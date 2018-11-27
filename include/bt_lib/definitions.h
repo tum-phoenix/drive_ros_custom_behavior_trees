@@ -1,12 +1,13 @@
 #ifndef BT_DEFINITIONS_H
 #define BT_DEFINITIONS_H
 
-namespace BT {
+#include "general.h"
 
-const int IDLE = 0, RUNNING = 1, SUCCESS = 2, FAILURE = 3;
+#define IDLE 0
+#define RUNNING 1
+#define SUCCESS 2
+#define FAILURE 3
 
-const bool CLEAN_OUTPUT = false;
-
-}
+#define CLEAN_OUTPUT false
 
 #endif

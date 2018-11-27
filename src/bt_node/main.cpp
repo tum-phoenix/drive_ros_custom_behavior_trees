@@ -2,9 +2,18 @@
 #include <vector>
 
 #include "bt_lib/tree.h"
-#include "bt_lib/tree_node.h"
 #include "bt_lib/sequence_node.h"
 #include "bt_lib/action_node.h"
+
+
+/* ---------- EXTERNAL DATA ---------- */
+std::string mode;
+
+void init_external_data(ros::NodeHandle *nh) {
+    nh->getParam("behavior_tree", mode);
+}
+/* ------- END OF EXTERNAL DATA ------ */
+
 
 class Act : public BT::ActionNode {
 public:
@@ -16,10 +25,14 @@ public:
     }
 };
 
+
 int main(int argc, char **argv) {
     ros::init(argc, argv, "BehaviorTree");
     ros::NodeHandle nh;
+    init_external_data(&nh);
 
+
+ROS_INFO_STREAM(mode);
     BT::SequenceNode h("Kopf", false);
     Act a1("Popf");
     Act a2("Bopfe");

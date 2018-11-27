@@ -11,17 +11,17 @@
 #include "bt_lib/tree_printer.h"
 
 namespace BT {
-class Tree {
-public:
-    Tree(TreeNode *head, int tick_frequency_ms);
-    int execute();
-    void reset_state(std::set<std::string> *new_states);
-    void print();
-private:
-    std::chrono::milliseconds tick_freq_ms;
-    TreeNode *head;
-    TreePrinter printer;
-};
+    class Tree {
+    public:
+        Tree(TreeNode *head, int tick_frequency_ms);
+        int execute();
+        void reset_state(std::set<std::string> *new_states);
+        void print();
+    private:
+        std::chrono::milliseconds tick_freq_ms;
+        TreeNode *head;
+        TreePrinter printer;
+    };
 } // BT
 
 

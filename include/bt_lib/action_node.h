@@ -7,14 +7,14 @@
 
 namespace BT {
 
-class ActionNode : public TreeNode {
-public:
-    ActionNode(std::string name);
-    virtual bool reset_state(std::set<std::string> *new_states);
-    virtual void currently_running_nodes(std::set<TreeNode *> *nodes);
-private:
-    
-};
+    class ActionNode : public TreeNode {
+    public:
+        ActionNode(std::string name);
+        virtual bool reset_state(std::set<std::string> *new_states);
+        virtual void currently_running_nodes(std::set<TreeNode *> *nodes);
+    private:
+        
+    };
 
 }
 #endif

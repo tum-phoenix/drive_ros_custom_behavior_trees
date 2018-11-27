@@ -6,12 +6,12 @@
 
 namespace BT {
 
-class TreePrinter {
-public:
-    void printTree(TreeNode *headNode);
-private:
-    std::string last_output;
-};
+    class TreePrinter {
+    public:
+        void printTree(TreeNode *headNode);
+    private:
+        std::string last_output;
+    };
 }
 
 #endif
