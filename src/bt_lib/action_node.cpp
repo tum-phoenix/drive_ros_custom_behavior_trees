@@ -21,7 +21,6 @@ namespace BT {
 
     void ActionNode::currently_running_nodes(std::set<TreeNode *> *nodes) {
         if(get_state() == RUNNING) {
-            ROS_INFO_STREAM(get_name());
             nodes->insert(this);
         }
     }

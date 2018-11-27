@@ -8,6 +8,6 @@
 #define SUCCESS 2
 #define FAILURE 3
 
-#define CLEAN_OUTPUT false
+#define CLEAN_OUTPUT true
 
 #endif

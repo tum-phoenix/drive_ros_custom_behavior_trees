@@ -3,6 +3,8 @@
 #include "bt_lib/tree_printer.h"
 #include <algorithm>
 
+extern std::string mode;
+
 namespace BT {
 
     void erase_last_n_lines(int n) {
@@ -29,7 +31,7 @@ namespace BT {
         for(auto it : running_nodes) {
             next_output += it->get_name() + " ";
         }
-        next_output += "\n";
+        next_output += "\n" + mode + "\n";
 
         if(CLEAN_OUTPUT) erase_last_n_lines(std::count(last_output.begin(), last_output.end(), '\n'));
 

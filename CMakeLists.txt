@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   std_msgs
+  dynamic_reconfigure
 )
 
 ## System dependencies are found with CMake's conventions
@@ -88,10 +89,9 @@ find_package(catkin REQUIRED COMPONENTS
 ##     and list every .cfg file to be processed
 
 ## Generate dynamic reconfigure parameters in the 'cfg' folder
-# generate_dynamic_reconfigure_options(
-#   cfg/DynReconf1.cfg
-#   cfg/DynReconf2.cfg
-# )
+generate_dynamic_reconfigure_options(
+  cfg/BehaviorTree.cfg
+)
 
 ###################################
 ## catkin specific configuration ##
@@ -201,6 +201,7 @@ include_directories(
 
 add_executable(BehaviorTree 
   src/bt_node/main.cpp
+  src/bt_node/ros_communication.cpp
   
   src/bt_lib/tree.cpp
   src/bt_lib/tree_node.cpp
@@ -208,12 +209,14 @@ add_executable(BehaviorTree
   src/bt_lib/action_node.cpp
   src/bt_lib/sequence_node.cpp
   src/bt_lib/parallel_node.cpp
+  src/bt_lib/fallback_node.cpp
   
   src/bt_lib/tree_printer.cpp)
 
 add_dependencies(BehaviorTree 
   ${BehaviorTree_generate_messages_cpp} 
   ${${PROJECT_NAME}_EXPORTED_TARGETS} 
-  ${catkin_EXPORTED_TARGETS})
+  ${catkin_EXPORTED_TARGETS}
+  ${PROJECT_NAME}_gencfg)
 
 target_link_libraries(BehaviorTree ${catkin_LIBRARIES})
