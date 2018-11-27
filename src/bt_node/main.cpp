@@ -8,13 +8,11 @@
 
 class Act : public BT::ActionNode {
 public:
-int c;
     Act(std::string name) : ActionNode(name) {
-        c = 1;
+        
     }
     void tick() {
-        if(c % 5 == 0) set_state(BT::SUCCESS);
-        c++;
+        
     }
 };
 
@@ -30,6 +28,10 @@ int main(int argc, char **argv) {
     h.addChild(&a2);
 
     BT::Tree t(&h, 100);
+
+    std::set<std::string> s;
+    s.insert("Bopfe");
+    t.reset_state(&s);
 
     t.execute();
 }

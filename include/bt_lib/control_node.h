@@ -7,16 +7,16 @@
 
 namespace BT {
 
-class ControlNode : public TreeNode {
-public:
-    ControlNode(std::string name);
-    void addChild(TreeNode *child);
+    class ControlNode : public TreeNode {
+    public:
+        ControlNode(std::string name);
+        void addChild(TreeNode *child);
 
-    virtual bool reset_state(std::vector<std::string> *new_states);
-    virtual std::vector<TreeNode *> currently_running_nodes();
-protected:
-    std::vector<TreeNode *> children;
-};
+        virtual bool reset_state(std::set<std::string> *new_states);
+        virtual void currently_running_nodes(std::set<TreeNode *> *nodes);
+    protected:
+        std::vector<TreeNode *> children;
+    };
 
 }
 

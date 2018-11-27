@@ -18,13 +18,17 @@ int Tree::execute() {
     while(ros::ok()) {
         tick_start = std::chrono::system_clock::now();
 
-        head->tick();
+        if(head->get_state() == IDLE || head->get_state() == RUNNING) head->tick();
 
         print();
 
         std::this_thread::sleep_until(tick_start + tick_freq_ms);
     }
     return 0;
+}
+
+void Tree::reset_state(std::set<std::string> *new_states) {
+    head->reset_state(new_states);
 }
 
 void Tree::print() {

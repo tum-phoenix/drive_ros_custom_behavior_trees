@@ -22,14 +22,16 @@ void TreePrinter::printTree(TreeNode *tree) {
     std::string next_output;
 
     next_output = "Current node: ";
-    std::vector<TreeNode *> running_nodes = tree->currently_running_nodes();
+    std::set<TreeNode *> running_nodes;
+    running_nodes.clear();
+    tree->currently_running_nodes(&running_nodes);
 
-    for(int i = 0; i < running_nodes.size(); i++) {
-        next_output += running_nodes.at(i)->get_name() + " ";
+    for(auto it : running_nodes) {
+        next_output += it->get_name() + " ";
     }
     next_output += "\n";
 
-    erase_last_n_lines(std::count(last_output.begin(), last_output.end(), '\n'));
+    if(CLEAN_OUTPUT) erase_last_n_lines(std::count(last_output.begin(), last_output.end(), '\n'));
 
     std::cout << next_output;
     last_output = next_output;

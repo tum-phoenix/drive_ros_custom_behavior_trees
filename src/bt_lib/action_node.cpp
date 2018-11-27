@@ -9,30 +9,21 @@ namespace BT {
         
     }
 
-    bool remove_if_contained(std::vector<std::string> *v, std::string name) {
-        for(int i = 0; i < v->size(); i++) {
-            if(!v->at(i).compare(name)) {
-                v->erase(v->begin() + i);
-                return true;
-            }
-        }
-        return false;
-    }
-
-    bool ActionNode::reset_state(std::vector<std::string> *new_states) {
-        if(remove_if_contained(new_states, get_name())) {
+    bool ActionNode::reset_state(std::set<std::string> *new_states) {
+        if(new_states->find(get_name()) != new_states->end()) {
+            new_states->erase(get_name());
             set_state(RUNNING);
             return true;
         }
+        set_state(IDLE);
         return false;
     }
 
-    std::vector<TreeNode *> ActionNode::currently_running_nodes() {
-        std::vector<TreeNode *> v;
+    void ActionNode::currently_running_nodes(std::set<TreeNode *> *nodes) {
         if(get_state() == RUNNING) {
-            v.push_back(this);
+            ROS_INFO_STREAM(get_name());
+            nodes->insert(this);
         }
-        return v;
     }
 
 }

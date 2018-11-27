@@ -11,14 +11,14 @@ class TreeNode {
 public:
     TreeNode(std::string name);
     virtual void tick();
-    virtual bool reset_state(std::vector<std::string> *new_states) = 0;
+    virtual bool reset_state(std::set<std::string> *new_states) = 0;
     int get_state();
     void set_state(int newState);
     TreeNode *get_parent();
     void set_parent(TreeNode *parent);
     std::string get_name();
 
-    virtual std::vector<TreeNode *> currently_running_nodes() = 0;
+    virtual void currently_running_nodes(std::set<TreeNode *> *nodes) = 0;
 private:
     int state;
     std::string name;

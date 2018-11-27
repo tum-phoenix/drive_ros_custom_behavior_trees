@@ -5,6 +5,8 @@ namespace BT {
 
 const int IDLE = 0, RUNNING = 1, SUCCESS = 2, FAILURE = 3;
 
+const bool CLEAN_OUTPUT = false;
+
 }
 
 #endif

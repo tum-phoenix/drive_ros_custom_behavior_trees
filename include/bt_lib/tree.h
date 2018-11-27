@@ -15,6 +15,7 @@ class Tree {
 public:
     Tree(TreeNode *head, int tick_frequency_ms);
     int execute();
+    void reset_state(std::set<std::string> *new_states);
     void print();
 private:
     std::chrono::milliseconds tick_freq_ms;
