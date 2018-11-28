@@ -12,6 +12,7 @@ namespace BT {
     public:
         ParallelNode(std::string name, void (*activationFunction)(std::vector<TreeNode *> *), bool stayAlive);
         virtual void tick();
+        virtual void currently_running_nodes(std::set<TreeNode *> *nodes);
     private:
         bool stayAlive;
         void (*activationFunction)(std::vector<TreeNode *> *);

@@ -42,4 +42,14 @@ namespace BT {
         set_state(newState);
     }
 
+    void ParallelNode::currently_running_nodes(std::set<TreeNode *> *nodes) {
+        int size_before = nodes->size();
+        for(int i = 0; i < children.size(); i++) {
+            if(children.at(i)->get_state() == RUNNING) {
+                children.at(i)->currently_running_nodes(nodes);
+            }
+        }
+        if(nodes->size() == size_before) nodes->insert(this);
+    }
+
 }
