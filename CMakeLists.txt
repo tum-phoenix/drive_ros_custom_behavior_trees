@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   std_msgs
+  message_generation
   dynamic_reconfigure
 )
 
@@ -48,11 +49,11 @@ find_package(catkin REQUIRED COMPONENTS
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-# add_message_files(
-#   FILES
-#   Message1.msg
-#   Message2.msg
-# )
+add_message_files(
+  FILES
+  EnvModelMessage.msg
+  TrajectoryMessage.msg
+)
 
 ## Generate services in the 'srv' folder
 # add_service_files(
@@ -68,11 +69,11 @@ find_package(catkin REQUIRED COMPONENTS
 #   Action2.action
 # )
 
-## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
-#   std_msgs
-# )
+# Generate added messages and services with any dependencies listed here
+generate_messages(
+  DEPENDENCIES
+  std_msgs
+)
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -105,7 +106,7 @@ generate_dynamic_reconfigure_options(
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES drive_ros_custom_behavior_trees
-#  CATKIN_DEPENDS roscpp rospy std_msgs
+  CATKIN_DEPENDS roscpp rospy std_msgs message_runtime
 #  DEPENDS system_lib
 )
 
@@ -213,10 +214,10 @@ add_executable(BehaviorTree
   
   src/bt_lib/tree_printer.cpp)
 
-add_dependencies(BehaviorTree 
-  ${BehaviorTree_generate_messages_cpp} 
-  ${${PROJECT_NAME}_EXPORTED_TARGETS} 
+add_dependencies(BehaviorTree  
   ${catkin_EXPORTED_TARGETS}
+  ${BehaviorTree_generate_messages_cpp} 
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
   ${PROJECT_NAME}_gencfg)
 
 target_link_libraries(BehaviorTree ${catkin_LIBRARIES})

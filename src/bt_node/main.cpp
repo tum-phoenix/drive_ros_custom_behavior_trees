@@ -23,6 +23,10 @@ public:
         c = 1;
     }
     void tick() {
+        drive_ros_custom_behavior_trees::TrajectoryMessage msg;
+        msg.max_speed = c;
+        msg.control_metadata = 2;
+        publish_trajectory_metadata(msg);
         if(c % 5 == 0) set_state(SUCCESS);
         c++;
     }
@@ -35,8 +39,6 @@ int main(int argc, char **argv) {
     setup_ros_communication(&nh);
     init_external_data(&nh);
 
-
-ROS_INFO_STREAM(mode);
     BT::SequenceNode h("Kopf", false);
     BT::SequenceNode sn("Sequence", true);
     Act a1("Act-node 1");
