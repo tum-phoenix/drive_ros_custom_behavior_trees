@@ -9,7 +9,6 @@ extern std::string mode;
 
 void dynamic_reconfigure_callback(drive_ros_custom_behavior_trees::BehaviorTreeConfig &config, uint32_t level) {
     mode = config.mode;
-    ROS_INFO("Values changed: %s", config.mode.c_str());
 }
 
 void env_model_callback(const drive_ros_custom_behavior_trees::EnvModelMessage &msg) {

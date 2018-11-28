@@ -2,5 +2,12 @@
     <node name="behavior_tree" pkg="drive_ros_custom_behavior_trees" type="BehaviorTree" output="screen">
       <!-- possible modes: "PARKING", "OBSTACLES"-->
       <param name="mode" value="OBSTACLES"/>
+
+      <!-- These are usually set by the BT and may be changed for testing purposes only!-->
+      <param name="start_value__overtaking_forbidden_zone" value="false"/>
+      <param name="start_value__express_way" value="false"/>
+      <param name="start_value__priority_road" value="false"/>
+      <param name="start_value__on_bridge" value="false"/>
+      <param name="start_value__speed_limit" value="1000"/>
     </node>
 </launch>

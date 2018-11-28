@@ -26,10 +26,12 @@ namespace BT {
                 children.at(currentChildIndex)->set_state(IDLE);
                 if(currentChildIndex < children.size() - 1) {
                     currentChildIndex++;
+                    children.at(currentChildIndex)->set_state(RUNNING);
                     newState = RUNNING;
                 }
                 else if(repeatOnSuccess) {
                     currentChildIndex = 0;
+                    children.at(currentChildIndex)->set_state(RUNNING);
                     newState = RUNNING;
                 }
                 else {

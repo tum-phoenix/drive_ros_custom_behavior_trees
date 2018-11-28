@@ -9,9 +9,12 @@ namespace BT {
     Tree::Tree(TreeNode *head, int tick_frequency_ms) {
         this->head = head;
         tick_freq_ms = std::chrono::milliseconds(tick_frequency_ms);
+
+        ROS_INFO("Tree built");
     }
 
     int Tree::execute() {
+        ROS_INFO("Starting tree execution");
         std::chrono::system_clock::time_point tick_start = std::chrono::system_clock::now();
 
         

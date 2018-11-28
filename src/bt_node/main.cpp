@@ -7,13 +7,30 @@
 #include "bt_lib/action_node.h"
 
 
-/* ---------- EXTERNAL DATA ---------- */
+/* ---------- GLOBAL DATA ---------- */
+//Fixed parameters
+float break_distance;
 std::string mode;
 
-void init_external_data(ros::NodeHandle *nh) {
+//Dynamic values
+bool overtaking_forbidden_zone;
+bool express_way;
+bool priority_road;
+bool on_bridge;
+int speed_limit;
+
+void init_global_data(ros::NodeHandle *nh) {
+    nh->getParam("behavior_tree/break_distance", break_distance);
     nh->getParam("behavior_tree/mode", mode);
+
+    nh->getParam("behavior_tree/start_value__overtaking_forbidden_zone", overtaking_forbidden_zone);
+    nh->getParam("behavior_tree/start_value__express_way", express_way);
+    nh->getParam("behavior_tree/start_value__priority_road", priority_road);
+    nh->getParam("behavior_tree/start_value__on_bridge", on_bridge);
+    nh->getParam("behavior_tree/start_value__speed_limit", speed_limit);
+
 }
-/* ------- END OF EXTERNAL DATA ------ */
+/* ------- END OF GLOBAL DATA ------ */
 
 
 class Act : public BT::ActionNode {
@@ -24,7 +41,7 @@ public:
     }
     void tick() {
         drive_ros_custom_behavior_trees::TrajectoryMessage msg;
-        msg.max_speed = c;
+        msg.max_speed = speed_limit;
         msg.control_metadata = 2;
         publish_trajectory_metadata(msg);
         if(c % 5 == 0) set_state(SUCCESS);
@@ -37,7 +54,7 @@ int main(int argc, char **argv) {
     ros::init(argc, argv, "BehaviorTree");
     ros::NodeHandle nh;
     setup_ros_communication(&nh);
-    init_external_data(&nh);
+    init_global_data(&nh);
 
     BT::SequenceNode h("Kopf", false);
     BT::SequenceNode sn("Sequence", true);
