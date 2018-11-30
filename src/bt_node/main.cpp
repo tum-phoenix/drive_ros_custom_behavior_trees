@@ -32,7 +32,7 @@ public:
 int main(int argc, char **argv) {
     ros::init(argc, argv, "BehaviorTree");
     ros::NodeHandle nh;
-    setup_ros_communication(&nh);
+    RosInterface ros_interface(nh);
     init_external_data(&nh);
 
 
