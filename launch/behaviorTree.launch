@@ -1,7 +1,13 @@
 <launch>
     <node name="behavior_tree" pkg="drive_ros_custom_behavior_trees" type="BehaviorTree" output="screen">
       <!-- possible modes: "PARKING", "OBSTACLES"-->
-      <param name="mode" value="OBSTACLES"/>
+      <param name="mode" value="PARKING"/>
+      <param name="tick_frequency" value="1000"/>
+      <param name="min_sign_react_distance" value="0.1"/>
+      <param name="max_sign_react_distance" value="0.5"/>
+      <param name="intersection_react_distance" value="50"/>
+      <param name="max_bridge_speed" value="1.5"/>
+      <param name="parking_spot_search_speed" value="0.5"/>
 
       <!-- These are usually set by the BT and may be changed for testing purposes only!-->
       <param name="start_value__overtaking_forbidden_zone" value="false"/>
@@ -9,5 +15,6 @@
       <param name="start_value__priority_road" value="false"/>
       <param name="start_value__on_bridge" value="false"/>
       <param name="start_value__speed_limit" value="1000"/>
+      <param name="start_value__successful_parking_count" value="0"/>
     </node>
 </launch>
