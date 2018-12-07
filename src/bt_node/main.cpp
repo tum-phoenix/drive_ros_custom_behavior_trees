@@ -86,6 +86,7 @@ public:
 int main(int argc, char **argv) {
     ros::init(argc, argv, "BehaviorTree");
     ros::NodeHandle nh;
+<<<<<<< HEAD
     setup_ros_communication(&nh);
     init_global_data(&nh);
     ROS_INFO("Creating BT for mode %s", mode.c_str());
@@ -168,6 +169,10 @@ int main(int argc, char **argv) {
         ROS_ERROR("Driving mode not properly declared. Please check behaviorTree.launch");
         return -1;
     }
+=======
+    RosInterface ros_interface(nh);
+    init_external_data(&nh);
+>>>>>>> 28a26d79e654a5a4857df649dd8f738bd725383a
 
     BT::Tree *tree = new BT::Tree(head, tick_frequency);
     tree->execute();
@@ -191,5 +196,10 @@ int main(int argc, char **argv) {
     s.insert("Act-node 2");
     t.reset_state(&s);
 
+<<<<<<< HEAD
     t.execute();*/
 }
+=======
+    t.execute();
+}
+>>>>>>> 28a26d79e654a5a4857df649dd8f738bd725383a

@@ -1,1 +1,3 @@
-# drive_ros_custom_behavior_trees
+# Behavior Trees
+Behavior Tree implementation of TUM Phoenix Autonomous Drive Team
+Readme will follow soon...
