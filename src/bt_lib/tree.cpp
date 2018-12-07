@@ -34,6 +34,10 @@ namespace BT {
         head->reset_state(new_states);
     }
 
+    TreeNode * Tree::get_head() {
+        return head;
+    }
+
     void Tree::print() {
         printer.printTree(head);
     }

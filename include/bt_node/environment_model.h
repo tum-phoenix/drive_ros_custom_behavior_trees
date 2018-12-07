@@ -6,8 +6,15 @@
 namespace EnvModel {
     bool intersection_immediately_upfront();
     bool start_box_open();
+    bool object_on_current_lane();
+    bool crosswalk_clear();
+    int get_current_lane();
+    int num_of_pedestrians();
 
-    float upfront_opject_distance();
+    float upfront_object_distance();
+    float barred_area_distance();
+    float current_break_distance();
+    float crosswalk_distance();
     
     void subscriber_callback(const drive_ros_custom_behavior_trees::EnvModelMessage &msg);
 }

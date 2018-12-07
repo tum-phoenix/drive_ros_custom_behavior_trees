@@ -1,12 +1,20 @@
 #include "bt_node/nodes.h"
 #include "bt_node/environment_model.h"
-#include "bt_node/ros_communication.h"
 #include "bt_lib/definitions.h"
 
+extern float general_max_speed;
+extern float general_max_speed_cautious;
 extern float max_bridge_speed;
 extern float parking_spot_search_speed;
-extern int speed_limit;
+extern float max_lane_switch_speed;
+extern float overtake_distance;
+extern float object_following_break_factor;
+extern float universal_break_factor;
+extern float barred_area_react_distance;
+extern float oncoming_traffic_clearance;
 
+extern int speed_limit;
+extern bool overtaking_forbidden_zone;
 extern int successful_parking_count;
 extern float current_velocity;
 
@@ -14,6 +22,7 @@ namespace NODES {
 
 
     drive_ros_custom_behavior_trees::TrajectoryMessage trajectory_msg;
+    TrackPropertyMessageHandler msg_handler;
 
     /* ---------- WaitForStart ---------- */
     WaitForStart::WaitForStart(std::string name) : BT::ActionNode(name) {
@@ -125,6 +134,159 @@ namespace NODES {
             publish_trajectory_metadata(trajectory_msg);
         }
     }
+
+    /* ---------- SwitchToLeftLane ---------- */
+    SwitchToLeftLane::SwitchToLeftLane(std::string name) : BT::ActionNode(name) {
+
+    }
+    void SwitchToLeftLane::tick() {
+        if(EnvModel::get_current_lane() == 0) {
+            set_state(SUCCESS);
+        }
+        else {
+            drive_ros_custom_behavior_trees::TrajectoryMessage *msg = new drive_ros_custom_behavior_trees::TrajectoryMessage();
+            msg->control_metadata = SWITCH_TO_LEFT_LANE;
+            msg->max_speed = max_lane_switch_speed;
+            msg_handler.addMessageSuggestion(msg);
+        }
+    }
+
+    /* ---------- SwitchToRightLane ---------- */
+    SwitchToRightLane::SwitchToRightLane(std::string name) : BT::ActionNode(name) {
+
+    }
+    void SwitchToRightLane::tick() {
+        if(EnvModel::get_current_lane() == 1) {
+            set_state(SUCCESS);
+        }
+        else {
+            drive_ros_custom_behavior_trees::TrajectoryMessage *msg = new drive_ros_custom_behavior_trees::TrajectoryMessage();
+            msg->control_metadata = SWITCH_TO_RIGHT_LANE;
+            msg->max_speed = max_lane_switch_speed;
+            msg_handler.addMessageSuggestion(msg);
+        }
+    }
+
+    /* ---------- FollowingObject ---------- */
+    FollowingObject::FollowingObject(std::string name) : BT::ActionNode(name) {
+        last_speed = 0;
+    }
+    void FollowingObject::tick() {
+        if(!EnvModel::object_on_current_lane()) {
+            set_state(FAILURE);
+        } else if(!(EnvModel::intersection_immediately_upfront() || overtaking_forbidden_zone)
+            && EnvModel::upfront_object_distance() < overtake_distance) {
+            set_state(SUCCESS);
+        }
+        else {
+            if(last_speed == 0) last_speed = current_velocity;
+
+            drive_ros_custom_behavior_trees::TrajectoryMessage *msg = new drive_ros_custom_behavior_trees::TrajectoryMessage();
+            msg->control_metadata = SWITCH_TO_RIGHT_LANE;
+            if(EnvModel::upfront_object_distance() < overtake_distance) { //Increase distance
+                msg->max_speed = last_speed * object_following_break_factor;
+                last_speed = msg->max_speed;
+            }
+            else msg->max_speed = last_speed * (1 / object_following_break_factor); //Reduce distance
+            msg_handler.addMessageSuggestion(msg);
+        }
+    }
     
+    /* ---------- LeftLaneDrive ---------- */
+    LeftLaneDrive::LeftLaneDrive(std::string name) : BT::ActionNode(name) {
+
+    }
+    void LeftLaneDrive::tick() {
+        if(false) { //When overtaking / passing barred area is finished.
+            set_state(SUCCESS);
+        }
+        else {
+            drive_ros_custom_behavior_trees::TrajectoryMessage *msg = new drive_ros_custom_behavior_trees::TrajectoryMessage();
+            msg->control_metadata = STANDARD;
+            msg->max_speed = general_max_speed;
+            msg_handler.addMessageSuggestion(msg);
+        }
+    }
+
+    /* ---------- BarredAreaAnticipate ---------- */
+    BarredAreaAnticipate::BarredAreaAnticipate(std::string name) : BT::ActionNode(name) {
+
+    }
+    void BarredAreaAnticipate::tick() {
+        if(EnvModel::barred_area_distance() < barred_area_react_distance
+            && (EnvModel::upfront_object_distance() > oncoming_traffic_clearance)) {
+            set_state(SUCCESS);
+        }
+        else {
+            drive_ros_custom_behavior_trees::TrajectoryMessage *msg = new drive_ros_custom_behavior_trees::TrajectoryMessage();
+            msg->control_metadata = STANDARD;
+            msg->max_speed = 0;
+            msg_handler.addMessageSuggestion(msg);
+        }
+    }
+
+    /* ---------- CrosswalkBreak ---------- */
+    CrosswalkBreak::CrosswalkBreak(std::string name) : BT::ActionNode(name) {
+
+    }
+    void CrosswalkBreak::tick() {
+        if(EnvModel::crosswalk_distance() == -1) set_state(FAILURE);
+        if(current_velocity == 0) {
+            set_state(SUCCESS);
+        }
+        else {
+            drive_ros_custom_behavior_trees::TrajectoryMessage *msg = new drive_ros_custom_behavior_trees::TrajectoryMessage();
+            if(EnvModel::crosswalk_distance() < EnvModel::current_break_distance()) {
+                msg->control_metadata = STANDARD;
+                msg->max_speed = 0;
+            }
+            else {
+                msg->control_metadata = STANDARD;
+                msg->max_speed = general_max_speed_cautious;
+                msg_handler.addMessageSuggestion(msg);
+            }
+        }
+    }
+
+    /* ---------- CrosswalkWait ---------- */
+    CrosswalkWait::CrosswalkWait(std::string name) : BT::ActionNode(name) {
+
+    }
+    void CrosswalkWait::tick() {
+        /*
+            Track pedestrians
+        */
+        if(EnvModel::num_of_pedestrians() == 0 || (pedestrians_detected_on_track > 0 && EnvModel::crosswalk_clear())) {
+            set_state(SUCCESS);
+        }
+        else {
+            drive_ros_custom_behavior_trees::TrajectoryMessage *msg = new drive_ros_custom_behavior_trees::TrajectoryMessage();
+            msg->control_metadata = STANDARD;
+            msg->max_speed = 0;
+            msg_handler.addMessageSuggestion(msg);
+        }
+    }
+
+    void trackPropertyCallback(std::vector<BT::TreeNode *> *nodes) {
+        msg_handler.evaluate_and_send();
+        //Activate nodes when necessary
+    }
     
+    void TrackPropertyMessageHandler::addMessageSuggestion(drive_ros_custom_behavior_trees::TrajectoryMessage *msg) {
+        suggestions.insert(msg);
+    }
+    void TrackPropertyMessageHandler::evaluate_and_send() {
+        float speed = general_max_speed;
+        int metadata = STRAIGHT_FORWARD;
+        for(drive_ros_custom_behavior_trees::TrajectoryMessage *msg : suggestions) {
+            if(msg->max_speed < speed) speed = msg->max_speed;
+            if(metadata == STRAIGHT_FORWARD) metadata = msg->control_metadata;
+        }
+        suggestions.clear();
+        drive_ros_custom_behavior_trees::TrajectoryMessage final_msg;
+        final_msg.control_metadata = metadata;
+        final_msg.max_speed = speed;
+        publish_trajectory_metadata(final_msg);
+    }
+
 }

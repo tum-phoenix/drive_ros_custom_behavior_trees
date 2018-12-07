@@ -205,6 +205,7 @@ add_executable(BehaviorTree
   src/bt_node/ros_communication.cpp
   src/bt_node/environment_model.cpp
   src/bt_node/nodes.cpp
+  src/bt_node/node_reset.cpp
 
   src/bt_lib/tree.cpp
   src/bt_lib/tree_node.cpp

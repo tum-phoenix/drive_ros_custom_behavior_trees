@@ -16,6 +16,7 @@ namespace BT {
         Tree(TreeNode *head, int tick_frequency_ms);
         int execute();
         void reset_state(std::set<std::string> *new_states);
+        TreeNode *get_head();
         void print();
     private:
         std::chrono::milliseconds tick_freq_ms;

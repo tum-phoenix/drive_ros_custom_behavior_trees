@@ -1,3 +1,6 @@
+#Left=0, Right=1
+int32 currentLane
+
 int32[] obj_lane
 float32[] obj_track_distance
 float32[] obj_lateral_offset

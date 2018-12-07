@@ -5,6 +5,7 @@
 #include "bt_node/environment_model.h"
 #include "bt_lib/tree.h"
 #include "bt_lib/sequence_node.h"
+#include "bt_lib/parallel_node.h"
 #include "bt_lib/action_node.h"
 
 #include "bt_node/nodes.h"
@@ -14,11 +15,19 @@
 //Fixed parameters
 std::string mode;
 int tick_frequency;
+float general_max_speed;
+float general_max_speed_cautious;
 float min_sign_react_distance;
 float max_sign_react_distance;
 float intersection_react_distance;
 float max_bridge_speed;
 float parking_spot_search_speed;
+float max_lane_switch_speed;
+float overtake_distance;
+float object_following_break_factor;
+float universal_break_factor;
+float barred_area_react_distance;
+float oncoming_traffic_clearance;
 
 //Dynamic values
 bool overtaking_forbidden_zone;
@@ -32,11 +41,19 @@ float current_velocity = 0;
 void init_global_data(ros::NodeHandle *nh) {
     nh->getParam("behavior_tree/mode", mode);
     nh->getParam("behavior_tree/tick_frequency", tick_frequency);
+    nh->getParam("behavior_tree/general_max_speed", general_max_speed);
+    nh->getParam("behavior_tree/general_max_speed_cautious", general_max_speed_cautious);
     nh->getParam("behavior_tree/min_sign_react_distance", min_sign_react_distance);
     nh->getParam("behavior_tree/max_sign_react_distance", max_sign_react_distance);
     nh->getParam("behavior_tree/intersection_react_distance", intersection_react_distance);
     nh->getParam("behavior_tree/max_bridge_speed", max_bridge_speed);
     nh->getParam("behavior_tree/parking_spot_search_speed", parking_spot_search_speed);
+    nh->getParam("behavior_tree/max_lane_switch_speed", max_lane_switch_speed);
+    nh->getParam("behavior_tree/overtake_distance", overtake_distance);
+    nh->getParam("behavior_tree/object_following_break_factor", object_following_break_factor);
+    nh->getParam("behaviro_tree/universal_break_factor", universal_break_factor);
+    nh->getParam("behavior_tree/barred_area_react_distance", barred_area_react_distance);
+    nh->getParam("behavior_tree/oncoming_traffic_clearance", oncoming_traffic_clearance);
 
     nh->getParam("behavior_tree/start_value__overtaking_forbidden_zone", overtaking_forbidden_zone);
     nh->getParam("behavior_tree/start_value__express_way", express_way);
@@ -71,6 +88,7 @@ int main(int argc, char **argv) {
     ros::NodeHandle nh;
     setup_ros_communication(&nh);
     init_global_data(&nh);
+    ROS_INFO("Creating BT for mode %s", mode.c_str());
 
     BT::SequenceNode *head = new BT::SequenceNode("CaroloCup2019", false);
     if(!mode.compare("PARKING")) {
@@ -101,15 +119,50 @@ int main(int argc, char **argv) {
         node_parkingPending->addChild(node_parkingInProgress);
         node_parkingPending->addChild(node_parkingReverse);
 
-        node_doCourse->addChild(node_freeDrive);
-        node_doCourse->addChild(node_freeDriveIntersection);
+        node_driving->addChild(node_freeDrive);
+        node_driving->addChild(node_freeDriveIntersection);
     }
     else if(!mode.compare("OBSTACLES")) {
         NODES::WaitForStart *node_waitForStart = new NODES::WaitForStart("Waiting for gate");
         NODES::InitialDriving *node_initialDriving = new NODES::InitialDriving("Initial Driving");
+        BT::ParallelNode *node_trackProperty = new BT::ParallelNode("Track property", &NODES::trackPropertyCallback, true);
+
+        BT::SequenceNode *node_objectAvoiding = new BT::SequenceNode("Handling object", false);
+        BT::SequenceNode *node_barredArea = new BT::SequenceNode("Handling barred area", false);
+        BT::SequenceNode *node_crosswalk = new BT::SequenceNode("Handling crosswalk", false);
+        BT::SequenceNode *node_intersection = new BT::SequenceNode("Handling intersection", false);
+
+        NODES::FollowingObject *node_followingObject = new NODES::FollowingObject("Following object");
+        NODES::SwitchToLeftLane *node_objectSwitchToLeft = new NODES::SwitchToLeftLane("Switching to left lane (object)");
+        NODES::LeftLaneDrive *node_overtakeObject = new NODES::LeftLaneDrive("Overtake object");
+        NODES::SwitchToRightLane *node_objectSwitchToRight = new NODES::SwitchToRightLane("Switching to right lane (object)");
+
+        NODES::BarredAreaAnticipate *node_barredAreaAnticipate = new NODES::BarredAreaAnticipate("Anticipating barred area");
+        NODES::SwitchToLeftLane *node_barredAreaSwitchToLeft = new NODES::SwitchToLeftLane("Switching to left lane (barred area)");
+        NODES::LeftLaneDrive *node_barredAreaPass = new NODES::LeftLaneDrive("Passing barred area");
+        NODES::SwitchToRightLane *node_barredAreaSwitchToRight = new NODES::SwitchToRightLane("Switching to right lane (barred area)");
+
+        NODES::CrosswalkBreak *node_crosswalkBreak = new NODES::CrosswalkBreak("Breaking (crosswalk)");
+        NODES::CrosswalkWait *node_crosswalkWait = new NODES::CrosswalkWait("Waiting at crosswalk");
+
 
         head->addChild(node_waitForStart);
         head->addChild(node_initialDriving);
+        head->addChild(node_trackProperty);
+        node_trackProperty->addChild(node_objectAvoiding);
+        node_trackProperty->addChild(node_barredArea);
+        node_trackProperty->addChild(node_crosswalk);
+        node_trackProperty->addChild(node_intersection);
+        node_objectAvoiding->addChild(node_followingObject);
+        node_objectAvoiding->addChild(node_objectSwitchToLeft);
+        node_objectAvoiding->addChild(node_overtakeObject);
+        node_objectAvoiding->addChild(node_objectSwitchToRight);
+        node_barredArea->addChild(node_barredAreaAnticipate);
+        node_barredArea->addChild(node_barredAreaSwitchToLeft);
+        node_barredArea->addChild(node_barredAreaPass);
+        node_barredArea->addChild(node_barredAreaSwitchToRight);
+        node_crosswalk->addChild(node_crosswalkBreak);
+        node_crosswalk->addChild(node_crosswalkWait);
     }
     else {
         ROS_ERROR("Driving mode not properly declared. Please check behaviorTree.launch");

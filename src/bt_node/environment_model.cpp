@@ -4,6 +4,8 @@ extern float min_sign_react_distance;
 extern float max_sign_react_distance;
 extern float intersection_react_distance;
 
+extern float current_velocity;
+
 /*
     TODO: Subscribe to vehicle and RC data, 
     find out if car is on track (again), e.g. after intersection or parking
@@ -22,9 +24,30 @@ namespace EnvModel {
     float upfront_object_distance() {
         return 0.1;
     }
+    float barred_area_distance() {
+        return 0;
+    }
+    float current_break_distance() {
+        return current_velocity; //Very rough estimation: break_distance[m] = v[m/s]
+    }
+    float crosswalk_distance() {
+        return get_traffic_mark_distance(102);
+    }
 
     bool start_box_open() {
         return true;
+    }
+    bool object_on_current_lane() {
+        return false;
+    }
+    bool crosswalk_clear() {
+        return true;
+    }
+    int get_current_lane() {
+        return 1;
+    }
+    int num_of_pedestrians() {
+        return 1;
     }
 
 
