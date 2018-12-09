@@ -25,6 +25,6 @@
       <param name="start_value__successful_parking_count" value="0"/>
 
       <!-- Other random values -->
-      <param name="initial_states" value=""/>
+      <param name="initial_states" type="str" value=""/>
     </node>
 </launch>

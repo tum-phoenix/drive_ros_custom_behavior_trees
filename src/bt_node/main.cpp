@@ -68,9 +68,10 @@ void read_launch_file(ros::NodeHandle *nh) {
     nh->getParam("behavior_tree/start_value__successful_parking_coung", successful_parking_count);
 
     //Read start states
-    std::string states = nh->getParam("behavior_tree/initial_states", states);
+    std::string states;
+    nh->getParam("behavior_tree/initial_states", states);
     std::vector<std::string> initial_states_vector;
-    boost::split(initial_states_vector, states, *(char c){return c == '|'});
+    boost::split(initial_states_vector, states, [](char c){return c == '|';});
     initial_states = new std::set<std::string>(initial_states_vector.begin(), initial_states_vector.end());
 }
 /* ------- END OF GLOBAL DATA ------ */
@@ -162,7 +163,6 @@ int main(int argc, char **argv) {
         return -1;
     }
     RosInterface ros_interface(nh);
-    init_external_data(&nh);
 
     BT::Tree *tree = new BT::Tree(head, tick_frequency);
     if(initial_states->size() > 0) tree->reset_state(initial_states);

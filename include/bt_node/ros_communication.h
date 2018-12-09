@@ -8,16 +8,15 @@
 #define SWITCH_TO_LEFT_LANE 4
 #define SWITCH_TO_RIGHT_LANE 5
 
+#include "dynamic_reconfigure/server.h"
+#include "drive_ros_custom_behavior_trees/BehaviorTreeConfig.h"
+
 #include "general.h"
 #include "drive_ros_custom_behavior_trees/TrajectoryMessage.h"
 
-<<<<<<< HEAD
 void setup_ros_communication(ros::NodeHandle *nh);
 void publish_trajectory_metadata(drive_ros_custom_behavior_trees::TrajectoryMessage msg);
-=======
-#include "dynamic_reconfigure/server.h"
-#include "drive_ros_custom_behavior_trees/BehaviorTreeConfig.h"
->>>>>>> 28a26d79e654a5a4857df649dd8f738bd725383a
+
 
 class RosInterface {
 public:
