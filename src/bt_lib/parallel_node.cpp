@@ -52,4 +52,22 @@ namespace BT {
         if(nodes->size() == size_before) nodes->insert(this);
     }
 
+    bool ParallelNode::reset_state(std::set<std::string> *new_states) {
+        bool flag = false;
+        //A parallel node may as well set itself to running, even if no child will be.
+        for(std::string s : *new_states) {
+            if(!s.compare(get_name())) {
+                set_state(RUNNING);
+                flag = true;
+            }
+        }
+        for(int i = 0; i < children.size(); i++) {
+            if(children.at(i)->reset_state(new_states)) {
+                flag = true;
+                set_state(RUNNING);
+            }
+        }
+        if(!flag) set_state(IDLE);
+        return flag;
+    } 
 }

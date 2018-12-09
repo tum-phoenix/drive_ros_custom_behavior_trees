@@ -36,7 +36,10 @@ void reset_tree_state(BT::Tree *tree) {
                 new_states.insert("Initial Driving");
             } else if(!s.compare("Initial Driving")) {
                 new_states.insert("");
+            } else if(!s.compare("Track property")) { //No special track property was being applied
+                new_states.insert("Track property"); //The TrackProperty node will evaluate the environment situation itself.
             }
+            //Some special track properties were being applied; then check if they should still be active.
         }
     }
     else {

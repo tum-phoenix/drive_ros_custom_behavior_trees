@@ -23,5 +23,8 @@
       <param name="start_value__on_bridge" value="false"/>
       <param name="start_value__speed_limit" value="1000"/>
       <param name="start_value__successful_parking_count" value="0"/>
+
+      <!-- Other random values -->
+      <param name="initial_states" value=""/>
     </node>
 </launch>

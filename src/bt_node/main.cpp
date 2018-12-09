@@ -1,5 +1,6 @@
 #include "general.h"
 #include <vector>
+#include <boost/algorithm/string.hpp>
 
 #include "bt_node/ros_communication.h"
 #include "bt_node/environment_model.h"
@@ -38,7 +39,11 @@ int speed_limit;
 int successful_parking_count;
 float current_velocity = 0;
 
-void init_global_data(ros::NodeHandle *nh) {
+/* ---------- END OF GLOBAL DATA ---------- */
+
+std::set<std::string> *initial_states;
+
+void read_launch_file(ros::NodeHandle *nh) {
     nh->getParam("behavior_tree/mode", mode);
     nh->getParam("behavior_tree/tick_frequency", tick_frequency);
     nh->getParam("behavior_tree/general_max_speed", general_max_speed);
@@ -62,33 +67,20 @@ void init_global_data(ros::NodeHandle *nh) {
     nh->getParam("behavior_tree/start_value__speed_limit", speed_limit);
     nh->getParam("behavior_tree/start_value__successful_parking_coung", successful_parking_count);
 
+    //Read start states
+    std::string states = nh->getParam("behavior_tree/initial_states", states);
+    std::vector<std::string> initial_states_vector;
+    boost::split(initial_states_vector, states, *(char c){return c == '|'});
+    initial_states = new std::set<std::string>(initial_states_vector.begin(), initial_states_vector.end());
 }
 /* ------- END OF GLOBAL DATA ------ */
-
-
-class Act : public BT::ActionNode {
-public:
-    int c;
-    Act(std::string name) : ActionNode(name) {
-        c = 1;
-    }
-    void tick() {
-        drive_ros_custom_behavior_trees::TrajectoryMessage msg;
-        msg.max_speed = speed_limit;
-        msg.control_metadata = 2;
-        publish_trajectory_metadata(msg);
-        if(c % 5 == 0) set_state(SUCCESS);
-        c++;
-    }
-};
 
 
 int main(int argc, char **argv) {
     ros::init(argc, argv, "BehaviorTree");
     ros::NodeHandle nh;
-<<<<<<< HEAD
     setup_ros_communication(&nh);
-    init_global_data(&nh);
+    read_launch_file(&nh);
     ROS_INFO("Creating BT for mode %s", mode.c_str());
 
     BT::SequenceNode *head = new BT::SequenceNode("CaroloCup2019", false);
@@ -169,37 +161,10 @@ int main(int argc, char **argv) {
         ROS_ERROR("Driving mode not properly declared. Please check behaviorTree.launch");
         return -1;
     }
-=======
     RosInterface ros_interface(nh);
     init_external_data(&nh);
->>>>>>> 28a26d79e654a5a4857df649dd8f738bd725383a
 
     BT::Tree *tree = new BT::Tree(head, tick_frequency);
+    if(initial_states->size() > 0) tree->reset_state(initial_states);
     tree->execute();
-
-    /*BT::SequenceNode h("Kopf", false);
-    BT::SequenceNode sn("Sequence", true);
-    Act a1("Act-node 1");
-    Act a2("Act-node 2");
-    Act a3("Act-node 3");
-    Act a4("Act-node 4");
-
-    h.addChild(&a1);
-    h.addChild(&a2);
-    h.addChild(&sn);
-    sn.addChild(&a3);
-    sn.addChild(&a4);
-
-    BT::Tree t(&h, 100);
-
-    std::set<std::string> s;
-    s.insert("Act-node 2");
-    t.reset_state(&s);
-
-<<<<<<< HEAD
-    t.execute();*/
 }
-=======
-    t.execute();
-}
->>>>>>> 28a26d79e654a5a4857df649dd8f738bd725383a
