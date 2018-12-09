@@ -8,7 +8,7 @@ namespace BT {
 
     class TreePrinter {
     public:
-        void printTree(TreeNode *headNode);
+        void printTree(TreeNode *headNode, int timeDif);
     private:
         std::string last_output;
     };

@@ -17,7 +17,7 @@ namespace BT {
         int execute();
         void reset_state(std::set<std::string> *new_states);
         TreeNode *get_head();
-        void print();
+        void print(int timeDif);
     private:
         std::chrono::milliseconds tick_freq_ms;
         TreeNode *head;

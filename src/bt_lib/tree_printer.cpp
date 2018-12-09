@@ -39,11 +39,11 @@ namespace BT {
     }
 
 
-    void TreePrinter::printTree(TreeNode *tree) {
+    void TreePrinter::printTree(TreeNode *tree, int timeDif) {
         int var_print_width = 32;
         std::string next_output = "";
 
-        next_output += "Live-updated tree status\n";
+        next_output += "Live-updated tree status (Computation time: " + std::to_string(timeDif) + " ns)\n";
         set_color(&next_output, 30, 47);
         next_output += change_string_to_length("Flags:", var_print_width) + "\n";
         set_color(&next_output, overtaking_forbidden_zone ? 32 : 31, 47);

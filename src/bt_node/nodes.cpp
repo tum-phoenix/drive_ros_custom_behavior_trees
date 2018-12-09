@@ -112,7 +112,7 @@ namespace NODES {
         if(EnvModel::intersection_immediately_upfront()) {
             set_state(SUCCESS);
         }
-        else if(true) { //Start line/Parking sign detected
+        else if(EnvModel::start_line_distance() < 0.2) { //Start line/Parking sign detected
             set_state(FAILURE); //Break infinite drive loop to re-enter parking mode
         }
         else {
@@ -127,7 +127,7 @@ namespace NODES {
 
     }
     void FreeDriveIntersection::tick() {
-        if(false) { //Back on normal road
+        if(true) { //Back on normal road
             set_state(SUCCESS);
         }
         else { //Maybe implement turn left/right?

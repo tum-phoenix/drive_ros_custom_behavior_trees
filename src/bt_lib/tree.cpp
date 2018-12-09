@@ -23,7 +23,7 @@ namespace BT {
 
             if(head->get_state() == IDLE || head->get_state() == RUNNING) head->tick();
 
-            print();
+            print(std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now() - tick_start).count());
 
             std::this_thread::sleep_until(tick_start + tick_freq_ms);
         }
@@ -38,8 +38,8 @@ namespace BT {
         return head;
     }
 
-    void Tree::print() {
-        printer.printTree(head);
+    void Tree::print(int timeDif) {
+        printer.printTree(head, timeDif);
     }
 
 }
