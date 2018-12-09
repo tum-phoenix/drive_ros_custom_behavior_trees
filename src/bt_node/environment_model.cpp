@@ -86,18 +86,11 @@ namespace EnvModel {
         return upfront_object_distance() > max_start_box_distance;
     }
 
-    bool f_object_on_current_lane = false;
-    bool v_object_on_current_lane;
-    bool object_on_current_lane() {
-        if(f_object_on_current_lane) return v_object_on_current_lane;
-
+    bool object_on_lane(int lane) {
         bool flag = false;
         for(int i = 0; i < env_msg.obj_lane.size(); i++) {
-            if(env_msg.obj_lane[i] == get_current_lane()) flag = true;
+            if(env_msg.obj_lane[i] == lane) flag = true;
         }
-
-        v_object_on_current_lane = flag;
-        f_object_on_current_lane = true;
         return flag;
     }
 
@@ -159,7 +152,6 @@ namespace EnvModel {
         f_barred_area_distance = false;
         f_crosswalk_distance = false;
         f_start_line_distance = false;
-        f_object_on_current_lane = false;
         f_crosswalk_clear = false;
         f_num_of_pedestrians = false;
         f_intersection_immediately_upfront = false;

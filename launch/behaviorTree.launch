@@ -11,7 +11,7 @@
       <param name="max_bridge_speed" value="1.5"/>
       <param name="parking_spot_search_speed" value="0.5"/>
       <param name="max_lane_switch_speed" value="2.5"/>
-      <param name="overtake_distance" value="0.8"/>
+      <param name="overtake_distance" value="1.5"/>
       <param name="object_following_break_factor" value="0.8"/>
       <param name="barred_area_react_distance" value="0.5"/>
       <param name="oncoming_traffic_clearance" value="3"/>

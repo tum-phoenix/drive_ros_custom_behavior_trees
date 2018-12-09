@@ -1,4 +1,4 @@
-#Left=0, Right=1
+#Left=0, Right=1, Undefined=2
 int32 current_lane
 
 #Left=0, Right=1, Left side=2, Right side=3

@@ -6,7 +6,7 @@
 namespace EnvModel {
     bool intersection_immediately_upfront();
     bool start_box_open();
-    bool object_on_current_lane();
+    bool object_on_lane(int lane);
     bool crosswalk_clear();
     int get_current_lane();
     int num_of_pedestrians();
