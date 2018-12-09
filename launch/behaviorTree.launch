@@ -15,6 +15,7 @@
       <param name="object_following_break_factor" value="0.8"/>
       <param name="barred_area_react_distance" value="0.5"/>
       <param name="oncoming_traffic_clearance" value="3"/>
+      <param name="max_start_box_distance" value="20.0">
 
       <!-- These are usually set by the BT and may be changed for testing purposes only!-->
       <param name="start_value__overtaking_forbidden_zone" value="false"/>

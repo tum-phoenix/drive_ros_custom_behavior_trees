@@ -29,6 +29,7 @@ float object_following_break_factor;
 float universal_break_factor;
 float barred_area_react_distance;
 float oncoming_traffic_clearance;
+float max_start_box_distance;
 
 //Dynamic values
 bool overtaking_forbidden_zone;
@@ -59,6 +60,7 @@ void read_launch_file(ros::NodeHandle *nh) {
     nh->getParam("behaviro_tree/universal_break_factor", universal_break_factor);
     nh->getParam("behavior_tree/barred_area_react_distance", barred_area_react_distance);
     nh->getParam("behavior_tree/oncoming_traffic_clearance", oncoming_traffic_clearance);
+    nh->getParam("behavior_tree/max_start_box_distance", max_start_box_distance);
 
     nh->getParam("behavior_tree/start_value__overtaking_forbidden_zone", overtaking_forbidden_zone);
     nh->getParam("behavior_tree/start_value__express_way", express_way);
