@@ -86,14 +86,14 @@ int main(int argc, char **argv) {
     read_launch_file(&nh);
     ROS_INFO("Creating BT for mode %s", mode.c_str());
 
-    BT::SequenceNode *head = new BT::SequenceNode("CaroloCup2019", false);
+    BT::SequenceNode *head = new BT::SequenceNode("CaroloCup2019", false, true);
     if(!mode.compare("PARKING")) {
         NODES::WaitForStart *node_waitForStart = new NODES::WaitForStart("Waiting for gate");
         NODES::InitialDriving *node_initialDriving = new NODES::InitialDriving("Initial Driving");
-        BT::SequenceNode *node_doCourse = new BT::SequenceNode("Course loop", true);
+        BT::SequenceNode *node_doCourse = new BT::SequenceNode("Course loop", true, true);
 
-        BT::SequenceNode *node_parkingPending = new BT::SequenceNode("Parking", false);
-        BT::SequenceNode *node_driving = new BT::SequenceNode("Driving", true);
+        BT::SequenceNode *node_parkingPending = new BT::SequenceNode("Parking", false, false);
+        BT::SequenceNode *node_driving = new BT::SequenceNode("Driving", true, false);
 
         NODES::ParkingSpotSearch *node_parkingSpotSearch = new NODES::ParkingSpotSearch("Parking Spot Search");
         NODES::ParkingBreaking *node_parkingBreaking = new NODES::ParkingBreaking("Breaking (parking)");
@@ -123,10 +123,10 @@ int main(int argc, char **argv) {
         NODES::InitialDriving *node_initialDriving = new NODES::InitialDriving("Initial Driving");
         BT::ParallelNode *node_trackProperty = new BT::ParallelNode("Track property", &NODES::trackPropertyCallback, true);
 
-        BT::SequenceNode *node_objectAvoiding = new BT::SequenceNode("Handling object", false);
-        BT::SequenceNode *node_barredArea = new BT::SequenceNode("Handling barred area", false);
-        BT::SequenceNode *node_crosswalk = new BT::SequenceNode("Handling crosswalk", false);
-        BT::SequenceNode *node_intersection = new BT::SequenceNode("Handling intersection", false);
+        BT::SequenceNode *node_objectAvoiding = new BT::SequenceNode("Handling object", false, false);
+        BT::SequenceNode *node_barredArea = new BT::SequenceNode("Handling barred area", false, false);
+        BT::SequenceNode *node_crosswalk = new BT::SequenceNode("Handling crosswalk", false, false);
+        BT::SequenceNode *node_intersection = new BT::SequenceNode("Handling intersection", false, false);
 
         NODES::FollowingObject *node_followingObject = new NODES::FollowingObject("Following object");
         NODES::SwitchToLeftLane *node_objectSwitchToLeft = new NODES::SwitchToLeftLane("Switching to left lane (object)");

@@ -4,8 +4,9 @@
 
 namespace BT {
 
-    SequenceNode::SequenceNode(std::string name, bool repeatOnSuccess = false) : ControlNode(name) {
+    SequenceNode::SequenceNode(std::string name, bool repeatOnSuccess = false, bool skipFailedChild = false) : ControlNode(name) {
         this->repeatOnSuccess = repeatOnSuccess;
+        this->skipFailedChild = skipFailedChild;
         currentChildIndex = 0;
     }
 
@@ -18,9 +19,16 @@ namespace BT {
         
         switch(children.at(currentChildIndex)->get_state()) {
             case FAILURE:
-                newState = FAILURE;
-                children.at(currentChildIndex)->set_state(IDLE);
-                currentChildIndex = 0;
+                if(skipFailedChild) {
+                    newState = RUNNING;
+                    children.at(currentChildIndex)->set_state(IDLE);
+                    currentChildIndex++;
+                    currentChildIndex %= children.size();
+                } else {    
+                    newState = FAILURE;
+                    children.at(currentChildIndex)->set_state(IDLE);
+                    currentChildIndex = 0;
+                }
                 break;
             case SUCCESS:
                 children.at(currentChildIndex)->set_state(IDLE);

@@ -33,6 +33,7 @@ namespace NODES {
             set_state(SUCCESS);
         }
         else {
+            //Keep the wheels straight, don't drive
             trajectory_msg.control_metadata = STRAIGHT_FORWARD;
             trajectory_msg.max_speed = 0;
             publish_trajectory_metadata(trajectory_msg);
@@ -44,12 +45,12 @@ namespace NODES {
 
     }
     void InitialDriving::tick() {
-        if(true) { //Start line / parking sign detected
+        if(EnvModel::start_line_distance() < 0.2) {
             set_state(SUCCESS);
         }
         else {
             trajectory_msg.control_metadata = STRAIGHT_FORWARD;
-            trajectory_msg.max_speed = 1000; //Speed doesn't need to be limited 
+            trajectory_msg.max_speed = general_max_speed_cautious; 
             publish_trajectory_metadata(trajectory_msg);
         }
     }
@@ -60,7 +61,7 @@ namespace NODES {
     }
     void ParkingSpotSearch::tick() {
         if(successful_parking_count >= 2) {
-            set_state(FAILURE);
+            set_state(FAILURE); //to break the parking process and start driving immediately
         }
         else if(true) { //Parking spot detected
             set_state(SUCCESS);
@@ -68,6 +69,7 @@ namespace NODES {
         else {
             trajectory_msg.control_metadata = STANDARD;
             trajectory_msg.max_speed = parking_spot_search_speed;
+            publish_trajectory_metadata(trajectory_msg);
         }
     }
 

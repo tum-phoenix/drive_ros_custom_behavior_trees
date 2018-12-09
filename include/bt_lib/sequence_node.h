@@ -9,11 +9,12 @@ namespace BT  {
 
     class SequenceNode : public ControlNode {
     public:
-        SequenceNode(std::string name, bool repeatOnSuccess);
+        SequenceNode(std::string name, bool repeatOnSuccess, bool skipFailedChild);
         virtual void tick();
         virtual bool reset_state(std::set<std::string> *new_states);
     private:
         bool repeatOnSuccess;
+        bool skipFailedChild;
         int currentChildIndex;
     };
 

@@ -71,6 +71,17 @@ namespace EnvModel {
         return d;
     }
 
+    bool f_start_line_distance = false;
+    float v_start_line_distance;
+    float start_line_distance() {
+        if(f_start_line_distance) return v_start_line_distance;
+
+        float d = get_traffic_mark_distance(MARKING_START_LINE);
+        v_start_line_distance = d;
+        f_start_line_distance = true;
+        return d;
+    }
+
     bool start_box_open() {
         return upfront_object_distance() > max_start_box_distance;
     }
@@ -147,6 +158,7 @@ namespace EnvModel {
         f_upfront_object_distance = false;
         f_barred_area_distance = false;
         f_crosswalk_distance = false;
+        f_start_line_distance = false;
         f_object_on_current_lane = false;
         f_crosswalk_clear = false;
         f_num_of_pedestrians = false;
