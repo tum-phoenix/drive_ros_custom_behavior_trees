@@ -5,7 +5,10 @@ extern float min_sign_react_distance;
 extern float max_sign_react_distance;
 extern float intersection_react_distance;
 extern float max_start_box_distance;
+extern float general_max_speed;
 
+extern int intersection_turn_indication;
+extern float speed_limit;
 extern float current_velocity;
 
 /*
@@ -54,10 +57,13 @@ namespace EnvModel {
         return d;
     }
 
-    float current_break_distance() {
-        float d = 0.125 * current_velocity * current_velocity; //Pretty accurate
+    float break_distance_to(float target_speed) {
+        float d = 0.5 * (current_velocity - target_speed) * (current_velocity - target_speed) / 4; //Pretty accurate
         d *= 1.6; //Safety factor
         return d;
+    }
+    float current_break_distance() {
+        return break_distance_to(0);
     }
 
     bool f_crosswalk_distance = false;
@@ -108,6 +114,7 @@ namespace EnvModel {
         f_crosswalk_clear = true;
         return flag;
     }
+
     int get_current_lane() {
         return env_msg.current_lane;
     }
@@ -137,14 +144,70 @@ namespace EnvModel {
     }
 
 
+    float to_real_speed(int s) {
+        return (s / 10) / 3.6;
+    }
     void subscriber_callback(const drive_ros_custom_behavior_trees::EnvModelMessage &msg) {
         env_msg = msg;
         //Check for global sign flags to be set
         for(int i = 0; i < msg.traffic_marks_id.size(); i++) {
-            if(msg.traffic_marks_track_distance[i] < max_sign_react_distance) {
-                switch(msg.traffic_marks_id[i]) {
-                //Depending of sign type also check for min_sign_react_distance
+            switch(msg.traffic_marks_id[i]) {
+            case SIGN_SPEED_ZONE_10:
+                if(msg.traffic_marks_track_distance[i] < break_distance_to(to_real_speed(10))) {
+                    speed_limit = to_real_speed(10);
                 }
+                break;
+            case SIGN_SPEED_ZONE_20:
+                if(msg.traffic_marks_track_distance[i] < break_distance_to(to_real_speed(20))) {
+                    speed_limit = to_real_speed(20);
+                }
+                break;
+            case SIGN_SPEED_ZONE_30:
+                if(msg.traffic_marks_track_distance[i] < break_distance_to(to_real_speed(30))) {
+                    speed_limit = to_real_speed(30);
+                }
+                break;
+            case SIGN_SPEED_ZONE_40:
+                if(msg.traffic_marks_track_distance[i] < break_distance_to(to_real_speed(40))) {
+                    speed_limit = to_real_speed(40);
+                }
+                break;
+            case SIGN_SPEED_ZONE_50:
+                if(msg.traffic_marks_track_distance[i] < break_distance_to(to_real_speed(50))) {
+                    speed_limit = to_real_speed(50);
+                }
+                break;
+            case SIGN_SPEED_ZONE_60:
+                if(msg.traffic_marks_track_distance[i] < break_distance_to(to_real_speed(60))) {
+                    speed_limit = to_real_speed(60);
+                }
+                break;
+            case SIGN_SPEED_ZONE_70:
+                if(msg.traffic_marks_track_distance[i] < break_distance_to(to_real_speed(70))) {
+                    speed_limit = to_real_speed(70);
+                }
+                break;
+            case SIGN_SPEED_ZONE_80:
+                if(msg.traffic_marks_track_distance[i] < break_distance_to(to_real_speed(80))) {
+                    speed_limit = to_real_speed(80);
+                }
+                break;
+            case SIGN_SPEED_ZONE_90:
+                if(msg.traffic_marks_track_distance[i] < break_distance_to(to_real_speed(90))) {
+                    speed_limit = to_real_speed(90);
+                }
+                break;
+            case SIGN_SPEED_ZONE_END:
+                if(msg.traffic_marks_track_distance[i] < min_sign_react_distance) {
+                    speed_limit = general_max_speed;
+                }
+                break;
+            case SIGN_TURN_LEFT:
+                intersection_turn_indication = DRIVE_CONTROL_TURN_LEFT;
+                break;
+            case SIGN_TURN_RIGHT:
+                intersection_turn_indication = DRIVE_CONTROL_TURN_RIGHT;
+                break;
             }
         }
         //Invalidate all previously computed data

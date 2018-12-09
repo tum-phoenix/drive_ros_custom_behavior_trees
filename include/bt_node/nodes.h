@@ -6,6 +6,8 @@
 #include "bt_lib/action_node.h"
 #include "bt_node/ros_communication.h"
 
+#include <chrono>
+
 namespace NODES {
     class WaitForStart : public BT::ActionNode {
     public:
@@ -49,10 +51,13 @@ namespace NODES {
         void tick();
     };
 
-    class FreeDriveIntersection : public BT::ActionNode {
+    class FreeDriveIntersectionWait : public BT::ActionNode {
     public:
-        FreeDriveIntersection(std::string name);
+        FreeDriveIntersectionWait(std::string name);
         void tick();
+    private:
+        bool start_waiting;
+        std::chrono::system_clock::time_point waiting_started;
     };
 
     class SwitchToLeftLane : public BT::ActionNode {
@@ -99,6 +104,21 @@ namespace NODES {
         void tick();
     private:
         int pedestrians_detected_on_track;
+    };
+
+    class IntersectionWait : public BT::ActionNode {
+    public:
+        IntersectionWait(std::string name);
+        void tick();
+    private:
+        bool start_waiting;
+        std::chrono::system_clock::time_point waiting_started;
+    };
+
+    class IntersectionDrive : public BT::ActionNode {
+    public:
+        IntersectionDrive(std::string name);
+        void tick();
     };
 
 

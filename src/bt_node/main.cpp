@@ -30,14 +30,16 @@ float universal_break_factor;
 float barred_area_react_distance;
 float oncoming_traffic_clearance;
 float max_start_box_distance;
+float intersection_turn_speed;
 
 //Dynamic values
 bool overtaking_forbidden_zone;
 bool express_way;
 bool priority_road;
 bool on_bridge;
-int speed_limit;
 int successful_parking_count;
+int intersection_turn_indication;
+float speed_limit;
 float current_velocity = 0;
 
 /* ---------- END OF GLOBAL DATA ---------- */
@@ -61,6 +63,7 @@ void read_launch_file(ros::NodeHandle *nh) {
     nh->getParam("behavior_tree/barred_area_react_distance", barred_area_react_distance);
     nh->getParam("behavior_tree/oncoming_traffic_clearance", oncoming_traffic_clearance);
     nh->getParam("behavior_tree/max_start_box_distance", max_start_box_distance);
+    nh->getParam("behavior_tree/intersection_turn_speed", intersection_turn_speed);
 
     nh->getParam("behavior_tree/start_value__overtaking_forbidden_zone", overtaking_forbidden_zone);
     nh->getParam("behavior_tree/start_value__express_way", express_way);
@@ -101,7 +104,8 @@ int main(int argc, char **argv) {
         NODES::ParkingReverse *node_parkingReverse = new NODES::ParkingReverse("Parking reverse");
 
         NODES::FreeDrive *node_freeDrive = new NODES::FreeDrive("Free Drive");
-        NODES::FreeDriveIntersection *node_freeDriveIntersection = new NODES::FreeDriveIntersection("Crossing intersection");
+        NODES::FreeDriveIntersectionWait *node_freeDriveIntersectionWait = new NODES::FreeDriveIntersectionWait("Waiting at intersection");
+        NODES::IntersectionDrive *node_freeDriveIntersectionDrive = new NODES::IntersectionDrive("Crossing intersection");
 
         head->addChild(node_waitForStart);
         head->addChild(node_initialDriving);
@@ -116,7 +120,8 @@ int main(int argc, char **argv) {
         node_parkingPending->addChild(node_parkingReverse);
 
         node_driving->addChild(node_freeDrive);
-        node_driving->addChild(node_freeDriveIntersection);
+        node_driving->addChild(node_freeDriveIntersectionWait);
+        node_driving->addChild(node_freeDriveIntersectionDrive);
     }
     else if(!mode.compare("OBSTACLES")) {
         NODES::WaitForStart *node_waitForStart = new NODES::WaitForStart("Waiting for gate");
@@ -141,6 +146,8 @@ int main(int argc, char **argv) {
         NODES::CrosswalkBreak *node_crosswalkBreak = new NODES::CrosswalkBreak("Breaking (crosswalk)");
         NODES::CrosswalkWait *node_crosswalkWait = new NODES::CrosswalkWait("Waiting at crosswalk");
 
+        NODES::IntersectionWait *node_intersectionWait = new NODES::IntersectionWait("Waiting at intersection");
+        NODES::IntersectionDrive *node_intersectionDrive = new NODES::IntersectionDrive("Crossing intersection");
 
         head->addChild(node_waitForStart);
         head->addChild(node_initialDriving);
@@ -159,6 +166,8 @@ int main(int argc, char **argv) {
         node_barredArea->addChild(node_barredAreaSwitchToRight);
         node_crosswalk->addChild(node_crosswalkBreak);
         node_crosswalk->addChild(node_crosswalkWait);
+        node_intersection->addChild(node_intersectionWait);
+        node_intersection->addChild(node_intersectionDrive);
     }
     else {
         ROS_ERROR("Driving mode not properly declared. Please check behaviorTree.launch");

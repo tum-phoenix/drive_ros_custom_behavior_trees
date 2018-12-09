@@ -15,10 +15,12 @@ extern float object_following_break_factor;
 extern float universal_break_factor;
 extern float barred_area_react_distance;
 extern float oncoming_traffic_clearance;
+extern float intersection_turn_speed;
 
-extern int speed_limit;
 extern bool overtaking_forbidden_zone;
+extern int speed_limit;
 extern int successful_parking_count;
+extern int intersection_turn_indication;
 extern float current_velocity;
 
 namespace NODES {
@@ -111,15 +113,21 @@ namespace NODES {
         }
     }
 
-    /* ---------- FreeDriveIntersection ---------- */
-    FreeDriveIntersection::FreeDriveIntersection(std::string name) : BT::ActionNode(name) {}
-    void FreeDriveIntersection::tick() {
-        if(true) { //Back on normal road
+    /* ---------- FreeDriveIntersectionWait ---------- */
+    FreeDriveIntersectionWait::FreeDriveIntersectionWait(std::string name) : BT::ActionNode(name) {
+        start_waiting = true;
+    }
+    void FreeDriveIntersectionWait::tick() {
+        if(start_waiting) {
+            waiting_started = std::chrono::system_clock::now();
+            start_waiting = false;
+        }
+        if(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - waiting_started).count() > 3000) { //Waiting time is over or no waiting is needed
             set_state(SUCCESS);
         }
-        else { //Maybe implement turn left/right?
-            trajectory_msg.control_metadata = DRIVE_CONTROL_STRAIGHT_FORWARD;
-            trajectory_msg.max_speed = fmin(general_max_speed, speed_limit); //Speed doesn't need to be limited 
+        else {
+            trajectory_msg.control_metadata = DRIVE_CONTROL_STANDARD;
+            trajectory_msg.max_speed = 0;
             publish_trajectory_metadata(trajectory_msg);
         }
     }
@@ -266,6 +274,43 @@ namespace NODES {
         }
     }
 
+    /* ---------- IntersectionWait ---------- */
+    IntersectionWait::IntersectionWait(std::string name) : BT::ActionNode(name) {
+        start_waiting = true;
+    }
+    void IntersectionWait::tick() {
+        if(start_waiting) {
+            waiting_started = std::chrono::system_clock::now();
+            start_waiting = false;
+        }
+
+        if(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - waiting_started).count() > 3000
+            /*&& Wait for priority traffic */) {
+                start_waiting = true;
+            set_state(SUCCESS);
+        }
+        else {
+            drive_ros_custom_behavior_trees::TrajectoryMessage *msg = new drive_ros_custom_behavior_trees::TrajectoryMessage();
+            msg->control_metadata = DRIVE_CONTROL_STANDARD;
+            msg->max_speed = 0;
+            msg_handler.addMessageSuggestion(msg);
+        }
+    }
+
+    /* ---------- IntersectionDrive ---------- */
+    IntersectionDrive::IntersectionDrive(std::string name) : BT::ActionNode(name) {}
+    void IntersectionDrive::tick() {
+        if(true) { //TODO: On normal track again
+            set_state(SUCCESS);
+        }
+        else {
+            drive_ros_custom_behavior_trees::TrajectoryMessage *msg = new drive_ros_custom_behavior_trees::TrajectoryMessage();
+            msg->control_metadata = intersection_turn_indication == 0 ? DRIVE_CONTROL_STRAIGHT_FORWARD : intersection_turn_indication;
+            msg->max_speed = intersection_turn_indication == 0 ? fmin(general_max_speed_cautious, speed_limit) : intersection_turn_speed;
+            msg_handler.addMessageSuggestion(msg);
+        }
+    }
+
     void trackPropertyCallback(std::vector<BT::TreeNode *> *nodes) {
         msg_handler.evaluate_and_send();
         //Activate nodes when necessary
@@ -279,7 +324,7 @@ namespace NODES {
         int metadata = DRIVE_CONTROL_STRAIGHT_FORWARD;
         for(drive_ros_custom_behavior_trees::TrajectoryMessage *msg : suggestions) {
             if(msg->max_speed < speed) speed = msg->max_speed;
-            if(metadata == STRAIGHT_FORWARD) metadata = msg->control_metadata;
+            if(metadata == DRIVE_CONTROL_STRAIGHT_FORWARD) metadata = msg->control_metadata;
         }
         suggestions.clear();
         drive_ros_custom_behavior_trees::TrajectoryMessage final_msg;
