@@ -12,7 +12,7 @@
       <param name="max_bridge_speed" value="1.5"/>
       <param name="parking_spot_search_speed" value="0.5"/>
       <param name="max_lane_switch_speed" value="2.5"/>
-      <param name="intersection_turn_speed" vaue="1.0"/>
+      <param name="intersection_turn_speed" value="1.0"/>
       <param name="sharp_turn_speed" value="2.5"/>
       <param name="very_sharp_turn_speed" value="2.0"/>
       <!-- Distances -->
@@ -32,6 +32,7 @@
       <param name="start_value__on_bridge" value="false"/>
       <param name="start_value__speed_limit" value="1000"/>
       <param name="start_value__successful_parking_count" value="0"/>
+      <param name="start_value__give_way" value="false"/>
 
       <!-- Other random values -->
       <param name="initial_states" type="str" value=""/>

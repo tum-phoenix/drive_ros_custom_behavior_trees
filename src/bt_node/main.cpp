@@ -41,6 +41,7 @@ bool express_way;
 bool priority_road;
 bool force_stop;
 bool on_bridge;
+bool give_way;
 int successful_parking_count;
 int intersection_turn_indication;
 float speed_limit;
@@ -82,6 +83,7 @@ void read_launch_file(ros::NodeHandle *nh) {
     nh->getParam("behavior_tree/start_value__on_bridge", on_bridge);
     nh->getParam("behavior_tree/start_value__speed_limit", speed_limit);
     nh->getParam("behavior_tree/start_value__successful_parking_coung", successful_parking_count);
+    nh->getParam("behavior_tree/start_value__give_way", give_way);
 
     //Read start states
     std::string states;

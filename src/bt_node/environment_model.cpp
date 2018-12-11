@@ -72,7 +72,7 @@ namespace EnvModel {
 
     bool intersection_no_object_right() {
         for(int i = 0; i < env_msg.obj_track_distance.size(); i++) {
-            if((env_msg.obj_lateral_offset[i] > -0.3 && env_msg.obj_lateral_offset[i] < intersection_min_obj_distance) {
+            if(env_msg.obj_lateral_offset[i] > -0.3 && env_msg.obj_lateral_offset[i] < intersection_min_obj_distance) {
                 return false;
             }
         }
@@ -123,9 +123,9 @@ namespace EnvModel {
     bool v_in_sharp_turn;
     bool in_sharp_turn() {
         if(f_in_sharp_turn) return v_in_sharp_turn;
-        for(int i = 0; i < traffic_marks_id.size(); i++) {
-            if(traffic_marks_id[i] == SIGN_SHARP_TURN_LEFT || traffic_marks_id[i] == SIGN_SHARP_TURN_RIGHT)
-                if(traffic_marks_track_distance[i] < 0.5) {
+        for(int i = 0; i < env_msg.traffic_marks_id.size(); i++) {
+            if(env_msg.traffic_marks_id[i] == SIGN_SHARP_TURN_LEFT || env_msg.traffic_marks_id[i] == SIGN_SHARP_TURN_RIGHT)
+                if(env_msg.traffic_marks_track_distance[i] < 0.5) {
                     v_in_sharp_turn = true;
                     f_in_sharp_turn = true;
                     return true;
@@ -138,11 +138,11 @@ namespace EnvModel {
 
     bool f_in_very_sharp_turn = false;
     bool v_in_very_sharp_turn;
-    bool in_sharp_turn() {
-        if(f_in_sharp_turn) return v_in_sharp_turn;
-        for(int i = 0; i < traffic_marks_id.size(); i++) {
-            if(traffic_marks_id[i] == SIGN_VERY_SHARP_TURN_LEFT || traffic_marks_id[i] == SIGN_VERY_SHARP_TURN_RIGHT)
-                if(traffic_marks_track_distance[i] < 0.5) {
+    bool in_very_sharp_turn() {
+        if(f_in_very_sharp_turn) return v_in_very_sharp_turn;
+        for(int i = 0; i < env_msg.traffic_marks_id.size(); i++) {
+            if(env_msg.traffic_marks_id[i] == SIGN_VERY_SHARP_TURN_LEFT || env_msg.traffic_marks_id[i] == SIGN_VERY_SHARP_TURN_RIGHT)
+                if(env_msg.traffic_marks_track_distance[i] < 0.5) {
                     v_in_very_sharp_turn = true;
                     f_in_very_sharp_turn = true;
                     return true;
@@ -154,7 +154,7 @@ namespace EnvModel {
     }
 
     bool start_box_open() {
-        return object_min_lane_distance() > max_start_box_distance;
+        return object_min_lane_distance(LANE_RIGHT) > max_start_box_distance;
     }
 
     bool object_on_lane(int lane) {

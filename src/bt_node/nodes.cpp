@@ -20,6 +20,8 @@ extern float oncoming_traffic_clearance;
 extern float intersection_turn_speed;
 
 extern bool overtaking_forbidden_zone;
+extern bool priority_road;
+extern bool give_way;
 extern int speed_limit;
 extern int successful_parking_count;
 extern int intersection_turn_indication;
@@ -111,7 +113,7 @@ namespace NODES {
         else {
             trajectory_msg.control_metadata = DRIVE_CONTROL_STANDARD;
             trajectory_msg.max_speed = fmin(speed_limit, 
-                EnvModel::in_sharp_turn() ? sharp_turn_max_speed : EnvModel::in_very_sharp_turn() ? very_sharp_turn_speed : general_max_speed);
+                EnvModel::in_sharp_turn() ? sharp_turn_speed : EnvModel::in_very_sharp_turn() ? very_sharp_turn_speed : general_max_speed);
             publish_trajectory_metadata(trajectory_msg);
         }
     }
@@ -291,7 +293,7 @@ namespace NODES {
             || priority_road 
             || (!priority_road && (
                 (!give_way && EnvModel::intersection_no_object_right()) 
-                || (give_way && EnvModel::intersection_no_object())) {
+                || (give_way && EnvModel::intersection_no_object())))) {
                 start_waiting = true;
             set_state(SUCCESS);
         }
@@ -321,17 +323,17 @@ namespace NODES {
         msg_handler.evaluate_and_send();
         //Activate nodes when necessary
         //Nodes may only be activated when they are idling. Of course they can't be activated when already running, but they also shouldn't be when in SUCCESS or FAILURE state.
-        if(nodes[0]->get_state() == IDLE && EnvModel::object_min_lane_distance(LANE_RIGHT) < 2 * overtake_distance) {
-            nodes[0]->set_state(RUNNING);
+        if((*nodes)[0]->get_state() == IDLE && EnvModel::object_min_lane_distance(LANE_RIGHT) < 2 * overtake_distance) {
+            (*nodes)[0]->set_state(RUNNING);
         }
-        if(nodes[1]->get_state() == IDLE && EnvModel::barred_area_distance() < barred_area_react_distance) {
-            nodes[1]->set_state(RUNNING);
+        if((*nodes)[1]->get_state() == IDLE && EnvModel::barred_area_distance() < barred_area_react_distance) {
+            (*nodes)[1]->set_state(RUNNING);
         }
-        if(nodes[2]->get_state() == IDLE && EnvModel::crosswalk_distance() < EnvModel::current_break_distance()) {
-            nodes[2]->set_state(RUNNING);
+        if((*nodes)[2]->get_state() == IDLE && EnvModel::crosswalk_distance() < EnvModel::current_break_distance()) {
+            (*nodes)[2]->set_state(RUNNING);
         }
-        if(nodes[3]->get_state() == IDLE && EnvModel::intersection_immediately_upfront()) {
-            nodes[3]->set_state(RUNNING);
+        if((*nodes)[3]->get_state() == IDLE && EnvModel::intersection_immediately_upfront()) {
+            (*nodes)[3]->set_state(RUNNING);
         }
     }
     
