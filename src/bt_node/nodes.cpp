@@ -288,14 +288,17 @@ namespace NODES {
         }
 
         if(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - waiting_started).count() > 3000
-            /*&& Wait for priority traffic */) {
+            || priority_road 
+            || (!priority_road && (
+                (!give_way && EnvModel::intersection_no_object_right()) 
+                || (give_way && EnvModel::intersection_no_object())) {
                 start_waiting = true;
             set_state(SUCCESS);
         }
         else {
             drive_ros_custom_behavior_trees::TrajectoryMessage *msg = new drive_ros_custom_behavior_trees::TrajectoryMessage();
             msg->control_metadata = DRIVE_CONTROL_STANDARD;
-            msg->max_speed = 0;
+            msg->max_speed = EnvModel::intersection_immediately_upfront() ? 0 : general_max_speed_cautious;
             msg_handler.addMessageSuggestion(msg);
         }
     }

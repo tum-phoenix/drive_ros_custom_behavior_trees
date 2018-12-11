@@ -10,6 +10,8 @@ namespace EnvModel {
     bool crosswalk_clear();
     bool in_sharp_turn();
     bool in_very_sharp_turn();
+    bool intersection_no_object();
+    bool intersection_no_object_right();
     int get_current_lane();
     int num_of_pedestrians();
 

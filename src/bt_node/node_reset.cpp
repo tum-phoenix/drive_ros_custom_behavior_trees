@@ -34,12 +34,13 @@ void reset_tree_state(BT::Tree *tree) {
         for(std::string s : currently_running_names) {
             if(!s.compare("Waiting for gate")) { //Probably the car did not manage to start driving.
                 new_states.insert("Initial Driving");
-            } else if(!s.compare("Initial Driving")) {
-                new_states.insert("");
+            } else if(!s.compare("Initial Driving")) { //Most likely it didn't exit initial driving state early enough..
+                new_states.insert("Track property");
             } else if(!s.compare("Track property")) { //No special track property was being applied
                 new_states.insert("Track property"); //The TrackProperty node will evaluate the environment situation itself.
             }
             //Some special track properties were being applied; then check if they should still be active.
+
         }
     }
     else {

@@ -1,11 +1,14 @@
 #include "bt_node/environment_model.h"
 #include "bt_node/value_definitions.h"
 
+#include <math.h>
+
 extern float min_sign_react_distance;
 extern float max_sign_react_distance;
 extern float max_start_box_distance;
 extern float general_max_speed;
 extern float break_distance_safety_factor;
+extern float intersection_min_obj_distance;
 
 extern bool priority_road;
 extern bool force_stop;
@@ -56,6 +59,24 @@ namespace EnvModel {
         v_barred_area_distance = d;
         f_barred_area_distance = true;
         return d;
+    }
+
+    bool intersection_no_object() {
+        for(int i = 0; i < env_msg.obj_track_distance.size(); i++) {
+            if(abs(env_msg.obj_lateral_offset[i]) < intersection_min_obj_distance) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    bool intersection_no_object_right() {
+        for(int i = 0; i < env_msg.obj_track_distance.size(); i++) {
+            if((env_msg.obj_lateral_offset[i] > -0.3 && env_msg.obj_lateral_offset[i] < intersection_min_obj_distance) {
+                return false;
+            }
+        }
+        return true;
     }
 
     float break_distance_to(float target_speed) {

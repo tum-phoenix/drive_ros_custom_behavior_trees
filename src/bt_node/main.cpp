@@ -33,6 +33,7 @@ float oncoming_traffic_clearance;
 float max_start_box_distance;
 float intersection_turn_speed;
 float break_distance_safety_factor;
+float intersection_min_obj_distance;
 
 //Dynamic values
 bool overtaking_forbidden_zone;
@@ -71,6 +72,7 @@ void read_launch_file(ros::NodeHandle *nh) {
     nh->getParam("behavior_tree/barred_area_react_distance", barred_area_react_distance);
     nh->getParam("behavior_tree/oncoming_traffic_clearance", oncoming_traffic_clearance);
     nh->getParam("behavior_tree/max_start_box_distance", max_start_box_distance);
+    nh->getParam("behavior_tree/intersection_min_obj_distance", intersection_min_obj_distance);
 
 
     nh->getParam("behavior_tree/start_value__overtaking_forbidden_zone", overtaking_forbidden_zone);
