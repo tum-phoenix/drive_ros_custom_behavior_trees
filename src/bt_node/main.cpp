@@ -20,10 +20,11 @@ float general_max_speed;
 float general_max_speed_cautious;
 float min_sign_react_distance;
 float max_sign_react_distance;
-float intersection_react_distance;
 float max_bridge_speed;
 float parking_spot_search_speed;
 float max_lane_switch_speed;
+float sharp_turn_speed;
+float very_sharp_turn_speed;
 float overtake_distance;
 float object_following_break_factor;
 float universal_break_factor;
@@ -31,11 +32,13 @@ float barred_area_react_distance;
 float oncoming_traffic_clearance;
 float max_start_box_distance;
 float intersection_turn_speed;
+float break_distance_safety_factor;
 
 //Dynamic values
 bool overtaking_forbidden_zone;
 bool express_way;
 bool priority_road;
+bool force_stop;
 bool on_bridge;
 int successful_parking_count;
 int intersection_turn_indication;
@@ -48,26 +51,32 @@ std::set<std::string> *initial_states;
 
 void read_launch_file(ros::NodeHandle *nh) {
     nh->getParam("behavior_tree/mode", mode);
+    nh->getParam("behavior_tree/break_distance_safety_factor", break_distance_safety_factor);
     nh->getParam("behavior_tree/tick_frequency", tick_frequency);
+    nh->getParam("behavior_tree/object_following_break_factor", object_following_break_factor);
+
     nh->getParam("behavior_tree/general_max_speed", general_max_speed);
     nh->getParam("behavior_tree/general_max_speed_cautious", general_max_speed_cautious);
-    nh->getParam("behavior_tree/min_sign_react_distance", min_sign_react_distance);
-    nh->getParam("behavior_tree/max_sign_react_distance", max_sign_react_distance);
-    nh->getParam("behavior_tree/intersection_react_distance", intersection_react_distance);
+    nh->getParam("behavior_tree/intersection_turn_speed", intersection_turn_speed);
     nh->getParam("behavior_tree/max_bridge_speed", max_bridge_speed);
     nh->getParam("behavior_tree/parking_spot_search_speed", parking_spot_search_speed);
     nh->getParam("behavior_tree/max_lane_switch_speed", max_lane_switch_speed);
+    nh->getParam("behavior_tree/sharp_turn_speed", sharp_turn_speed);
+    nh->getParam("behavior_tree/very_sharp_turn_speed", very_sharp_turn_speed);
+
+    nh->getParam("behavior_tree/min_sign_react_distance", min_sign_react_distance);
+    nh->getParam("behavior_tree/max_sign_react_distance", max_sign_react_distance);
     nh->getParam("behavior_tree/overtake_distance", overtake_distance);
-    nh->getParam("behavior_tree/object_following_break_factor", object_following_break_factor);
     nh->getParam("behaviro_tree/universal_break_factor", universal_break_factor);
     nh->getParam("behavior_tree/barred_area_react_distance", barred_area_react_distance);
     nh->getParam("behavior_tree/oncoming_traffic_clearance", oncoming_traffic_clearance);
     nh->getParam("behavior_tree/max_start_box_distance", max_start_box_distance);
-    nh->getParam("behavior_tree/intersection_turn_speed", intersection_turn_speed);
+
 
     nh->getParam("behavior_tree/start_value__overtaking_forbidden_zone", overtaking_forbidden_zone);
     nh->getParam("behavior_tree/start_value__express_way", express_way);
     nh->getParam("behavior_tree/start_value__priority_road", priority_road);
+    nh->getParam("behavior_tree/start_value__force_stop", force_stop);
     nh->getParam("behavior_tree/start_value__on_bridge", on_bridge);
     nh->getParam("behavior_tree/start_value__speed_limit", speed_limit);
     nh->getParam("behavior_tree/start_value__successful_parking_coung", successful_parking_count);

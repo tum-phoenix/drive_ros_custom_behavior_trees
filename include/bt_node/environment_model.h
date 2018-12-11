@@ -8,14 +8,17 @@ namespace EnvModel {
     bool start_box_open();
     bool object_on_lane(int lane);
     bool crosswalk_clear();
+    bool in_sharp_turn();
+    bool in_very_sharp_turn();
     int get_current_lane();
     int num_of_pedestrians();
 
-    float upfront_object_distance();
+    float object_min_lane_distance(int lane);
     float barred_area_distance();
     float current_break_distance();
     float crosswalk_distance();
     float start_line_distance();
+    float parking_sign_distance();
     
     void subscriber_callback(const drive_ros_custom_behavior_trees::EnvModelMessage &msg);
 }

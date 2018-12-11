@@ -3,18 +3,19 @@
 
 extern float min_sign_react_distance;
 extern float max_sign_react_distance;
-extern float intersection_react_distance;
 extern float max_start_box_distance;
 extern float general_max_speed;
+extern float break_distance_safety_factor;
 
+extern bool priority_road;
+extern bool force_stop;
+extern bool overtaking_forbidden_zone;
+extern bool express_way;
 extern int intersection_turn_indication;
 extern float speed_limit;
 extern float current_velocity;
 
-/*
-    TODO: Subscribe to vehicle and RC data, 
-    find out if car is on track (again), e.g. after intersection or parking
-*/
+
 namespace EnvModel {
     //Only for internal use. NO external variable!!
     drive_ros_custom_behavior_trees::EnvModelMessage env_msg;
@@ -29,20 +30,20 @@ namespace EnvModel {
         return -1;
     }
 
-    bool f_upfront_object_distance = false;
-    float v_upfront_object_distance;
-    float upfront_object_distance() {
-        if(f_upfront_object_distance) return v_upfront_object_distance;
+    bool f_object_min_lane_distance = false;
+    float v_object_min_lane_distance;
+    float object_min_lane_distance(int lane) {
+        if(f_object_min_lane_distance) return v_object_min_lane_distance;
 
         float shortest_distance = 100000;
         for(int i = 0; i < env_msg.obj_lane.size(); i++) {
-            if(env_msg.obj_lane[i] == get_current_lane() 
+            if(env_msg.obj_lane[i] == lane
                 && env_msg.obj_track_distance[i] < shortest_distance
                 && env_msg.obj_track_distance[i] > 0) 
                     shortest_distance = env_msg.obj_track_distance[i];
         }
-        v_upfront_object_distance = shortest_distance;
-        f_upfront_object_distance = true;
+        v_object_min_lane_distance = shortest_distance;
+        f_object_min_lane_distance = true;
         return shortest_distance;
     }
 
@@ -58,9 +59,7 @@ namespace EnvModel {
     }
 
     float break_distance_to(float target_speed) {
-        float d = 0.5 * (current_velocity - target_speed) * (current_velocity - target_speed) / 4; //Pretty accurate
-        d *= 1.6; //Safety factor
-        return d;
+        return break_distance_safety_factor * 0.5 * (current_velocity - target_speed) * (current_velocity - target_speed) / 4;
     }
     float current_break_distance() {
         return break_distance_to(0);
@@ -88,8 +87,53 @@ namespace EnvModel {
         return d;
     }
 
+    bool f_parking_sign_distance = false;
+    float v_parking_sign_distance;
+    float parking_sign_distance() {
+        if(f_parking_sign_distance) return v_parking_sign_distance;
+
+        float d = get_traffic_mark_distance(SIGN_PARKING);
+        v_parking_sign_distance = d;
+        f_parking_sign_distance = true;
+        return d;
+    }
+
+    bool f_in_sharp_turn = false;
+    bool v_in_sharp_turn;
+    bool in_sharp_turn() {
+        if(f_in_sharp_turn) return v_in_sharp_turn;
+        for(int i = 0; i < traffic_marks_id.size(); i++) {
+            if(traffic_marks_id[i] == SIGN_SHARP_TURN_LEFT || traffic_marks_id[i] == SIGN_SHARP_TURN_RIGHT)
+                if(traffic_marks_track_distance[i] < 0.5) {
+                    v_in_sharp_turn = true;
+                    f_in_sharp_turn = true;
+                    return true;
+                }
+        }
+        v_in_sharp_turn = false;
+        f_in_sharp_turn = true;
+        return false;
+    }
+
+    bool f_in_very_sharp_turn = false;
+    bool v_in_very_sharp_turn;
+    bool in_sharp_turn() {
+        if(f_in_sharp_turn) return v_in_sharp_turn;
+        for(int i = 0; i < traffic_marks_id.size(); i++) {
+            if(traffic_marks_id[i] == SIGN_VERY_SHARP_TURN_LEFT || traffic_marks_id[i] == SIGN_VERY_SHARP_TURN_RIGHT)
+                if(traffic_marks_track_distance[i] < 0.5) {
+                    v_in_very_sharp_turn = true;
+                    f_in_very_sharp_turn = true;
+                    return true;
+                }
+        }
+        v_in_very_sharp_turn = false;
+        f_in_very_sharp_turn = true;
+        return false;
+    }
+
     bool start_box_open() {
-        return upfront_object_distance() > max_start_box_distance;
+        return object_min_lane_distance() > max_start_box_distance;
     }
 
     bool object_on_lane(int lane) {
@@ -137,7 +181,7 @@ namespace EnvModel {
     bool intersection_immediately_upfront() {
         if(f_intersection_immediately_upfront) return v_intersection_immediately_upfront;
 
-        bool b = get_traffic_mark_distance(MARKING_INTERSECTION) < intersection_react_distance;
+        bool b = get_traffic_mark_distance(MARKING_INTERSECTION) < current_break_distance();
         v_intersection_immediately_upfront = b;
         f_intersection_immediately_upfront = true;
         return b;
@@ -208,13 +252,40 @@ namespace EnvModel {
             case SIGN_TURN_RIGHT:
                 intersection_turn_indication = DRIVE_CONTROL_TURN_RIGHT;
                 break;
+            case SIGN_PRIORITY_ROAD:
+                priority_road = true;
+                break;
+            case SIGN_GIVE_WAY:
+                priority_road = false;
+                break;
+            case SIGN_STOP:
+                priority_road = false;
+                force_stop = true;
+                break;
+            case SIGN_NO_PASSING_ZONE:
+                overtaking_forbidden_zone = true;
+                break;
+            case SIGN_NO_PASSING_ZONE_END:
+                overtaking_forbidden_zone = false;
+                break;
+            case SIGN_EXPRESSWAY_BEGIN:
+                express_way = true;
+                break;
+            case SIGN_EXPRESSWAY_END:
+                express_way = false;
+                break;
+            default:
+                break; //All other signs are used differently, e.g. by asking for them directly. These were just passive states.
             }
         }
         //Invalidate all previously computed data
-        f_upfront_object_distance = false;
+        f_object_min_lane_distance = false;
         f_barred_area_distance = false;
         f_crosswalk_distance = false;
         f_start_line_distance = false;
+        f_parking_sign_distance = false;
+        f_in_sharp_turn = false;
+        f_in_very_sharp_turn = false;
         f_crosswalk_clear = false;
         f_num_of_pedestrians = false;
         f_intersection_immediately_upfront = false;

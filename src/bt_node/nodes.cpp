@@ -10,6 +10,8 @@ extern float general_max_speed_cautious;
 extern float max_bridge_speed;
 extern float parking_spot_search_speed;
 extern float max_lane_switch_speed;
+extern float sharp_turn_speed;
+extern float very_sharp_turn_speed;
 extern float overtake_distance;
 extern float object_following_break_factor;
 extern float universal_break_factor;
@@ -93,8 +95,8 @@ namespace NODES {
 
     /* ---------- ParkingReverse ---------- */
     ParkingReverse::ParkingReverse(std::string name) : BT::ActionNode(name) {}
-    void ParkingReverse::tick() {
-        set_state(SUCCESS); //TODO
+    void ParkingReverse::tick() { //TODO
+        set_state(SUCCESS);
     }
 
     /* ---------- FreeDrive ---------- */
@@ -103,12 +105,13 @@ namespace NODES {
         if(EnvModel::intersection_immediately_upfront()) {
             set_state(SUCCESS);
         }
-        else if(EnvModel::start_line_distance() < 0.2) { //Start line/Parking sign detected
+        else if(EnvModel::start_line_distance() < 0.2 || EnvModel::parking_sign_distance() < 0.2) { //Start line/Parking sign detected
             set_state(FAILURE); //Break infinite drive loop to re-enter parking mode
         }
         else {
             trajectory_msg.control_metadata = DRIVE_CONTROL_STANDARD;
-            trajectory_msg.max_speed = fmin(speed_limit, max_bridge_speed);
+            trajectory_msg.max_speed = fmin(speed_limit, 
+                EnvModel::in_sharp_turn() ? sharp_turn_max_speed : EnvModel::in_very_sharp_turn() ? very_sharp_turn_speed : general_max_speed);
             publish_trajectory_metadata(trajectory_msg);
         }
     }
@@ -184,7 +187,7 @@ namespace NODES {
         if(!EnvModel::object_on_lane(EnvModel::get_current_lane())) { //Cancel folowing; there's no object in the way any more.
             set_state(FAILURE);
         } else if(!(EnvModel::intersection_immediately_upfront() || overtaking_forbidden_zone)
-            && EnvModel::upfront_object_distance() < overtake_distance) {
+            && EnvModel::object_min_lane_distance(LANE_RIGHT) < overtake_distance) {
             set_state(SUCCESS);
         }
         else {
@@ -192,7 +195,7 @@ namespace NODES {
 
             drive_ros_custom_behavior_trees::TrajectoryMessage *msg = new drive_ros_custom_behavior_trees::TrajectoryMessage();
             msg->control_metadata = DRIVE_CONTROL_STANDARD;
-            if(EnvModel::upfront_object_distance() < overtake_distance - 0.3) 
+            if(EnvModel::object_min_lane_distance(LANE_RIGHT) < overtake_distance - 0.3) 
                 msg->max_speed = fmin(last_speed * object_following_break_factor, speed_limit); //Increase distance
             else 
                 msg->max_speed = fmin(last_speed * (1 / object_following_break_factor), speed_limit); //Reduce distance
@@ -208,7 +211,7 @@ namespace NODES {
             set_state(SUCCESS);
         }
         else {
-            if(EnvModel::upfront_object_distance() < oncoming_traffic_clearance 
+            if(EnvModel::object_min_lane_distance(LANE_LEFT) < oncoming_traffic_clearance 
                 || EnvModel::barred_area_distance() < oncoming_traffic_clearance) { //Abort, there's no room to overtake.
                     set_state(SUCCESS); //Go to "switch to right lane" and maybe then go back to "switch to left lane" again to try once more.
             }
@@ -225,7 +228,7 @@ namespace NODES {
     BarredAreaAnticipate::BarredAreaAnticipate(std::string name) : BT::ActionNode(name) {}
     void BarredAreaAnticipate::tick() {
         if(EnvModel::barred_area_distance() < barred_area_react_distance
-            && (EnvModel::upfront_object_distance() > oncoming_traffic_clearance)) {
+            && (EnvModel::object_min_lane_distance(LANE_LEFT) > oncoming_traffic_clearance)) {
             set_state(SUCCESS);
         }
         else {
@@ -314,13 +317,28 @@ namespace NODES {
     void trackPropertyCallback(std::vector<BT::TreeNode *> *nodes) {
         msg_handler.evaluate_and_send();
         //Activate nodes when necessary
+        //Nodes may only be activated when they are idling. Of course they can't be activated when already running, but they also shouldn't be when in SUCCESS or FAILURE state.
+        if(nodes[0]->get_state() == IDLE && EnvModel::object_min_lane_distance(LANE_RIGHT) < 2 * overtake_distance) {
+            nodes[0]->set_state(RUNNING);
+        }
+        if(nodes[1]->get_state() == IDLE && EnvModel::barred_area_distance() < barred_area_react_distance) {
+            nodes[1]->set_state(RUNNING);
+        }
+        if(nodes[2]->get_state() == IDLE && EnvModel::crosswalk_distance() < EnvModel::current_break_distance()) {
+            nodes[2]->set_state(RUNNING);
+        }
+        if(nodes[3]->get_state() == IDLE && EnvModel::intersection_immediately_upfront()) {
+            nodes[3]->set_state(RUNNING);
+        }
     }
     
     void TrackPropertyMessageHandler::addMessageSuggestion(drive_ros_custom_behavior_trees::TrajectoryMessage *msg) {
         suggestions.insert(msg);
     }
     void TrackPropertyMessageHandler::evaluate_and_send() {
-        float speed = fmin(general_max_speed, speed_limit);
+        float speed = fmin(
+            EnvModel::in_sharp_turn() ? sharp_turn_speed :
+                EnvModel::in_very_sharp_turn() ? very_sharp_turn_speed : general_max_speed, speed_limit);
         int metadata = DRIVE_CONTROL_STRAIGHT_FORWARD;
         for(drive_ros_custom_behavior_trees::TrajectoryMessage *msg : suggestions) {
             if(msg->max_speed < speed) speed = msg->max_speed;
