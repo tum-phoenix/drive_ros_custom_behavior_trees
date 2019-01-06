@@ -54,3 +54,18 @@ BarredAreaAnticipate | O | Stops the car in front of a barred area. Successful w
 CrosswalkBreak | O | Breaks in front of a crosswalk if there are any pedestrians
 CrosswalkWait | O | Waits for pedestrians if there are any
 IntersectionWait | O | Waits at an intersection. Which means: Not if the car is on a priority road, either for 3 seconds if there is no object or for the object if there is one. The "right of way" implementation MIGHT STILL BE BUGGY
+
+### What is "addMessageSuggestion" / how does the parallel "trackProperty" node only send one message each cycle?
+To somehow merge the different control requirements the nodes have, first each active node finds out how it would like to control the car in the normal "tick"-method. These "finished" trajectoryMessages are then added to a collection of messages. 
+
+When all subnodes of the parallel node have entered their request, the method "evaluate_and_send" finds the most strict of all requests and forwards it to the Trajectory Planner. If there is no node running, it has some default values prepared. 
+
+Example: 
+
+The car is following an object on the left lane because there is a barred area on the right. 
+
+The barred area says, the usual speed limit can be applied, but since the object is quite slow, the FollowingObject-node will request a slower speed. Of course, the slower one is then chosen. 
+
+The same applies for control_metadata. When FollowingObject says, STANDARD is enough, but the IntersectionCrossing node requests a TURN_RIGHT, of course, the TURN_RIGHT is then chosen. 
+
+I hope it is now clear.
