@@ -56,7 +56,7 @@ namespace NODES {
         FreeDriveIntersectionWait(std::string name);
         void tick();
     private:
-        bool start_waiting;
+        int start_waiting;
         std::chrono::system_clock::time_point waiting_started;
     };
 
@@ -102,8 +102,6 @@ namespace NODES {
     public:
         CrosswalkWait(std::string name);
         void tick();
-    private:
-        int pedestrians_detected_on_track;
     };
 
     class IntersectionWait : public BT::ActionNode {

@@ -17,6 +17,7 @@ namespace EnvModel {
 
     float object_min_lane_distance(int lane);
     float barred_area_distance();
+    float pass_by_on_right_distance();
     float current_break_distance();
     float crosswalk_distance();
     float start_line_distance();

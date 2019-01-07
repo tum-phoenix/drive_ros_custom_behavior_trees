@@ -1,7 +1,9 @@
 #include "bt_node/nodes.h"
 #include "bt_node/environment_model.h"
 #include "bt_lib/definitions.h"
+#include "bt_lib/tree.h"
 #include "bt_node/value_definitions.h"
+#include "bt_node/node_reset.h"
 
 #include <math.h>
 
@@ -18,6 +20,7 @@ extern float universal_break_factor;
 extern float barred_area_react_distance;
 extern float oncoming_traffic_clearance;
 extern float intersection_turn_speed;
+extern float speed_zero_tolerance;
 
 extern bool overtaking_forbidden_zone;
 extern bool priority_road;
@@ -26,6 +29,9 @@ extern int speed_limit;
 extern int successful_parking_count;
 extern int intersection_turn_indication;
 extern float current_velocity;
+
+extern std::string mode;
+extern BT::Tree *tree;
 
 namespace NODES {
 
@@ -79,7 +85,7 @@ namespace NODES {
     /* ---------- ParkingBreaking ---------- */
     ParkingBreaking::ParkingBreaking(std::string name) : BT::ActionNode(name) {}
     void ParkingBreaking::tick() {
-        if(current_velocity < 0.05) {
+        if(current_velocity < speed_zero_tolerance) {
             set_state(SUCCESS);
         }
         else {
@@ -92,13 +98,22 @@ namespace NODES {
     /* ---------- ParkingInProgress ---------- */
     ParkingInProgress::ParkingInProgress(std::string name) : BT::ActionNode(name) {}
     void ParkingInProgress::tick() { //TODO
+        //TODO flash turn indicators
         set_state(SUCCESS);
     }
 
     /* ---------- ParkingReverse ---------- */
     ParkingReverse::ParkingReverse(std::string name) : BT::ActionNode(name) {}
-    void ParkingReverse::tick() { //TODO
-        set_state(SUCCESS);
+    void ParkingReverse::tick() {
+        if(EnvModel::get_current_lane() == LANE_RIGHT) {
+          set_state(SUCCESS); //Car is back on track  
+        }
+        else if(EnvModel::get_current_lane() == LANE_UNDEFINED) { 
+            //TODO
+        }
+        else { //Car is on left lane, error reset!
+            reset_tree_state(tree);
+        }
     }
 
     /* ---------- FreeDrive ---------- */
@@ -120,15 +135,17 @@ namespace NODES {
 
     /* ---------- FreeDriveIntersectionWait ---------- */
     FreeDriveIntersectionWait::FreeDriveIntersectionWait(std::string name) : BT::ActionNode(name) {
-        start_waiting = true;
+        start_waiting = 0;
     }
     void FreeDriveIntersectionWait::tick() {
-        if(start_waiting) {
+        if(current_velocity < speed_zero_tolerance) start_waiting = 1;
+        if(start_waiting == 1) {
             waiting_started = std::chrono::system_clock::now();
-            start_waiting = false;
+            start_waiting = 2;
         }
-        if(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - waiting_started).count() > 3000) { //Waiting time is over or no waiting is needed
-            set_state(SUCCESS);
+        if(start_waiting == 2 
+            && std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - waiting_started).count() > 3000) { //Waiting time is over or no waiting is needed
+            set_state(SUCCESS); //The intersection crossing is done by IntersectionDrive.
         }
         else {
             trajectory_msg.control_metadata = DRIVE_CONTROL_STANDARD;
@@ -145,14 +162,14 @@ namespace NODES {
             set_state(SUCCESS);
         }
         else if(EnvModel::get_current_lane() == LANE_RIGHT) {
-            if(!EnvModel::object_on_lane(LANE_RIGHT)) {
+            if(EnvModel::object_min_lane_distance(LANE_LEFT) > oncoming_traffic_clearance) {
                 msg->max_speed = fmin(max_lane_switch_speed, speed_limit);
                 msg->control_metadata = DRIVE_CONTROL_SWITCH_LEFT;
                 msg_handler.addMessageSuggestion(msg);
             }
             else {
                 msg->max_speed = 0;
-                msg->control_metadata = DRIVE_CONTROL_SWITCH_LEFT; //Prepare to switch to the left lane already
+                msg->control_metadata = DRIVE_CONTROL_STANDARD;
                 msg_handler.addMessageSuggestion(msg);
             }
         }
@@ -209,12 +226,14 @@ namespace NODES {
     /* ---------- LeftLaneDrive ---------- */
     LeftLaneDrive::LeftLaneDrive(std::string name) : BT::ActionNode(name) {}
     void LeftLaneDrive::tick() {
-        if(!EnvModel::object_on_lane(LANE_RIGHT)) { //When overtaking / passing barred area is finished.
+        if(!EnvModel::object_on_lane(LANE_RIGHT) 
+            && (EnvModel::barred_area_distance() > 4 || EnvModel::barred_area_distance() == -1)) { //When overtaking / passing barred area is finished.
             set_state(SUCCESS);
         }
         else {
             if(EnvModel::object_min_lane_distance(LANE_LEFT) < oncoming_traffic_clearance 
-                || EnvModel::barred_area_distance() < oncoming_traffic_clearance) { //Abort, there's no room to overtake.
+                || EnvModel::barred_area_distance() < oncoming_traffic_clearance
+                || EnvModel::pass_by_on_right_distance() < oncoming_traffic_clearance) { //Abort, there's no room to overtake.
                     set_state(SUCCESS); //Go to "switch to right lane" and maybe then go back to "switch to left lane" again to try once more.
             }
             else {
@@ -245,7 +264,7 @@ namespace NODES {
     CrosswalkBreak::CrosswalkBreak(std::string name) : BT::ActionNode(name) {}
     void CrosswalkBreak::tick() {
         if(EnvModel::crosswalk_distance() == -1) set_state(FAILURE);
-        if(current_velocity == 0) {
+        if(EnvModel::num_of_pedestrians() == 0 || current_velocity < speed_zero_tolerance) {
             set_state(SUCCESS);
         }
         else {
@@ -265,10 +284,7 @@ namespace NODES {
     /* ---------- CrosswalkWait ---------- */
     CrosswalkWait::CrosswalkWait(std::string name) : BT::ActionNode(name) {}
     void CrosswalkWait::tick() {
-        /*
-            Track pedestrians
-        */
-        if(EnvModel::num_of_pedestrians() == 0 || (pedestrians_detected_on_track > 0 && EnvModel::crosswalk_clear())) {
+        if(EnvModel::num_of_pedestrians() == 0 || EnvModel::crosswalk_clear()) {
             set_state(SUCCESS);
         }
         else {
@@ -289,12 +305,13 @@ namespace NODES {
             start_waiting = false;
         }
 
-        if(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - waiting_started).count() > 3000
-            || priority_road 
+        if(priority_road 
+            || (!priority_road 
+                && !EnvModel::intersection_no_object_right() 
+                && std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - waiting_started).count() > 3000
             || (!priority_road && (
                 (!give_way && EnvModel::intersection_no_object_right()) 
-                || (give_way && EnvModel::intersection_no_object())))) {
-                start_waiting = true;
+                || (give_way && EnvModel::intersection_no_object()))))) {
             set_state(SUCCESS);
         }
         else {
@@ -308,12 +325,16 @@ namespace NODES {
     /* ---------- IntersectionDrive ---------- */
     IntersectionDrive::IntersectionDrive(std::string name) : BT::ActionNode(name) {}
     void IntersectionDrive::tick() {
-        if(true) { //TODO: On normal track again
+        if(EnvModel::get_current_lane() != LANE_UNDEFINED) { //On normal track again
             set_state(SUCCESS);
         }
         else {
             drive_ros_custom_behavior_trees::TrajectoryMessage *msg = new drive_ros_custom_behavior_trees::TrajectoryMessage();
-            msg->control_metadata = intersection_turn_indication == 0 ? DRIVE_CONTROL_STRAIGHT_FORWARD : intersection_turn_indication;
+            if(!mode.compare("PARKING")) {
+                msg->control_metadata = 0;
+            } else {
+                msg->control_metadata = intersection_turn_indication == 0 ? DRIVE_CONTROL_STRAIGHT_FORWARD : intersection_turn_indication;
+            }
             msg->max_speed = intersection_turn_indication == 0 ? fmin(general_max_speed_cautious, speed_limit) : intersection_turn_speed;
             msg_handler.addMessageSuggestion(msg);
         }
@@ -323,16 +344,21 @@ namespace NODES {
         msg_handler.evaluate_and_send();
         //Activate nodes when necessary
         //Nodes may only be activated when they are idling. Of course they can't be activated when already running, but they also shouldn't be when in SUCCESS or FAILURE state.
-        if((*nodes)[0]->get_state() == IDLE && EnvModel::object_min_lane_distance(LANE_RIGHT) < 2 * overtake_distance) {
+        if((*nodes)[0]->get_state() == IDLE 
+            && EnvModel::object_min_lane_distance(LANE_RIGHT) < 2 * overtake_distance) {
             (*nodes)[0]->set_state(RUNNING);
         }
-        if((*nodes)[1]->get_state() == IDLE && EnvModel::barred_area_distance() < barred_area_react_distance) {
+        if((*nodes)[1]->get_state() == IDLE 
+            && EnvModel::barred_area_distance() < barred_area_react_distance) {
             (*nodes)[1]->set_state(RUNNING);
         }
-        if((*nodes)[2]->get_state() == IDLE && EnvModel::crosswalk_distance() < EnvModel::current_break_distance()) {
+        if((*nodes)[2]->get_state() == IDLE 
+            && EnvModel::crosswalk_distance() < EnvModel::current_break_distance()
+            && EnvModel::crosswalk_distance() > 0.1) { //This is a safety feature so the state won't reactivate when waiting at the crosswalk is already over
             (*nodes)[2]->set_state(RUNNING);
         }
-        if((*nodes)[3]->get_state() == IDLE && EnvModel::intersection_immediately_upfront()) {
+        if((*nodes)[3]->get_state() == IDLE 
+            && EnvModel::intersection_immediately_upfront()) {
             (*nodes)[3]->set_state(RUNNING);
         }
     }

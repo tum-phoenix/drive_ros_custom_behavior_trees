@@ -61,9 +61,20 @@ namespace EnvModel {
         return d;
     }
 
+    bool f_pass_by_on_right_distance = false;
+    float v_pass_by_on_right_distance;
+    float pass_by_on_right_distance() {
+        if(f_pass_by_on_right_distance) return v_pass_by_on_right_distance;
+
+        float d = get_traffic_mark_distance(SIGN_PASS_BY_ON_RIGHT);
+        v_pass_by_on_right_distance = d;
+        f_pass_by_on_right_distance = true;
+        return d;
+    }
+
     bool intersection_no_object() {
-        for(int i = 0; i < env_msg.obj_track_distance.size(); i++) {
-            if(abs(env_msg.obj_lateral_offset[i]) < intersection_min_obj_distance) {
+        for(int i = 0; i < env_msg.obj_lateral_offset.size(); i++) {
+            if(abs(env_msg.obj_lateral_offset[i]) > intersection_min_obj_distance) {
                 return false;
             }
         }
@@ -72,7 +83,8 @@ namespace EnvModel {
 
     bool intersection_no_object_right() {
         for(int i = 0; i < env_msg.obj_track_distance.size(); i++) {
-            if(env_msg.obj_lateral_offset[i] > -0.3 && env_msg.obj_lateral_offset[i] < intersection_min_obj_distance) {
+            if(env_msg.obj_lateral_offset[i] > -0.3 
+                && env_msg.obj_lateral_offset[i] < intersection_min_obj_distance) {
                 return false;
             }
         }
@@ -302,6 +314,7 @@ namespace EnvModel {
         //Invalidate all previously computed data
         f_object_min_lane_distance = false;
         f_barred_area_distance = false;
+        f_pass_by_on_right_distance = false;
         f_crosswalk_distance = false;
         f_start_line_distance = false;
         f_parking_sign_distance = false;

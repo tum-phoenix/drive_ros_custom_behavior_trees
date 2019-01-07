@@ -34,6 +34,7 @@ float max_start_box_distance;
 float intersection_turn_speed;
 float break_distance_safety_factor;
 float intersection_min_obj_distance;
+float speed_zero_tolerance;
 
 //Dynamic values
 bool overtaking_forbidden_zone;
@@ -46,6 +47,9 @@ int successful_parking_count;
 int intersection_turn_indication;
 float speed_limit;
 float current_velocity = 0;
+
+//Miscellaneous
+BT::Tree *tree;
 
 /* ---------- END OF GLOBAL DATA ---------- */
 
@@ -65,6 +69,7 @@ void read_launch_file(ros::NodeHandle *nh) {
     nh->getParam("behavior_tree/max_lane_switch_speed", max_lane_switch_speed);
     nh->getParam("behavior_tree/sharp_turn_speed", sharp_turn_speed);
     nh->getParam("behavior_tree/very_sharp_turn_speed", very_sharp_turn_speed);
+    nh->getParam("behavior_tree/speed_zero_tolerance", speed_zero_tolerance);
 
     nh->getParam("behavior_tree/min_sign_react_distance", min_sign_react_distance);
     nh->getParam("behavior_tree/max_sign_react_distance", max_sign_react_distance);
@@ -188,7 +193,7 @@ int main(int argc, char **argv) {
     }
     RosInterface ros_interface(nh);
 
-    BT::Tree *tree = new BT::Tree(head, tick_frequency);
+    tree = new BT::Tree(head, tick_frequency);
     if(initial_states->size() > 0) tree->reset_state(initial_states);
     tree->execute();
 }

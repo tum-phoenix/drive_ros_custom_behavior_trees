@@ -15,6 +15,7 @@
       <param name="intersection_turn_speed" value="1.0"/>
       <param name="sharp_turn_speed" value="2.5"/>
       <param name="very_sharp_turn_speed" value="2.0"/>
+      <param name="speed_zero_tolerance" value="0.05"/>
       <!-- Distances -->
       <param name="min_sign_react_distance" value="0.1"/>
       <param name="max_sign_react_distance" value="0.5"/>

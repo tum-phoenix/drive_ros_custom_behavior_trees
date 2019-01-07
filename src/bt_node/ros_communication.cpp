@@ -9,11 +9,18 @@ extern float min_sign_react_distance;
 extern float max_sign_react_distance;
 extern std::string mode;
 
+extern float current_velocity;
+
 void dynamic_reconfigure_callback(drive_ros_custom_behavior_trees::BehaviorTreeConfig &config, uint32_t level) {
     mode = config.mode;
 }
 
+void car_data_callback(/* const drive_ros_msgs::Message &msg */) {
+    //current_velocity = msg.velocity;
+}
+
 ros::Subscriber environment_model_subscriber;
+ros::Subscriber car_data_subscriber;
 ros::Publisher trajectory_publisher;
 void setup_ros_communication(ros::NodeHandle *nh) {
     /* Dynamic Reconfigure Setup */
@@ -23,7 +30,8 @@ void setup_ros_communication(ros::NodeHandle *nh) {
     dr_server.setCallback(dr_callback);
 
     /* Topic Subscribers Setup */
-    environment_model_subscriber = nh->subscribe("env_model_topic", 4, &EnvModel::subscriber_callback);
+    environment_model_subscriber = nh->subscribe("EnvironmentModel", 4, &EnvModel::subscriber_callback);
+    //car_data_subscriber = nh->subscribe("", 4, &car_data_callback); //TODO car data topic name
 
     /* Topic Publishers Setup */
     trajectory_publisher = nh->advertise<drive_ros_custom_behavior_trees::TrajectoryMessage>("trajectory_metadata", 64);

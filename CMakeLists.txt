@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   std_msgs
+  drive_ros_msgs
   message_generation
   dynamic_reconfigure
 )
@@ -49,11 +50,11 @@ find_package(catkin REQUIRED COMPONENTS
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-add_message_files(
-  FILES
-  EnvModelMessage.msg
-  TrajectoryMessage.msg
-)
+# add_message_files(
+#  FILES
+#  EnvModelMessage.msg
+#  TrajectoryMessage.msg
+#)
 
 ## Generate services in the 'srv' folder
 # add_service_files(
