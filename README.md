@@ -39,7 +39,7 @@ The are roughly sorted in categories. Speeds are in m/s ; distances in m
 
 Parameter name | Possible values / variable type | Description
 :---: | :---: | :---:
-**"Random" parameters** | | 
+**Uncategorized parameters** | | 
 mode | "PARKING", "OBSTACLES" | Specifies the (CaroloCup) driving mode
 clean_output | bool | After every cycle some brief information about the state of the tree is printed. If clean_output is true, the first output will be updated, while false will make it output new lines every time.
 tick_frequency | int | IMPORTANT: This specifies the desired frequency IN MILLISECONDS. So it's rather a "cycle duration" than a frequency. Example: tick_frequency = 100 will result in ~10 cycles per second.
