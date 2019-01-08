@@ -34,6 +34,45 @@ node_reset.cpp / node_reset.h | Everything needed for state resetting (e.g. afte
 environment_model.cpp / environment_model.h | Evaluation of incoming environment data and wrapper functions which can then be called in the nodes' implementation bodies.
 ros_communication.cpp / ros_communication.h | All the more "advanced" ROS stuff, like subscribing to and publishing topics, using dynamic_reconfigure etc. It provides simple setup- and usage-functions.
 
+### Launch parameters
+The are roughly sorted in categories. Speeds are in m/s ; distances in m
+
+Parameter name | Possible values / variable type | Description
+:---: | :---: | :---:
+**"Random" parameters** | | 
+mode | "PARKING", "OBSTACLES" | Specifies the (CaroloCup) driving mode
+clean_output | bool | After every cycle some brief information about the state of the tree is printed. If clean_output is true, the first output will be updated, while false will make it output new lines every time.
+tick_frequency | int | IMPORTANT: This specifies the desired frequency IN MILLISECONDS. So it's rather a "cycle duration" than a frequency. Example: tick_frequency = 100 will result in ~10 cycles per second.
+object_following_break_factor | float | This value should only be changed when testing. Its internal use is to specify how quickly the car breaks when coming too close to the object it is following. The value should therefore be *somewhere* in the region of 1.
+break_distance_safety_factor | float | The BT EnvModel is able to approximate the break distance pretty well. Nevertheless, the computed break distance is multiplied with this factor for safety reasons.
+**Speeds** | | 
+general_max_speed | float | What the car should be allowed to drive on the track (-> it will never go faster than this)
+general_max_speed_cautious | float | A max speed for situations where very exact sensing or quick breaking is required (e.g. when approaching a crosswalk but there's no need to radically break yet).
+max_bridge_speed | float | Self-explaining. This speed is limited by the level of safety of the car when on the edges of the slopes.
+parking_spot_search_speed | float | Self-explaining.
+max_lane_switch_speed | float | Self-explaining.
+intersection_turn_speed | float | The max speed when taking a 90° turn at an intersection. Has no effect when crossing an intersection.
+sharp_turn_speed | float | Possibility to adjust curve speed if necessary; especially if the car doesn't perform too well in curves. This applies to curved roads, no intersection turns.
+very_sharp_turn_speed | float | See sharp_turn_speed. This is used in very sharp turns (no bullshit!)
+speed_zero_tolerance | If a sensed speed is less than this value it is considered to be zero. This is important for accurate state switching.
+**Distances** | | 
+min_sign_react_distance | float | currently unused.
+max_sign_react_distance | float | currently unused.
+overtake_distance | float | Specifies how far the car should be away from an object when attempting to overtake it.
+barred_area_react_distance | float | Specifies how far the car should be away from a barred area when attempting to pass it.
+oncoming_traffic_clearance | float | Tolerated distance to oncoming traffic which is considered safe. Use: when on the left lane and the distance to the oncoming traffic is smaller than this parameter, the car will try to get back on the right lane again.
+max_start_box_distance | float | Used to classify whether the start box is open or not (distance greater than this means it is open).
+intersection_min_obj_distance | float | Used to classify whether an object at an intersection is actually on the other lane or in front of the car (further down the track) May be deleted in favor of a better intersection algorithm.
+**Start values** | | 
+start_value__overtaking_forbidden_zone | bool | Currently in an overtaking forbidden zone?
+start_value__express_way | bool | Currently on an express way?
+start_value__priority_road | bool | Currently on a priority road?
+start_value__force_stop | bool | Used for stop signs. Brings the car to halt.
+start_value__on_bridge | bool | Currently on a bridge?
+start_value__speed_limit | int | the current speed limit. Note: If not used, set it to a high value (e.g. general_amx_speed) since the car will always adhere to the smallest speed limit given (speed_limit=0 will permanently stop the car)
+start_value__successful_parking_count | int | Counts the successful (and therefore correct for the CaroloCup) parking attempts.
+start_value__give_way | Set if the car has to give way at an intersection
+
 ### Node descriptions
 Node | Used in mode (P/O) | Name
 :---: | :---: | :---:
