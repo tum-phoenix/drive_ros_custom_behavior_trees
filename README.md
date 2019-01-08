@@ -37,6 +37,10 @@ ros_communication.cpp / ros_communication.h | All the more "advanced" ROS stuff,
 ### Launch parameters
 The are roughly sorted in categories. Speeds are in m/s ; distances in m
 
+Start values are usually set at runtime, they are only in the launch file for testing (e.g. so you can start the car off in an expressway although it couldn' see the sign).
+
+Make sure to set them to useful values for normal tests or CaroloCup laps, to avoid undefined behavior.
+
 Parameter name | Possible values / variable type | Description
 :---: | :---: | :---:
 **Uncategorized parameters** | | 
