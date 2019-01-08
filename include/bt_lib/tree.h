@@ -13,7 +13,7 @@
 namespace BT {
     class Tree {
     public:
-        Tree(TreeNode *head, int tick_frequency_ms);
+        Tree(TreeNode *head, int tick_frequency_ms, bool clean_output);
         int execute();
         void reset_state(std::set<std::string> *new_states);
         TreeNode *get_head();

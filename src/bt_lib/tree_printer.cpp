@@ -69,10 +69,14 @@ namespace BT {
         }
         next_output += "\n";
 
-        if(CLEAN_OUTPUT) erase_last_n_lines(&next_output, number_of_lines(next_output));
+        if(clean_output) erase_last_n_lines(&next_output, number_of_lines(next_output));
 
         std::cout << next_output;
         last_output = next_output;
+    }
+
+    void TreePrinter::set_clean_output(bool co) {
+        clean_output = co;
     }
 
 }

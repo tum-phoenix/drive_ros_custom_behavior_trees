@@ -49,6 +49,7 @@ float speed_limit;
 float current_velocity = 0;
 
 //Miscellaneous
+bool clean_output;
 BT::Tree *tree;
 
 /* ---------- END OF GLOBAL DATA ---------- */
@@ -57,6 +58,7 @@ std::set<std::string> *initial_states;
 
 void read_launch_file(ros::NodeHandle *nh) {
     nh->getParam("behavior_tree/mode", mode);
+    nh->getParam("behavior_tree/clean_output", clean_output);
     nh->getParam("behavior_tree/break_distance_safety_factor", break_distance_safety_factor);
     nh->getParam("behavior_tree/tick_frequency", tick_frequency);
     nh->getParam("behavior_tree/object_following_break_factor", object_following_break_factor);
@@ -70,6 +72,7 @@ void read_launch_file(ros::NodeHandle *nh) {
     nh->getParam("behavior_tree/sharp_turn_speed", sharp_turn_speed);
     nh->getParam("behavior_tree/very_sharp_turn_speed", very_sharp_turn_speed);
     nh->getParam("behavior_tree/speed_zero_tolerance", speed_zero_tolerance);
+    speed_limit = general_max_speed;
 
     nh->getParam("behavior_tree/min_sign_react_distance", min_sign_react_distance);
     nh->getParam("behavior_tree/max_sign_react_distance", max_sign_react_distance);
@@ -193,7 +196,7 @@ int main(int argc, char **argv) {
     }
     RosInterface ros_interface(nh);
 
-    tree = new BT::Tree(head, tick_frequency);
+    tree = new BT::Tree(head, tick_frequency, clean_output);
     if(initial_states->size() > 0) tree->reset_state(initial_states);
     tree->execute();
 }

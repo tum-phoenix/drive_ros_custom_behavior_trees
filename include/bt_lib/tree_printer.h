@@ -9,7 +9,9 @@ namespace BT {
     class TreePrinter {
     public:
         void printTree(TreeNode *headNode, int timeDif);
+        void set_clean_output(bool co);
     private:
+        bool clean_output;
         std::string last_output;
     };
 }

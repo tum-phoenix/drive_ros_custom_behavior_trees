@@ -6,10 +6,10 @@
 
 namespace BT {
 
-    Tree::Tree(TreeNode *head, int tick_frequency_ms) {
+    Tree::Tree(TreeNode *head, int tick_frequency_ms, bool clean_output) {
         this->head = head;
         tick_freq_ms = std::chrono::milliseconds(tick_frequency_ms);
-
+        printer.set_clean_output(clean_output);
         ROS_INFO("Tree built");
     }
 
