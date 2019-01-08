@@ -72,7 +72,7 @@ void read_launch_file(ros::NodeHandle *nh) {
     nh->getParam("behavior_tree/sharp_turn_speed", sharp_turn_speed);
     nh->getParam("behavior_tree/very_sharp_turn_speed", very_sharp_turn_speed);
     nh->getParam("behavior_tree/speed_zero_tolerance", speed_zero_tolerance);
-    speed_limit = general_max_speed;
+
 
     nh->getParam("behavior_tree/min_sign_react_distance", min_sign_react_distance);
     nh->getParam("behavior_tree/max_sign_react_distance", max_sign_react_distance);
@@ -82,7 +82,6 @@ void read_launch_file(ros::NodeHandle *nh) {
     nh->getParam("behavior_tree/oncoming_traffic_clearance", oncoming_traffic_clearance);
     nh->getParam("behavior_tree/max_start_box_distance", max_start_box_distance);
     nh->getParam("behavior_tree/intersection_min_obj_distance", intersection_min_obj_distance);
-
 
     nh->getParam("behavior_tree/start_value__overtaking_forbidden_zone", overtaking_forbidden_zone);
     nh->getParam("behavior_tree/start_value__express_way", express_way);
@@ -108,7 +107,8 @@ int main(int argc, char **argv) {
     ros::NodeHandle nh;
     setup_ros_communication(&nh);
     read_launch_file(&nh);
-    ROS_INFO("Creating BT for mode %s", mode.c_str());
+    if(speed_limit == 0) ROS_WARN("WARNING: speed_limit is set to 0. Check behaviorTree.launch to change it.");
+    ROS_INFO("Creating BT for mode %s%f", mode.c_str(), speed_limit);
 
     BT::SequenceNode *head = new BT::SequenceNode("CaroloCup2019", false, true);
     if(!mode.compare("PARKING")) {
