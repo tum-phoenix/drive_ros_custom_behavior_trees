@@ -54,7 +54,7 @@ max_lane_switch_speed | float | Self-explaining.
 intersection_turn_speed | float | The max speed when taking a 90° turn at an intersection. Has no effect when crossing an intersection.
 sharp_turn_speed | float | Possibility to adjust curve speed if necessary; especially if the car doesn't perform too well in curves. This applies to curved roads, no intersection turns.
 very_sharp_turn_speed | float | See sharp_turn_speed. This is used in very sharp turns (no bullshit!)
-speed_zero_tolerance | If a sensed speed is less than this value it is considered to be zero. This is important for accurate state switching.
+speed_zero_tolerance | float | If a sensed speed is less than this value it is considered to be zero. This is important for accurate state switching.
 **Distances** | | 
 min_sign_react_distance | float | currently unused.
 max_sign_react_distance | float | currently unused.
