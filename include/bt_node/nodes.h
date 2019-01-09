@@ -102,6 +102,9 @@ namespace NODES {
     public:
         CrosswalkWait(std::string name);
         void tick();
+    private:
+        bool already_waiting;
+        std::chrono::system_clock::time_point waiting_started;
     };
 
     class IntersectionWait : public BT::ActionNode {

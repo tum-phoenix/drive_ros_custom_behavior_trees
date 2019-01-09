@@ -14,6 +14,7 @@ namespace EnvModel {
     bool intersection_no_object_right();
     int get_current_lane();
     int num_of_pedestrians();
+    int pedestrians_on_track();
 
     float object_min_lane_distance(int lane);
     float barred_area_distance();
@@ -22,6 +23,8 @@ namespace EnvModel {
     float crosswalk_distance();
     float start_line_distance();
     float parking_sign_distance();
+
+    void clear_pedestrian_tracking();
     
     void subscriber_callback(const drive_ros_custom_behavior_trees::EnvModelMessage &msg);
 }

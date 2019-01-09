@@ -82,7 +82,7 @@ void read_launch_file(ros::NodeHandle *nh) {
     nh->getParam("behavior_tree/oncoming_traffic_clearance", oncoming_traffic_clearance);
     nh->getParam("behavior_tree/max_start_box_distance", max_start_box_distance);
     nh->getParam("behavior_tree/intersection_min_obj_distance", intersection_min_obj_distance);
-
+ 
     nh->getParam("behavior_tree/start_value__overtaking_forbidden_zone", overtaking_forbidden_zone);
     nh->getParam("behavior_tree/start_value__express_way", express_way);
     nh->getParam("behavior_tree/start_value__priority_road", priority_road);

@@ -284,8 +284,17 @@ namespace NODES {
     /* ---------- CrosswalkWait ---------- */
     CrosswalkWait::CrosswalkWait(std::string name) : BT::ActionNode(name) {}
     void CrosswalkWait::tick() {
-        if(EnvModel::num_of_pedestrians() == 0 || EnvModel::crosswalk_clear()) {
-            set_state(SUCCESS);
+        if(EnvModel::num_of_pedestrians() == 0 
+            || (EnvModel::pedestrians_on_track() == 0 && EnvModel::pedestrian_on_track)) {
+            if(already_waiting
+                && std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - waiting_started).count() > 500) {
+                set_state(SUCCESS);
+                already_waiting = false;
+            }
+            else {
+                waiting_started = std::chrono::system_clock::now();
+                already_waiting = true;
+            }
         }
         else {
             drive_ros_custom_behavior_trees::TrajectoryMessage *msg = new drive_ros_custom_behavior_trees::TrajectoryMessage();

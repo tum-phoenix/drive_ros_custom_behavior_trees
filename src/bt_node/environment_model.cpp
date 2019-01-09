@@ -2,6 +2,7 @@
 #include "bt_node/value_definitions.h"
 
 #include <math.h>
+#include <map>
 
 extern float min_sign_react_distance;
 extern float max_sign_react_distance;
@@ -20,10 +21,11 @@ extern float current_velocity;
 
 
 namespace EnvModel {
-    //Only for internal use. NO external variable!!
+    //Working copy of the most recently received message. Only to be used in the environment_model.cpp!!!
     drive_ros_custom_behavior_trees::EnvModelMessage env_msg;
-
-
+    //true when currently in pedestrian tracking "mode" and there was a pedestrian on the track at some point
+    //set to false when no crosswalk is in sight
+    bool pedestrian_on_track = false;
 
 
     float get_traffic_mark_distance(int id) {
@@ -196,17 +198,16 @@ namespace EnvModel {
         return env_msg.current_lane;
     }
 
-    bool f_num_of_pedestrians = false;
-    int v_num_of_pedestrians;
-    int num_of_pedestrians() {
-        if(f_num_of_pedestrians) return v_num_of_pedestrians;
-        int n = 0;
-        for(int i = 0; i < env_msg.traffic_marks_id.size(); i++) {
-            if(env_msg.traffic_marks_id[i] == PEDESTRIAN) n++;
+    bool f_pedestrians_on_track = false;
+    int v_pedestrians_on_track;
+    int pedestrians_on_track() {
+        if(f_pedestrians_on_track) return v_pedestrians_on_track;
+        int c = 0;
+        for(int i = 0; i < env_msg.pedestrian_lane.size(); i++) {
+            if(env_msg.pedestrian_lane[i] < 2) c++;
         }
-        v_num_of_pedestrians = n;
-        f_num_of_pedestrians = true;
-        return n;
+        v_pedestrians_on_track = c;
+        f_pedestrians_on_track = true;
     }
 
     bool f_intersection_immediately_upfront = false;
@@ -220,12 +221,31 @@ namespace EnvModel {
         return b;
     }
 
+    int num_of_pedestrians() {
+        return env_msg.pedestrian_lane.size();
+    }
+
 
     float to_real_speed(int s) {
         return (s / 10) / 3.6;
     }
     void subscriber_callback(const drive_ros_custom_behavior_trees::EnvModelMessage &msg) {
         env_msg = msg;
+        //Pedestrian tracking
+        if(crosswalk_distance() == -1) {
+            pedestrian_on_track = false;
+        }
+        else {
+            if(!pedestrian_on_track) {
+                for(int i = 0; i < msg.pedestrian_lane.size(); i++) {
+                    if(msg.pedestrian_lane[i] < 2) {
+                        pedestrian_on_track = true; 
+                        break;
+                    }
+                }
+            }
+        }
+
         //Check for global sign flags to be set
         for(int i = 0; i < msg.traffic_marks_id.size(); i++) {
             switch(msg.traffic_marks_id[i]) {
@@ -321,7 +341,7 @@ namespace EnvModel {
         f_in_sharp_turn = false;
         f_in_very_sharp_turn = false;
         f_crosswalk_clear = false;
-        f_num_of_pedestrians = false;
+        f_pedestrians_on_track = false;
         f_intersection_immediately_upfront = false;
     }
 }
