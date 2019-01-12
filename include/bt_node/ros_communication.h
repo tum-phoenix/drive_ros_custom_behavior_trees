@@ -6,11 +6,10 @@
 #include "drive_ros_custom_behavior_trees/BehaviorTreeConfig.h"
 
 #include "general.h"
-#include "drive_ros_custom_behavior_trees/TrajectoryMessage.h"
+#include "drive_ros_msgs/TrajectoryMetaInput.h"
 
 void setup_ros_communication(ros::NodeHandle *nh);
-void publish_trajectory_metadata(drive_ros_custom_behavior_trees::TrajectoryMessage msg);
-
+void publish_trajectory_metadata(drive_ros_msgs::TrajectoryMetaInput msg);
 
 class RosInterface {
 public:

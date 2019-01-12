@@ -22,11 +22,14 @@ extern float current_velocity;
 
 namespace EnvModel {
     //Working copy of the most recently received message. Only to be used in the environment_model.cpp!!!
-    drive_ros_custom_behavior_trees::EnvModelMessage env_msg;
+    drive_ros_msgs::EnvironmentModel env_msg;
     //true when currently in pedestrian tracking "mode" and there was a pedestrian on the track at some point
     //set to false when no crosswalk is in sight
     bool pedestrian_on_track = false;
 
+    bool was_pedestrian_on_track() {
+        return pedestrian_on_track;
+    }
 
     float get_traffic_mark_distance(int id) {
         for(int i = 0; i < env_msg.traffic_marks_id.size(); i++) {
@@ -229,7 +232,7 @@ namespace EnvModel {
     float to_real_speed(int s) {
         return (s / 10) / 3.6;
     }
-    void subscriber_callback(const drive_ros_custom_behavior_trees::EnvModelMessage &msg) {
+    void subscriber_callback(const drive_ros_msgs::EnvironmentModel &msg) {
         env_msg = msg;
         //Pedestrian tracking
         if(crosswalk_distance() == -1) {
@@ -239,7 +242,7 @@ namespace EnvModel {
             if(!pedestrian_on_track) {
                 for(int i = 0; i < msg.pedestrian_lane.size(); i++) {
                     if(msg.pedestrian_lane[i] < 2) {
-                        pedestrian_on_track = true; 
+                        pedestrian_on_track = true;
                         break;
                     }
                 }

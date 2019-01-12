@@ -128,10 +128,10 @@ namespace NODES {
 
     class TrackPropertyMessageHandler {
     public:
-        void addMessageSuggestion(drive_ros_custom_behavior_trees::TrajectoryMessage *msg);
+        void addMessageSuggestion(drive_ros_msgs::TrajectoryMetaInput *msg);
         void evaluate_and_send();
     private:
-        std::set<drive_ros_custom_behavior_trees::TrajectoryMessage *> suggestions;
+        std::set<drive_ros_msgs::TrajectoryMetaInput *> suggestions;
     };
 }
 

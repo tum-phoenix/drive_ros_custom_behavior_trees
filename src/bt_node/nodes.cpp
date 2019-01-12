@@ -5,6 +5,8 @@
 #include "bt_node/value_definitions.h"
 #include "bt_node/node_reset.h"
 
+#include "drive_ros_msgs/TrajectoryMetaInput.h"
+
 #include <math.h>
 
 extern float general_max_speed;
@@ -36,7 +38,7 @@ extern BT::Tree *tree;
 namespace NODES {
 
 
-    drive_ros_custom_behavior_trees::TrajectoryMessage trajectory_msg;
+    drive_ros_msgs::TrajectoryMetaInput trajectory_msg;
     TrackPropertyMessageHandler msg_handler;
 
     /* ---------- WaitForStart ---------- */
@@ -157,7 +159,7 @@ namespace NODES {
     /* ---------- SwitchToLeftLane ---------- */
     SwitchToLeftLane::SwitchToLeftLane(std::string name) : BT::ActionNode(name) {}
     void SwitchToLeftLane::tick() {
-        drive_ros_custom_behavior_trees::TrajectoryMessage *msg = new drive_ros_custom_behavior_trees::TrajectoryMessage();
+        drive_ros_msgs::TrajectoryMetaInput *msg = new drive_ros_msgs::TrajectoryMetaInput();
         if(EnvModel::get_current_lane() == LANE_LEFT) {
             set_state(SUCCESS);
         }
@@ -191,7 +193,7 @@ namespace NODES {
             set_state(SUCCESS);
         }
         else { //No surprises to be expected here.
-            drive_ros_custom_behavior_trees::TrajectoryMessage *msg = new drive_ros_custom_behavior_trees::TrajectoryMessage();
+            drive_ros_msgs::TrajectoryMetaInput *msg = new drive_ros_msgs::TrajectoryMetaInput();
             msg->control_metadata = DRIVE_CONTROL_SWITCH_RIGHT;
             msg->max_speed = fmin(max_lane_switch_speed, speed_limit);
             msg_handler.addMessageSuggestion(msg);
@@ -212,7 +214,7 @@ namespace NODES {
         else {
             if(last_speed == 0) last_speed = current_velocity;
 
-            drive_ros_custom_behavior_trees::TrajectoryMessage *msg = new drive_ros_custom_behavior_trees::TrajectoryMessage();
+            drive_ros_msgs::TrajectoryMetaInput *msg = new drive_ros_msgs::TrajectoryMetaInput();
             msg->control_metadata = DRIVE_CONTROL_STANDARD;
             if(EnvModel::object_min_lane_distance(LANE_RIGHT) < overtake_distance - 0.3) 
                 msg->max_speed = fmin(last_speed * object_following_break_factor, speed_limit); //Increase distance
@@ -237,7 +239,7 @@ namespace NODES {
                     set_state(SUCCESS); //Go to "switch to right lane" and maybe then go back to "switch to left lane" again to try once more.
             }
             else {
-                drive_ros_custom_behavior_trees::TrajectoryMessage *msg = new drive_ros_custom_behavior_trees::TrajectoryMessage();
+                drive_ros_msgs::TrajectoryMetaInput *msg = new drive_ros_msgs::TrajectoryMetaInput();
                 msg->control_metadata = DRIVE_CONTROL_STANDARD;
                 msg->max_speed = fmin(general_max_speed, speed_limit); //Spend as little tim
                 msg_handler.addMessageSuggestion(msg);
@@ -253,7 +255,7 @@ namespace NODES {
             set_state(SUCCESS);
         }
         else {
-            drive_ros_custom_behavior_trees::TrajectoryMessage *msg = new drive_ros_custom_behavior_trees::TrajectoryMessage();
+            drive_ros_msgs::TrajectoryMetaInput *msg = new drive_ros_msgs::TrajectoryMetaInput();
             msg->control_metadata = DRIVE_CONTROL_STANDARD;
             msg->max_speed = 0;
             msg_handler.addMessageSuggestion(msg);
@@ -268,7 +270,7 @@ namespace NODES {
             set_state(SUCCESS);
         }
         else {
-            drive_ros_custom_behavior_trees::TrajectoryMessage *msg = new drive_ros_custom_behavior_trees::TrajectoryMessage();
+            drive_ros_msgs::TrajectoryMetaInput *msg = new drive_ros_msgs::TrajectoryMetaInput();
             if(EnvModel::crosswalk_distance() < EnvModel::current_break_distance()) {
                 msg->control_metadata = DRIVE_CONTROL_STANDARD;
                 msg->max_speed = 0;
@@ -285,7 +287,7 @@ namespace NODES {
     CrosswalkWait::CrosswalkWait(std::string name) : BT::ActionNode(name) {}
     void CrosswalkWait::tick() {
         if(EnvModel::num_of_pedestrians() == 0 
-            || (EnvModel::pedestrians_on_track() == 0 && EnvModel::pedestrian_on_track)) {
+            || (EnvModel::pedestrians_on_track() == 0 && EnvModel::was_pedestrian_on_track())) {
             if(already_waiting
                 && std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - waiting_started).count() > 500) {
                 set_state(SUCCESS);
@@ -297,8 +299,8 @@ namespace NODES {
             }
         }
         else {
-            drive_ros_custom_behavior_trees::TrajectoryMessage *msg = new drive_ros_custom_behavior_trees::TrajectoryMessage();
-            msg->control_metadata = DRIVE_CONTROL_STANDARD;
+            drive_ros_msgs::TrajectoryMetaInput *msg = new drive_ros_msgs::TrajectoryMetaInput();
+            msg->control_metadata = msg->STANDARD;
             msg->max_speed = 0;
             msg_handler.addMessageSuggestion(msg);
         }
@@ -324,7 +326,7 @@ namespace NODES {
             set_state(SUCCESS);
         }
         else {
-            drive_ros_custom_behavior_trees::TrajectoryMessage *msg = new drive_ros_custom_behavior_trees::TrajectoryMessage();
+            drive_ros_msgs::TrajectoryMetaInput *msg = new drive_ros_msgs::TrajectoryMetaInput();
             msg->control_metadata = DRIVE_CONTROL_STANDARD;
             msg->max_speed = EnvModel::intersection_immediately_upfront() ? 0 : general_max_speed_cautious;
             msg_handler.addMessageSuggestion(msg);
@@ -338,7 +340,7 @@ namespace NODES {
             set_state(SUCCESS);
         }
         else {
-            drive_ros_custom_behavior_trees::TrajectoryMessage *msg = new drive_ros_custom_behavior_trees::TrajectoryMessage();
+            drive_ros_msgs::TrajectoryMetaInput *msg = new drive_ros_msgs::TrajectoryMetaInput();
             if(!mode.compare("PARKING")) {
                 msg->control_metadata = 0;
             } else {
@@ -372,7 +374,7 @@ namespace NODES {
         }
     }
     
-    void TrackPropertyMessageHandler::addMessageSuggestion(drive_ros_custom_behavior_trees::TrajectoryMessage *msg) {
+    void TrackPropertyMessageHandler::addMessageSuggestion(drive_ros_msgs::TrajectoryMetaInput *msg) {
         suggestions.insert(msg);
     }
     void TrackPropertyMessageHandler::evaluate_and_send() {
@@ -380,12 +382,12 @@ namespace NODES {
             EnvModel::in_sharp_turn() ? sharp_turn_speed :
                 EnvModel::in_very_sharp_turn() ? very_sharp_turn_speed : general_max_speed, speed_limit);
         int metadata = DRIVE_CONTROL_STRAIGHT_FORWARD;
-        for(drive_ros_custom_behavior_trees::TrajectoryMessage *msg : suggestions) {
+        for(drive_ros_msgs::TrajectoryMetaInput *msg : suggestions) {
             if(msg->max_speed < speed) speed = msg->max_speed;
             if(metadata == DRIVE_CONTROL_STRAIGHT_FORWARD) metadata = msg->control_metadata;
         }
         suggestions.clear();
-        drive_ros_custom_behavior_trees::TrajectoryMessage final_msg;
+        drive_ros_msgs::TrajectoryMetaInput final_msg;
         final_msg.control_metadata = metadata;
         final_msg.max_speed = speed;
         publish_trajectory_metadata(final_msg);

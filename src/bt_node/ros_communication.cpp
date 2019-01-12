@@ -2,7 +2,7 @@
 
 #include "dynamic_reconfigure/server.h"
 #include "drive_ros_custom_behavior_trees/BehaviorTreeConfig.h"
-#include "drive_ros_custom_behavior_trees/TrajectoryMessage.h"
+#include "drive_ros_msgs/TrajectoryMetaInput.h"
 #include "bt_node/environment_model.h"
 
 extern float min_sign_react_distance;
@@ -30,14 +30,14 @@ void setup_ros_communication(ros::NodeHandle *nh) {
     dr_server.setCallback(dr_callback);
 
     /* Topic Subscribers Setup */
-    environment_model_subscriber = nh->subscribe("EnvironmentModel", 4, &EnvModel::subscriber_callback);
+    environment_model_subscriber = nh->subscribe("env_out", 4, &EnvModel::subscriber_callback);
     //car_data_subscriber = nh->subscribe("", 4, &car_data_callback); //TODO car data topic name
 
     /* Topic Publishers Setup */
-    trajectory_publisher = nh->advertise<drive_ros_custom_behavior_trees::TrajectoryMessage>("trajectory_metadata", 64);
+    trajectory_publisher = nh->advertise<drive_ros_msgs::TrajectoryMetaInput>("trajectory_metadata", 64);
 }
 
-void publish_trajectory_metadata(drive_ros_custom_behavior_trees::TrajectoryMessage msg) {
+void publish_trajectory_metadata(drive_ros_msgs::TrajectoryMetaInput msg) {
     trajectory_publisher.publish(msg);
 }
 

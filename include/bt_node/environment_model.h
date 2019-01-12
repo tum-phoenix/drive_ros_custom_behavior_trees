@@ -1,9 +1,11 @@
 #ifndef ENVIRONMENT_MODEL_H
 #define ENVIRONMENT_MODEL_H
 
-#include "drive_ros_custom_behavior_trees/EnvModelMessage.h"
+#include "drive_ros_msgs/EnvironmentModel.h"
 
 namespace EnvModel {
+
+    bool was_pedestrian_on_track();
     bool intersection_immediately_upfront();
     bool start_box_open();
     bool object_on_lane(int lane);
@@ -26,7 +28,7 @@ namespace EnvModel {
 
     void clear_pedestrian_tracking();
     
-    void subscriber_callback(const drive_ros_custom_behavior_trees::EnvModelMessage &msg);
+    void subscriber_callback(const drive_ros_msgs::EnvironmentModel &msg);
 }
 
 #endif
