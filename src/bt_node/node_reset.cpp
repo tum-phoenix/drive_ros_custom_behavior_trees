@@ -3,6 +3,7 @@
 extern std::string mode;
 
 void reset_tree_state(BT::Tree *tree) {
+    //Analyse the current state of the tree
     std::set<BT::TreeNode *> currently_running;
     tree->get_head()->currently_running_nodes(&currently_running);
     std::set<std::string> currently_running_names;
@@ -26,7 +27,7 @@ void reset_tree_state(BT::Tree *tree) {
             }
 */
             } else { //As can be seen above, usually the FreeDrive node is the best choice in a reset situation.
-                new_states.insert("FreeDrive");
+                new_states.insert("Free Drive");
             }
         }
     }

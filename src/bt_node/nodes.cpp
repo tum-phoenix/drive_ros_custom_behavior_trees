@@ -361,7 +361,7 @@ namespace NODES {
             (*nodes)[0]->set_state(RUNNING);
         }
         if((*nodes)[1]->get_state() == IDLE 
-            && EnvModel::barred_area_right_distance() < barred_area_react_distance) {
+            && EnvModel::barred_area_right_distance() != -1 && EnvModel::barred_area_right_distance() < barred_area_react_distance) {
             (*nodes)[1]->set_state(RUNNING);
         }
         if((*nodes)[2]->get_state() == IDLE 

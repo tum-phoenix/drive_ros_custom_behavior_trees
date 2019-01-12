@@ -2,9 +2,9 @@
     <node name="behavior_tree" pkg="drive_ros_custom_behavior_trees" type="BehaviorTree" output="screen">
       <!-- "random" variables (factory, etc) -->
       <!-- possible modes: "PARKING", "OBSTACLES"-->
-      <param name="mode" value="PARKING"/>
+      <param name="mode" value="OBSTACLES"/>
       <param name="clean_output" value="true"/>
-      <param name="tick_frequency" value="1000"/>
+      <param name="tick_frequency" value="10"/>
       <param name="object_following_break_factor" value="0.8"/>
       <param name="break_distance_safety_factor" value="1.6"/>
       <!-- Speeds -->
@@ -33,9 +33,9 @@
       <param name="start_value__force_stop" value="false"/>
       <param name="start_value__on_bridge" value="false"/>
       <param name="start_value__speed_limit" value="0.0"/>
-      <param name="start_value__successful_parking_count" value="0"/>
+      <param name="start_value__successful_parking_count" value="2"/>
       <param name="start_value__give_way" value="false"/>
       <!-- Seperate the states with '|' if necessary !-->
-      <param name="initial_states" type="str" value="Free Drive"/>
+      <param name="initial_states" type="str" value="Track property"/>
     </node>
 </launch>

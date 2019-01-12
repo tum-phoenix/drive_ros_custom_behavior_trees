@@ -108,7 +108,7 @@ int main(int argc, char **argv) {
     setup_ros_communication(&nh);
     read_launch_file(&nh);
     if(speed_limit == 0) ROS_WARN("WARNING: speed_limit is set to 0. Check behaviorTree.launch to change it.");
-    ROS_INFO("Creating BT for mode %s%f", mode.c_str(), speed_limit);
+    ROS_INFO("Creating BT for mode %s", mode.c_str());
 
     BT::SequenceNode *head = new BT::SequenceNode("CaroloCup2019", false, true);
     if(!mode.compare("PARKING")) {
