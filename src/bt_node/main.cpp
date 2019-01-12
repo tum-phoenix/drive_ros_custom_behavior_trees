@@ -107,11 +107,12 @@ int main(int argc, char **argv) {
     ros::NodeHandle nh;
     setup_ros_communication(&nh);
     read_launch_file(&nh);
-    if(speed_limit == 0) ROS_WARN("WARNING: speed_limit is set to 0. Check behaviorTree.launch to change it.");
-    ROS_INFO("Creating BT for mode %s", mode.c_str());
+    if(speed_limit == 0) ROS_WARN("WARNING: speed_limit is set to 0. Check behaviorTree.launch if you'd like to change it.");
+    ROS_INFO("Creating Behavior Tree for %s mode", mode.c_str());
 
     BT::SequenceNode *head = new BT::SequenceNode("CaroloCup2019", false, true);
     if(!mode.compare("PARKING")) {
+        //Create nodes
         NODES::WaitForStart *node_waitForStart = new NODES::WaitForStart("Waiting for gate");
         NODES::InitialDriving *node_initialDriving = new NODES::InitialDriving("Initial Driving");
         BT::SequenceNode *node_doCourse = new BT::SequenceNode("Course loop", true, true);
@@ -128,6 +129,7 @@ int main(int argc, char **argv) {
         NODES::FreeDriveIntersectionWait *node_freeDriveIntersectionWait = new NODES::FreeDriveIntersectionWait("Waiting at intersection");
         NODES::IntersectionDrive *node_freeDriveIntersectionDrive = new NODES::IntersectionDrive("Crossing intersection");
 
+        //Link them in a meaningful way
         head->addChild(node_waitForStart);
         head->addChild(node_initialDriving);
         head->addChild(node_doCourse);
@@ -145,6 +147,7 @@ int main(int argc, char **argv) {
         node_driving->addChild(node_freeDriveIntersectionDrive);
     }
     else if(!mode.compare("OBSTACLES")) {
+        //Create nodes
         NODES::WaitForStart *node_waitForStart = new NODES::WaitForStart("Waiting for gate");
         NODES::InitialDriving *node_initialDriving = new NODES::InitialDriving("Initial Driving");
         BT::ParallelNode *node_trackProperty = new BT::ParallelNode("Track property", &NODES::trackPropertyCallback, true);
@@ -170,6 +173,7 @@ int main(int argc, char **argv) {
         NODES::IntersectionWait *node_intersectionWait = new NODES::IntersectionWait("Waiting at intersection");
         NODES::IntersectionDrive *node_intersectionDrive = new NODES::IntersectionDrive("Crossing intersection");
 
+        //Link them in a meaningful way
         head->addChild(node_waitForStart);
         head->addChild(node_initialDriving);
         head->addChild(node_trackProperty);
@@ -196,7 +200,10 @@ int main(int argc, char **argv) {
     }
     RosInterface ros_interface(nh);
 
+    //Create the tree instance
     tree = new BT::Tree(head, tick_frequency, clean_output);
+    //If start states have been set in the launch file, apply them
     if(initial_states->size() > 0) tree->reset_state(initial_states);
+    //Fire up the tree
     tree->execute();
 }
