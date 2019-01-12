@@ -323,11 +323,10 @@ namespace NODES {
 
         if(priority_road 
             || (!priority_road 
-                && !EnvModel::intersection_no_object_right() 
-                && std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - waiting_started).count() > 3000
-            || (!priority_road && (
-                (!give_way && EnvModel::intersection_no_object_right()) 
-                || (give_way && EnvModel::intersection_no_object()))))) {
+                && (!EnvModel::intersection_no_object_right() 
+                        && std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - waiting_started).count() > 3000)
+                    || ((!give_way && EnvModel::intersection_no_object_right()) 
+                        || (give_way && EnvModel::intersection_no_object())))) {
             set_state(SUCCESS);
         }
         else {
