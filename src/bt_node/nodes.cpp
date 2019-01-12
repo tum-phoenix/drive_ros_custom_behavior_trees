@@ -49,7 +49,7 @@ namespace NODES {
         }
         else {
             //Keep the wheels straight, don't drive
-            trajectory_msg.control_metadata = DRIVE_CONTROL_STRAIGHT_FORWARD;
+            trajectory_msg.control_metadata = drive_ros_msgs::TrajectoryMetaInput::STRAIGHT_FORWARD;
             trajectory_msg.max_speed = 0;
             publish_trajectory_metadata(trajectory_msg);
         }
@@ -62,7 +62,7 @@ namespace NODES {
             set_state(SUCCESS);
         }
         else {
-            trajectory_msg.control_metadata = DRIVE_CONTROL_STRAIGHT_FORWARD;
+            trajectory_msg.control_metadata = drive_ros_msgs::TrajectoryMetaInput::STRAIGHT_FORWARD;
             trajectory_msg.max_speed = fmin(general_max_speed_cautious, speed_limit); 
             publish_trajectory_metadata(trajectory_msg);
         }
@@ -78,7 +78,7 @@ namespace NODES {
             set_state(SUCCESS);
         }
         else {
-            trajectory_msg.control_metadata = DRIVE_CONTROL_STANDARD;
+            trajectory_msg.control_metadata = drive_ros_msgs::TrajectoryMetaInput::STANDARD;
             trajectory_msg.max_speed = fmin(parking_spot_search_speed, speed_limit);
             publish_trajectory_metadata(trajectory_msg);
         }
@@ -91,7 +91,7 @@ namespace NODES {
             set_state(SUCCESS);
         }
         else {
-            trajectory_msg.control_metadata = DRIVE_CONTROL_STANDARD;
+            trajectory_msg.control_metadata = drive_ros_msgs::TrajectoryMetaInput::STANDARD;
             trajectory_msg.max_speed = 0;
             publish_trajectory_metadata(trajectory_msg);
         }
@@ -127,7 +127,7 @@ namespace NODES {
             set_state(FAILURE); //Break infinite drive loop to re-enter parking mode
         }
         else {
-            trajectory_msg.control_metadata = DRIVE_CONTROL_STANDARD;
+            trajectory_msg.control_metadata = drive_ros_msgs::TrajectoryMetaInput::STANDARD;
             trajectory_msg.max_speed = fmin(speed_limit, 
                 EnvModel::in_sharp_turn() ? sharp_turn_speed : EnvModel::in_very_sharp_turn() ? very_sharp_turn_speed : general_max_speed);
             publish_trajectory_metadata(trajectory_msg);
@@ -149,7 +149,7 @@ namespace NODES {
             set_state(SUCCESS); //The intersection crossing is done by IntersectionDrive.
         }
         else {
-            trajectory_msg.control_metadata = DRIVE_CONTROL_STANDARD;
+            trajectory_msg.control_metadata = drive_ros_msgs::TrajectoryMetaInput::STANDARD;
             trajectory_msg.max_speed = 0;
             publish_trajectory_metadata(trajectory_msg);
         }
@@ -165,20 +165,20 @@ namespace NODES {
         else if(EnvModel::get_current_lane() == LANE_RIGHT) {
             if(EnvModel::object_min_lane_distance(LANE_LEFT) > oncoming_traffic_clearance) {
                 msg->max_speed = fmin(max_lane_switch_speed, speed_limit);
-                msg->control_metadata = DRIVE_CONTROL_SWITCH_LEFT;
+                msg->control_metadata = drive_ros_msgs::TrajectoryMetaInput::SWITCH_LEFT;
                 msg_handler.addMessageSuggestion(msg);
             }
             else {
                 msg->max_speed = 0;
-                msg->control_metadata = DRIVE_CONTROL_STANDARD;
+                msg->control_metadata = drive_ros_msgs::TrajectoryMetaInput::STANDARD;
                 msg_handler.addMessageSuggestion(msg);
             }
         }
         else { //Lane is undefined; in the middle of lane change
             if(!EnvModel::object_on_lane(LANE_LEFT)) {
-                msg->control_metadata = DRIVE_CONTROL_SWITCH_LEFT;
+                msg->control_metadata = drive_ros_msgs::TrajectoryMetaInput::SWITCH_LEFT;
             } else {
-                msg->control_metadata = DRIVE_CONTROL_SWITCH_RIGHT;
+                msg->control_metadata = drive_ros_msgs::TrajectoryMetaInput::SWITCH_RIGHT;
             }
             msg->max_speed = fmin(max_lane_switch_speed, speed_limit);
             msg_handler.addMessageSuggestion(msg);
@@ -193,7 +193,7 @@ namespace NODES {
         }
         else { //No surprises are to be expected here.
             drive_ros_msgs::TrajectoryMetaInput *msg = new drive_ros_msgs::TrajectoryMetaInput();
-            msg->control_metadata = DRIVE_CONTROL_SWITCH_RIGHT;
+            msg->control_metadata = drive_ros_msgs::TrajectoryMetaInput::SWITCH_RIGHT;
             msg->max_speed = fmin(max_lane_switch_speed, speed_limit);
             msg_handler.addMessageSuggestion(msg);
         }
@@ -214,7 +214,7 @@ namespace NODES {
             if(last_speed == 0) last_speed = current_velocity;
 
             drive_ros_msgs::TrajectoryMetaInput *msg = new drive_ros_msgs::TrajectoryMetaInput();
-            msg->control_metadata = DRIVE_CONTROL_STANDARD;
+            msg->control_metadata = drive_ros_msgs::TrajectoryMetaInput::STANDARD;
             if(EnvModel::object_min_lane_distance(LANE_RIGHT) < overtake_distance - 0.3) 
                 msg->max_speed = fmin(last_speed * object_following_break_factor, speed_limit); //Increase distance
             else 
@@ -239,7 +239,7 @@ namespace NODES {
             }
             else {
                 drive_ros_msgs::TrajectoryMetaInput *msg = new drive_ros_msgs::TrajectoryMetaInput();
-                msg->control_metadata = DRIVE_CONTROL_STANDARD;
+                msg->control_metadata = drive_ros_msgs::TrajectoryMetaInput::STANDARD;
                 msg->max_speed = fmin(general_max_speed, speed_limit); //Spend as little time as possible on left lane
                 msg_handler.addMessageSuggestion(msg);
             }
@@ -255,7 +255,7 @@ namespace NODES {
         }
         else {
             drive_ros_msgs::TrajectoryMetaInput *msg = new drive_ros_msgs::TrajectoryMetaInput();
-            msg->control_metadata = DRIVE_CONTROL_STANDARD;
+            msg->control_metadata = drive_ros_msgs::TrajectoryMetaInput::STANDARD;
             msg->max_speed = 0;
             msg_handler.addMessageSuggestion(msg);
         }
@@ -272,11 +272,11 @@ namespace NODES {
             else {
                 drive_ros_msgs::TrajectoryMetaInput *msg = new drive_ros_msgs::TrajectoryMetaInput();
                 if(EnvModel::crosswalk_distance() < EnvModel::current_break_distance()) {
-                    msg->control_metadata = DRIVE_CONTROL_STANDARD;
+                    msg->control_metadata = drive_ros_msgs::TrajectoryMetaInput::STANDARD;
                     msg->max_speed = 0;
                 }
                 else {
-                    msg->control_metadata = DRIVE_CONTROL_STANDARD;
+                    msg->control_metadata = drive_ros_msgs::TrajectoryMetaInput::STANDARD;
                     msg->max_speed = fmin(general_max_speed_cautious, speed_limit);
                     msg_handler.addMessageSuggestion(msg);
                 }
@@ -328,7 +328,7 @@ namespace NODES {
         }
         else {
             drive_ros_msgs::TrajectoryMetaInput *msg = new drive_ros_msgs::TrajectoryMetaInput();
-            msg->control_metadata = DRIVE_CONTROL_STANDARD;
+            msg->control_metadata = drive_ros_msgs::TrajectoryMetaInput::STANDARD;
             msg->max_speed = EnvModel::intersection_immediately_upfront() ? 0 : general_max_speed_cautious;
             msg_handler.addMessageSuggestion(msg);
         }
@@ -345,7 +345,7 @@ namespace NODES {
             if(!mode.compare("PARKING")) {
                 msg->control_metadata = 0;
             } else {
-                msg->control_metadata = intersection_turn_indication == 0 ? DRIVE_CONTROL_STRAIGHT_FORWARD : intersection_turn_indication;
+                msg->control_metadata = intersection_turn_indication == 0 ? drive_ros_msgs::TrajectoryMetaInput::STRAIGHT_FORWARD : intersection_turn_indication;
             }
             msg->max_speed = intersection_turn_indication == 0 ? fmin(general_max_speed_cautious, speed_limit) : intersection_turn_speed;
             msg_handler.addMessageSuggestion(msg);
@@ -382,10 +382,10 @@ namespace NODES {
         float speed = fmin(
             EnvModel::in_sharp_turn() ? sharp_turn_speed :
                 EnvModel::in_very_sharp_turn() ? very_sharp_turn_speed : general_max_speed, speed_limit);
-        int metadata = DRIVE_CONTROL_STRAIGHT_FORWARD;
+        int metadata = drive_ros_msgs::TrajectoryMetaInput::STRAIGHT_FORWARD;
         for(drive_ros_msgs::TrajectoryMetaInput *msg : suggestions) {
             if(msg->max_speed < speed) speed = msg->max_speed;
-            if(metadata == DRIVE_CONTROL_STRAIGHT_FORWARD) metadata = msg->control_metadata;
+            if(metadata == drive_ros_msgs::TrajectoryMetaInput::STRAIGHT_FORWARD) metadata = msg->control_metadata;
         }
         suggestions.clear();
         drive_ros_msgs::TrajectoryMetaInput final_msg;
