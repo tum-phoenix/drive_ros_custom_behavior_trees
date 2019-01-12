@@ -75,7 +75,7 @@ start_value__force_stop | bool | Used for stop signs. Brings the car to halt.
 start_value__on_bridge | bool | Currently on a bridge?
 start_value__speed_limit | int | the current speed limit. Note: If not used, set it to a high value (e.g. general_amx_speed) since the car will always adhere to the smallest speed limit given (speed_limit=0 will permanently stop the car)
 start_value__successful_parking_count | int | Counts the successful (and therefore correct for the CaroloCup) parking attempts.
-start_value__give_way | Set if the car has to give way at an intersection
+start_value__give_way | bool | Set if the car has to give way at an intersection
 
 ### Node descriptions
 Node | Used in mode (P/O) | Name
