@@ -11,6 +11,8 @@ namespace BT {
     public:
         ActionNode(std::string name);
         virtual bool reset_state(std::set<std::string> *new_states);
+
+        virtual void print_tree(std::string *str, int indent);
         virtual void currently_running_nodes(std::set<TreeNode *> *nodes);
     private:
         

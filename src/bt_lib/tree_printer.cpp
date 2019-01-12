@@ -38,6 +38,7 @@ namespace BT {
         return c;
     }
 
+    int last_output_length = 0;
 
     void TreePrinter::printTree(TreeNode *tree, int timeDif) {
         int var_print_width = 32;
@@ -68,8 +69,9 @@ namespace BT {
             next_output += it->get_name() + " ";
         }
         next_output += "\n";
-
-        if(clean_output) erase_last_n_lines(&next_output, number_of_lines(next_output));
+        if(clean_output) erase_last_n_lines(&next_output, last_output_length);
+        tree->print_tree(&next_output, 0);
+        last_output_length = number_of_lines(next_output);
 
         std::cout << next_output;
         last_output = next_output;

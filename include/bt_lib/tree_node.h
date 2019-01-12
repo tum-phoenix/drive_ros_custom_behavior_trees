@@ -18,6 +18,7 @@ namespace BT
         void set_parent(TreeNode *parent);
         std::string get_name();
 
+        virtual void print_tree(std::string *str, int indent) = 0;
         virtual void currently_running_nodes(std::set<TreeNode *> *nodes) = 0;
     private:
         int state;

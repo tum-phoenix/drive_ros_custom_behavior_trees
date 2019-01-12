@@ -24,6 +24,17 @@ namespace BT {
         return flag;
     }
 
+
+    void ControlNode::print_tree(std::string *str, int indent) {
+        for(int i = 0; i < indent; i++) {*str += "\t";}
+        if(get_state() == RUNNING) *str += "\e[" + std::to_string(32) + "m\e[" + std::to_string(47) + "m";
+        *str += get_name() + "\n";
+        if(get_state() == RUNNING) *str += "\e[" + std::to_string(0) + "m\e[" + std::to_string(0) + "m";
+        for(int i = 0; i < children.size(); i++) {
+            children.at(i)->print_tree(str, indent + 1);
+        }
+    }
+
     void ControlNode::currently_running_nodes(std::set<TreeNode *> *nodes) {
         for(int i = 0; i < children.size(); i++) {
             if(children.at(i)->get_state() == RUNNING) {

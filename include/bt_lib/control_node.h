@@ -13,6 +13,8 @@ namespace BT {
         void addChild(TreeNode *child);
 
         virtual bool reset_state(std::set<std::string> *new_states);
+
+        virtual void print_tree(std::string *str, int indent);
         virtual void currently_running_nodes(std::set<TreeNode *> *nodes);
     protected:
         std::vector<TreeNode *> children;
