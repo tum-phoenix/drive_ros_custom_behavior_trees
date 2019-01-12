@@ -58,7 +58,9 @@ namespace NODES {
     /* ---------- InitialDriving ---------- */
     InitialDriving::InitialDriving(std::string name) : BT::ActionNode(name) {}
     void InitialDriving::tick() {
-        if(EnvModel::start_line_distance() != -1 && EnvModel::start_line_distance() < 0.2) {
+        //To improve robustness of the system, InitialDriving is completed when either the start line of the Parking Zone sign is detected.
+        if((EnvModel::start_line_distance() != -1 && EnvModel::start_line_distance() < 0.2)
+            || (EnvModel::parking_sign_distance() != -1 && EnvModel::parking_sign_distance() < 0.2)) {
             set_state(SUCCESS);
         }
         else {
@@ -113,7 +115,9 @@ namespace NODES {
             //TODO
         }
         else { //Car is on left lane, error reset!
-            reset_tree_state(tree);
+            //Skipping only because parking is not yet implemented
+            set_state(SUCCESS);
+            //reset_tree_state(tree);
         }
     }
 
@@ -355,7 +359,8 @@ namespace NODES {
     void trackPropertyCallback(std::vector<BT::TreeNode *> *nodes) {
         msg_handler.evaluate_and_send();
         //Activate nodes when necessary
-        //Nodes may only be activated when they are idling. Of course they can't be activated when already running, but they also shouldn't be when in SUCCESS or FAILURE state.
+        //Nodes may only be activated when they are idling. 
+        //Of course they can't be activated when already running, but they also shouldn't be when in SUCCESS or FAILURE state.
         if((*nodes)[0]->get_state() == IDLE 
             && EnvModel::object_min_lane_distance(LANE_RIGHT) < 2 * overtake_distance) {
             (*nodes)[0]->set_state(RUNNING);
