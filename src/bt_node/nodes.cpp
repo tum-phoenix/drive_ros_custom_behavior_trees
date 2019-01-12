@@ -58,7 +58,7 @@ namespace NODES {
     /* ---------- InitialDriving ---------- */
     InitialDriving::InitialDriving(std::string name) : BT::ActionNode(name) {}
     void InitialDriving::tick() {
-        if(EnvModel::start_line_distance() < 0.2) {
+        if(EnvModel::start_line_distance() != -1 && EnvModel::start_line_distance() < 0.2) {
             set_state(SUCCESS);
         }
         else {
@@ -74,7 +74,7 @@ namespace NODES {
         if(successful_parking_count >= 2) {
             set_state(FAILURE); //to break the parking process and start driving immediately
         }
-        else if(true) { //Parking spot detected
+        else if(true) { //TODO: Parking spot detected
             set_state(SUCCESS);
         }
         else {
@@ -100,7 +100,6 @@ namespace NODES {
     /* ---------- ParkingInProgress ---------- */
     ParkingInProgress::ParkingInProgress(std::string name) : BT::ActionNode(name) {}
     void ParkingInProgress::tick() { //TODO
-        //TODO flash turn indicators
         set_state(SUCCESS);
     }
 
@@ -124,7 +123,7 @@ namespace NODES {
         if(EnvModel::intersection_immediately_upfront()) {
             set_state(SUCCESS);
         }
-        else if(EnvModel::start_line_distance() < 0.2 || EnvModel::parking_sign_distance() < 0.2) { //Start line/Parking sign detected
+        else if(EnvModel::start_line_distance() != -1 && (EnvModel::start_line_distance() < 0.2 || EnvModel::parking_sign_distance() < 0.2)) { //Start line/Parking sign detected
             set_state(FAILURE); //Break infinite drive loop to re-enter parking mode
         }
         else {
@@ -140,7 +139,7 @@ namespace NODES {
         start_waiting = 0;
     }
     void FreeDriveIntersectionWait::tick() {
-        if(current_velocity < speed_zero_tolerance) start_waiting = 1;
+        if(start_waiting == 0 && (current_velocity < speed_zero_tolerance)) start_waiting = 1;
         if(start_waiting == 1) {
             waiting_started = std::chrono::system_clock::now();
             start_waiting = 2;
@@ -192,7 +191,7 @@ namespace NODES {
         if(EnvModel::get_current_lane() == LANE_RIGHT) {
             set_state(SUCCESS);
         }
-        else { //No surprises to be expected here.
+        else { //No surprises are to be expected here.
             drive_ros_msgs::TrajectoryMetaInput *msg = new drive_ros_msgs::TrajectoryMetaInput();
             msg->control_metadata = DRIVE_CONTROL_SWITCH_RIGHT;
             msg->max_speed = fmin(max_lane_switch_speed, speed_limit);
@@ -229,19 +228,19 @@ namespace NODES {
     LeftLaneDrive::LeftLaneDrive(std::string name) : BT::ActionNode(name) {}
     void LeftLaneDrive::tick() {
         if(!EnvModel::object_on_lane(LANE_RIGHT) 
-            && (EnvModel::barred_area_distance() > 4 || EnvModel::barred_area_distance() == -1)) { //When overtaking / passing barred area is finished.
+            && (EnvModel::barred_area_right_distance() > 4 || EnvModel::barred_area_right_distance() == -1)) { //When overtaking / passing barred area is finished.
             set_state(SUCCESS);
         }
         else {
             if(EnvModel::object_min_lane_distance(LANE_LEFT) < oncoming_traffic_clearance 
-                || EnvModel::barred_area_distance() < oncoming_traffic_clearance
+                || EnvModel::barred_area_left_distance() < oncoming_traffic_clearance
                 || EnvModel::pass_by_on_right_distance() < oncoming_traffic_clearance) { //Abort, there's no room to overtake.
                     set_state(SUCCESS); //Go to "switch to right lane" and maybe then go back to "switch to left lane" again to try once more.
             }
             else {
                 drive_ros_msgs::TrajectoryMetaInput *msg = new drive_ros_msgs::TrajectoryMetaInput();
                 msg->control_metadata = DRIVE_CONTROL_STANDARD;
-                msg->max_speed = fmin(general_max_speed, speed_limit); //Spend as little tim
+                msg->max_speed = fmin(general_max_speed, speed_limit); //Spend as little time as possible on left lane
                 msg_handler.addMessageSuggestion(msg);
             }
         }
@@ -250,7 +249,7 @@ namespace NODES {
     /* ---------- BarredAreaAnticipate ---------- */
     BarredAreaAnticipate::BarredAreaAnticipate(std::string name) : BT::ActionNode(name) {}
     void BarredAreaAnticipate::tick() {
-        if(EnvModel::barred_area_distance() < barred_area_react_distance
+        if(EnvModel::barred_area_right_distance() < barred_area_react_distance
             && (EnvModel::object_min_lane_distance(LANE_LEFT) > oncoming_traffic_clearance)) {
             set_state(SUCCESS);
         }
@@ -266,19 +265,21 @@ namespace NODES {
     CrosswalkBreak::CrosswalkBreak(std::string name) : BT::ActionNode(name) {}
     void CrosswalkBreak::tick() {
         if(EnvModel::crosswalk_distance() == -1) set_state(FAILURE);
-        if(EnvModel::num_of_pedestrians() == 0 || current_velocity < speed_zero_tolerance) {
-            set_state(SUCCESS);
-        }
         else {
-            drive_ros_msgs::TrajectoryMetaInput *msg = new drive_ros_msgs::TrajectoryMetaInput();
-            if(EnvModel::crosswalk_distance() < EnvModel::current_break_distance()) {
-                msg->control_metadata = DRIVE_CONTROL_STANDARD;
-                msg->max_speed = 0;
+            if(EnvModel::num_of_pedestrians() == 0 || current_velocity < speed_zero_tolerance) {
+                set_state(SUCCESS);
             }
             else {
-                msg->control_metadata = DRIVE_CONTROL_STANDARD;
-                msg->max_speed = fmin(general_max_speed_cautious, speed_limit);
-                msg_handler.addMessageSuggestion(msg);
+                drive_ros_msgs::TrajectoryMetaInput *msg = new drive_ros_msgs::TrajectoryMetaInput();
+                if(EnvModel::crosswalk_distance() < EnvModel::current_break_distance()) {
+                    msg->control_metadata = DRIVE_CONTROL_STANDARD;
+                    msg->max_speed = 0;
+                }
+                else {
+                    msg->control_metadata = DRIVE_CONTROL_STANDARD;
+                    msg->max_speed = fmin(general_max_speed_cautious, speed_limit);
+                    msg_handler.addMessageSuggestion(msg);
+                }
             }
         }
     }
@@ -360,7 +361,7 @@ namespace NODES {
             (*nodes)[0]->set_state(RUNNING);
         }
         if((*nodes)[1]->get_state() == IDLE 
-            && EnvModel::barred_area_distance() < barred_area_react_distance) {
+            && EnvModel::barred_area_right_distance() < barred_area_react_distance) {
             (*nodes)[1]->set_state(RUNNING);
         }
         if((*nodes)[2]->get_state() == IDLE 

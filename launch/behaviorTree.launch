@@ -35,8 +35,7 @@
       <param name="start_value__speed_limit" value="0.0"/>
       <param name="start_value__successful_parking_count" value="0"/>
       <param name="start_value__give_way" value="false"/>
-
-      <!-- Other random values -->
-      <param name="initial_states" type="str" value=""/>
+      <!-- Seperate the states with '|' if necessary !-->
+      <param name="initial_states" type="str" value="Free Drive"/>
     </node>
 </launch>

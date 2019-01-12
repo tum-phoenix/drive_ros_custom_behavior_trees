@@ -55,14 +55,25 @@ namespace EnvModel {
         return shortest_distance;
     }
 
-    bool f_barred_area_distance = false;
-    float v_barred_area_distance;
-    float barred_area_distance() {
-        if(f_barred_area_distance) return v_barred_area_distance;
+    bool f_barred_area_left_distance = false;
+    float v_barred_area_left_distance;
+    float barred_area_left_distance() {
+        if(f_barred_area_left_distance) return v_barred_area_left_distance;
 
-        float d = get_traffic_mark_distance(MARKING_BARRED_AREA);
-        v_barred_area_distance = d;
-        f_barred_area_distance = true;
+        float d = get_traffic_mark_distance(MARKING_BARRED_AREA_LEFT);
+        v_barred_area_left_distance = d;
+        f_barred_area_left_distance = true;
+        return d;
+    }
+
+    bool f_barred_area_right_distance = false;
+    float v_barred_area_right_distance;
+    float barred_area_right_distance() {
+        if(f_barred_area_right_distance) return v_barred_area_right_distance;
+
+        float d = get_traffic_mark_distance(MARKING_BARRED_AREA_RIGHT);
+        v_barred_area_right_distance = d;
+        f_barred_area_right_distance = true;
         return d;
     }
 
@@ -108,7 +119,7 @@ namespace EnvModel {
     float crosswalk_distance() {
         if(f_crosswalk_distance) return v_crosswalk_distance;
 
-        float d =  get_traffic_mark_distance(MARKING_BARRED_AREA);
+        float d =  get_traffic_mark_distance(MARKING_CROSSWALK);
         v_crosswalk_distance = d;
         f_crosswalk_distance = true;
         return d;
@@ -175,11 +186,10 @@ namespace EnvModel {
     }
 
     bool object_on_lane(int lane) {
-        bool flag = false;
         for(int i = 0; i < env_msg.obj_lane.size(); i++) {
-            if(env_msg.obj_lane[i] == lane) flag = true;
+            if(env_msg.obj_lane[i] == lane) return true;
         }
-        return flag;
+        return false;
     }
 
     bool f_crosswalk_clear = false;
@@ -218,7 +228,8 @@ namespace EnvModel {
     bool intersection_immediately_upfront() {
         if(f_intersection_immediately_upfront) return v_intersection_immediately_upfront;
 
-        bool b = get_traffic_mark_distance(MARKING_INTERSECTION) < current_break_distance();
+        int intersect_dist = get_traffic_mark_distance(MARKING_INTERSECTION);
+        bool b = (intersect_dist == -1) ? false : intersect_dist < current_break_distance();
         v_intersection_immediately_upfront = b;
         f_intersection_immediately_upfront = true;
         return b;
@@ -336,7 +347,8 @@ namespace EnvModel {
         }
         //Invalidate all previously computed data
         f_object_min_lane_distance = false;
-        f_barred_area_distance = false;
+        f_barred_area_left_distance = false;
+        f_barred_area_right_distance = false;
         f_pass_by_on_right_distance = false;
         f_crosswalk_distance = false;
         f_start_line_distance = false;

@@ -19,7 +19,8 @@ namespace EnvModel {
     int pedestrians_on_track();
 
     float object_min_lane_distance(int lane);
-    float barred_area_distance();
+    float barred_area_left_distance();
+    float barred_area_right_distance();
     float pass_by_on_right_distance();
     float current_break_distance();
     float crosswalk_distance();
