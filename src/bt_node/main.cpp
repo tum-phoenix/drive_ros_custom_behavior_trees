@@ -99,7 +99,6 @@ void read_launch_file(ros::NodeHandle *nh) {
     boost::split(initial_states_vector, states, [](char c){return c == '|';});
     initial_states = new std::set<std::string>(initial_states_vector.begin(), initial_states_vector.end());
 }
-/* ------- END OF GLOBAL DATA ------ */
 
 
 int main(int argc, char **argv) {

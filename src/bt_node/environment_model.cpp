@@ -1,6 +1,11 @@
 #include "bt_node/environment_model.h"
 #include "bt_node/value_definitions.h"
 
+#include "drive_ros_msgs/ObstacleEnvironment.h"
+#include "drive_ros_msgs/PedestrianEnvironment.h"
+#include "drive_ros_msgs/TrafficMarkEnvironment.h"
+#include "drive_ros_msgs/Lane.h"
+
 #include <math.h>
 #include <map>
 
@@ -32,8 +37,8 @@ namespace EnvModel {
     }
 
     float get_traffic_mark_distance(int id) {
-        for(int i = 0; i < env_msg.traffic_marks_id.size(); i++) {
-            if(env_msg.traffic_marks_id[i] == id) return env_msg.traffic_marks_track_distance[i];
+        for(int i = 0; i < env_msg.traffic_marks.size(); i++) {
+            if(env_msg.traffic_marks[i].id == id) return env_msg.traffic_marks[i].track_distance;
         }
         return -1;
     }
@@ -44,11 +49,11 @@ namespace EnvModel {
         if(f_object_min_lane_distance) return v_object_min_lane_distance;
 
         float shortest_distance = 100000;
-        for(int i = 0; i < env_msg.obj_lane.size(); i++) {
-            if(env_msg.obj_lane[i] == lane
-                && env_msg.obj_track_distance[i] < shortest_distance
-                && env_msg.obj_track_distance[i] > 0) 
-                    shortest_distance = env_msg.obj_track_distance[i];
+        for(int i = 0; i < env_msg.obstacles.size(); i++) {
+            if(env_msg.obstacles[i].obj_lane.obj_lane == lane
+                && env_msg.obstacles[i].obj_track_distance < shortest_distance
+                && env_msg.obstacles[i].obj_track_distance > 0) 
+                    shortest_distance = env_msg.obstacles[i].obj_track_distance;
         }
         v_object_min_lane_distance = shortest_distance;
         f_object_min_lane_distance = true;
@@ -89,8 +94,8 @@ namespace EnvModel {
     }
 
     bool intersection_no_object() {
-        for(int i = 0; i < env_msg.obj_lateral_offset.size(); i++) {
-            if(abs(env_msg.obj_lateral_offset[i]) > intersection_min_obj_distance) {
+        for(int i = 0; i < env_msg.obstacles.size(); i++) {
+            if(abs(env_msg.obstacles[i].obj_lateral_offset) > intersection_min_obj_distance) {
                 return false;
             }
         }
@@ -98,9 +103,9 @@ namespace EnvModel {
     }
 
     bool intersection_no_object_right() {
-        for(int i = 0; i < env_msg.obj_track_distance.size(); i++) {
-            if(env_msg.obj_lateral_offset[i] > -0.3 
-                && env_msg.obj_lateral_offset[i] < intersection_min_obj_distance) {
+        for(int i = 0; i < env_msg.obstacles.size(); i++) {
+            if(env_msg.obstacles[i].obj_lateral_offset > -0.3 
+                && env_msg.obstacles[i].obj_lateral_offset < intersection_min_obj_distance) {
                 return false;
             }
         }
@@ -151,9 +156,9 @@ namespace EnvModel {
     bool v_in_sharp_turn;
     bool in_sharp_turn() {
         if(f_in_sharp_turn) return v_in_sharp_turn;
-        for(int i = 0; i < env_msg.traffic_marks_id.size(); i++) {
-            if(env_msg.traffic_marks_id[i] == SIGN_SHARP_TURN_LEFT || env_msg.traffic_marks_id[i] == SIGN_SHARP_TURN_RIGHT)
-                if(env_msg.traffic_marks_track_distance[i] < 0.5) {
+        for(int i = 0; i < env_msg.traffic_marks.size(); i++) {
+            if(env_msg.traffic_marks[i].id == SIGN_SHARP_TURN_LEFT || env_msg.traffic_marks[i].id == SIGN_SHARP_TURN_RIGHT)
+                if(env_msg.traffic_marks[i].track_distance < 0.5) {
                     v_in_sharp_turn = true;
                     f_in_sharp_turn = true;
                     return true;
@@ -168,9 +173,9 @@ namespace EnvModel {
     bool v_in_very_sharp_turn;
     bool in_very_sharp_turn() {
         if(f_in_very_sharp_turn) return v_in_very_sharp_turn;
-        for(int i = 0; i < env_msg.traffic_marks_id.size(); i++) {
-            if(env_msg.traffic_marks_id[i] == SIGN_VERY_SHARP_TURN_LEFT || env_msg.traffic_marks_id[i] == SIGN_VERY_SHARP_TURN_RIGHT)
-                if(env_msg.traffic_marks_track_distance[i] < 0.5) {
+        for(int i = 0; i < env_msg.traffic_marks.size(); i++) {
+            if(env_msg.traffic_marks[i].id == SIGN_VERY_SHARP_TURN_LEFT || env_msg.traffic_marks[i].id == SIGN_VERY_SHARP_TURN_RIGHT)
+                if(env_msg.traffic_marks[i].track_distance < 0.5) {
                     v_in_very_sharp_turn = true;
                     f_in_very_sharp_turn = true;
                     return true;
@@ -186,8 +191,8 @@ namespace EnvModel {
     }
 
     bool object_on_lane(int lane) {
-        for(int i = 0; i < env_msg.obj_lane.size(); i++) {
-            if(env_msg.obj_lane[i] == lane) return true;
+        for(int i = 0; i < env_msg.obstacles.size(); i++) {
+            if(env_msg.obstacles[i].obj_lane.obj_lane == lane) return true;
         }
         return false;
     }
@@ -197,9 +202,9 @@ namespace EnvModel {
     bool crosswalk_clear() {
         if(f_crosswalk_clear) return v_crosswalk_clear;
         bool flag = true;
-        for(int i = 0; i < env_msg.obj_lane.size(); i++) {
-            if(env_msg.obj_lane[i] == LANE_LEFT || env_msg.obj_lane[i] == LANE_RIGHT)
-                if(env_msg.obj_track_distance[i] > crosswalk_distance() - 0.1 && env_msg.obj_track_distance[i] < crosswalk_distance() + 0.6)
+        for(int i = 0; i < env_msg.obstacles.size(); i++) {
+            if(env_msg.obstacles[i].obj_lane.obj_lane == LANE_LEFT || env_msg.obstacles[i].obj_lane.obj_lane == LANE_RIGHT)
+                if(env_msg.obstacles[i].obj_track_distance > crosswalk_distance() - 0.1 && env_msg.obstacles[i].obj_track_distance < crosswalk_distance() + 0.6)
                     flag = false;
         }
         v_crosswalk_clear = flag;
@@ -216,8 +221,8 @@ namespace EnvModel {
     int pedestrians_on_track() {
         if(f_pedestrians_on_track) return v_pedestrians_on_track;
         int c = 0;
-        for(int i = 0; i < env_msg.pedestrian_lane.size(); i++) {
-            if(env_msg.pedestrian_lane[i] < 2) c++;
+        for(int i = 0; i < env_msg.pedestrians.size(); i++) {
+            if(env_msg.pedestrians[i].obj_lane.obj_lane < 2) c++;
         }
         v_pedestrians_on_track = c;
         f_pedestrians_on_track = true;
@@ -236,7 +241,7 @@ namespace EnvModel {
     }
 
     int num_of_pedestrians() {
-        return env_msg.pedestrian_lane.size();
+        return env_msg.pedestrians.size();
     }
 
 
@@ -251,8 +256,8 @@ namespace EnvModel {
         }
         else {
             if(!pedestrian_on_track) {
-                for(int i = 0; i < msg.pedestrian_lane.size(); i++) {
-                    if(msg.pedestrian_lane[i] < 2) {
+                for(int i = 0; i < msg.pedestrians.size(); i++) {
+                    if(msg.pedestrians[i].obj_lane.obj_lane < 2) {
                         pedestrian_on_track = true;
                         break;
                     }
@@ -261,55 +266,55 @@ namespace EnvModel {
         }
 
         //Check for global sign flags to be set
-        for(int i = 0; i < msg.traffic_marks_id.size(); i++) {
-            switch(msg.traffic_marks_id[i]) {
+        for(int i = 0; i < msg.traffic_marks.size(); i++) {
+            switch(msg.traffic_marks[i].id) {
             case SIGN_SPEED_ZONE_10:
-                if(msg.traffic_marks_track_distance[i] < break_distance_to(to_real_speed(10))) {
+                if(msg.traffic_marks[i].track_distance < break_distance_to(to_real_speed(10))) {
                     speed_limit = to_real_speed(10);
                 }
                 break;
             case SIGN_SPEED_ZONE_20:
-                if(msg.traffic_marks_track_distance[i] < break_distance_to(to_real_speed(20))) {
+                if(msg.traffic_marks[i].track_distance < break_distance_to(to_real_speed(20))) {
                     speed_limit = to_real_speed(20);
                 }
                 break;
             case SIGN_SPEED_ZONE_30:
-                if(msg.traffic_marks_track_distance[i] < break_distance_to(to_real_speed(30))) {
+                if(msg.traffic_marks[i].track_distance < break_distance_to(to_real_speed(30))) {
                     speed_limit = to_real_speed(30);
                 }
                 break;
             case SIGN_SPEED_ZONE_40:
-                if(msg.traffic_marks_track_distance[i] < break_distance_to(to_real_speed(40))) {
+                if(msg.traffic_marks[i].track_distance < break_distance_to(to_real_speed(40))) {
                     speed_limit = to_real_speed(40);
                 }
                 break;
             case SIGN_SPEED_ZONE_50:
-                if(msg.traffic_marks_track_distance[i] < break_distance_to(to_real_speed(50))) {
+                if(msg.traffic_marks[i].track_distance < break_distance_to(to_real_speed(50))) {
                     speed_limit = to_real_speed(50);
                 }
                 break;
             case SIGN_SPEED_ZONE_60:
-                if(msg.traffic_marks_track_distance[i] < break_distance_to(to_real_speed(60))) {
+                if(msg.traffic_marks[i].track_distance < break_distance_to(to_real_speed(60))) {
                     speed_limit = to_real_speed(60);
                 }
                 break;
             case SIGN_SPEED_ZONE_70:
-                if(msg.traffic_marks_track_distance[i] < break_distance_to(to_real_speed(70))) {
+                if(msg.traffic_marks[i].track_distance < break_distance_to(to_real_speed(70))) {
                     speed_limit = to_real_speed(70);
                 }
                 break;
             case SIGN_SPEED_ZONE_80:
-                if(msg.traffic_marks_track_distance[i] < break_distance_to(to_real_speed(80))) {
+                if(msg.traffic_marks[i].track_distance < break_distance_to(to_real_speed(80))) {
                     speed_limit = to_real_speed(80);
                 }
                 break;
             case SIGN_SPEED_ZONE_90:
-                if(msg.traffic_marks_track_distance[i] < break_distance_to(to_real_speed(90))) {
+                if(msg.traffic_marks[i].track_distance < break_distance_to(to_real_speed(90))) {
                     speed_limit = to_real_speed(90);
                 }
                 break;
             case SIGN_SPEED_ZONE_END:
-                if(msg.traffic_marks_track_distance[i] < min_sign_react_distance) {
+                if(msg.traffic_marks[i].track_distance < min_sign_react_distance) {
                     speed_limit = general_max_speed;
                 }
                 break;

@@ -321,12 +321,19 @@ namespace NODES {
             start_waiting = false;
         }
 
+        /* The logic is: 
+            priority_road OR 
+                (!priority_road AND 
+                    ((no one on the right AND waited for 3sec) OR
+                     ((!give_way AND no one on right) OR 
+                     (give_way AND no one anywhere)))
+        */
         if(priority_road 
             || (!priority_road 
-                && (!EnvModel::intersection_no_object_right() 
+                && ((EnvModel::intersection_no_object_right() 
                         && std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - waiting_started).count() > 3000)
                     || ((!give_way && EnvModel::intersection_no_object_right()) 
-                        || (give_way && EnvModel::intersection_no_object())))) {
+                        || (give_way && EnvModel::intersection_no_object()))))) {
             set_state(SUCCESS);
         }
         else {
@@ -346,7 +353,7 @@ namespace NODES {
         else {
             drive_ros_msgs::TrajectoryMetaInput *msg = new drive_ros_msgs::TrajectoryMetaInput();
             if(!mode.compare("PARKING")) {
-                msg->control_metadata = 0;
+                msg->control_metadata = drive_ros_msgs::TrajectoryMetaInput::STRAIGHT_FORWARD;
             } else {
                 msg->control_metadata = intersection_turn_indication == 0 ? drive_ros_msgs::TrajectoryMetaInput::STRAIGHT_FORWARD : intersection_turn_indication;
             }
@@ -383,18 +390,24 @@ namespace NODES {
         suggestions.insert(msg);
     }
     void TrackPropertyMessageHandler::evaluate_and_send() {
+        //Initialize a minimum speed which already respects speed limits and some parameters (in case no special trackProperty is active)
         float speed = fmin(
             EnvModel::in_sharp_turn() ? sharp_turn_speed :
                 EnvModel::in_very_sharp_turn() ? very_sharp_turn_speed : general_max_speed, speed_limit);
-        int metadata = drive_ros_msgs::TrajectoryMetaInput::STRAIGHT_FORWARD;
+        //If nothing else is defined, just follow the track
+        int metadata = drive_ros_msgs::TrajectoryMetaInput::STANDARD;
+        //Iterate through all suggested messages and update the initialized values if the new ones are more strict.
         for(drive_ros_msgs::TrajectoryMetaInput *msg : suggestions) {
             if(msg->max_speed < speed) speed = msg->max_speed;
-            if(metadata == drive_ros_msgs::TrajectoryMetaInput::STRAIGHT_FORWARD) metadata = msg->control_metadata;
+            if(metadata == drive_ros_msgs::TrajectoryMetaInput::STANDARD) metadata = msg->control_metadata;
         }
+        //Suggestions should only be considered once (if a trackProperty is active in the next cycle, it will send another one anyways).
         suggestions.clear();
+        //Build the actual (and final) message
         drive_ros_msgs::TrajectoryMetaInput final_msg;
         final_msg.control_metadata = metadata;
         final_msg.max_speed = speed;
+        //...then send it.
         publish_trajectory_metadata(final_msg);
     }
 
