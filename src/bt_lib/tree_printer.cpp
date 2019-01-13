@@ -43,6 +43,7 @@ namespace BT {
     void TreePrinter::printTree(TreeNode *tree, int timeDif) {
         int var_print_width = 32;
         std::string next_output = "";
+        if(clean_output) erase_last_n_lines(&next_output, last_output_length);
 
         next_output += "Live-updated tree status (Computation time: " + std::to_string(timeDif) + " ns)\n";
         set_color(&next_output, 30, 47);
@@ -76,11 +77,10 @@ namespace BT {
         next_output += "\n";
 
         set_color(&next_output, 0, 0);
-        if(clean_output) erase_last_n_lines(&next_output, last_output_length);
         tree->print_tree(&next_output, 0);
-        last_output_length = number_of_lines(next_output);
 
         std::cout << next_output;
+        last_output_length = number_of_lines(next_output);
         last_output = next_output;
     }
 
