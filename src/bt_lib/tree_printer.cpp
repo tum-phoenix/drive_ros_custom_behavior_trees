@@ -9,8 +9,14 @@ extern std::string mode;
 extern bool overtaking_forbidden_zone;
 extern bool express_way;
 extern bool priority_road;
+extern bool force_stop;
 extern bool on_bridge;
-extern int speed_limit;
+extern bool give_way;
+extern int successful_parking_count;
+extern int intersection_turn_indication;
+
+extern float speed_limit;
+extern float current_velocity;
 
 namespace BT {
 
@@ -45,40 +51,58 @@ namespace BT {
         std::string next_output = "";
         if(clean_output) erase_last_n_lines(&next_output, last_output_length);
 
-        next_output += "Live-updated tree status (Computation time: " + std::to_string(timeDif) + " ns)\n";
+        //Header
+        next_output += "\n\n"; //A little distance to tree-generation related output
+        next_output += "----------------------------------------------------------------\n";
+        next_output += "Live-updated behavior tree status (Computation time: " + std::to_string(timeDif) + " ns)\n";
+        next_output += "----------------------------------------------------------------\n";
         set_color(&next_output, 30, 47);
-        next_output += change_string_to_length("Flags:", var_print_width);
+
+        //VARIABLES, TWO IN EACH ROW
+        //Boolean variables
+        next_output += change_string_to_length("Global data (runtime variables):", 2 * var_print_width);
         set_color(&next_output, 0, 0);
         next_output += "\n";
         set_color(&next_output, overtaking_forbidden_zone ? 32 : 31, 47);
         next_output += change_string_to_length("overtaking_forbidden_zone", var_print_width);
-        set_color(&next_output, 0, 0);
-        next_output += "\n";
         set_color(&next_output, express_way ? 32 : 31, 47);
         next_output += change_string_to_length("express_way", var_print_width);
         set_color(&next_output, 0, 0);
         next_output += "\n";
         set_color(&next_output, priority_road ? 32 : 31, 47);
         next_output += change_string_to_length("priority_road", var_print_width);
+        set_color(&next_output, force_stop ? 32 : 31, 47);
+        next_output += change_string_to_length("force_stop", var_print_width);
         set_color(&next_output, 0, 0);
         next_output += "\n";
+        set_color(&next_output, give_way ? 32 : 31, 47);
+        next_output += change_string_to_length("give_way", var_print_width);
         set_color(&next_output, on_bridge ? 32 : 31, 47);
         next_output += change_string_to_length("on_bridge", var_print_width);
         set_color(&next_output, 0, 0);
-        next_output += "\n\n";
+        next_output += "\n";
 
+        //Number variables
         set_color(&next_output, 30, 47);
-        next_output += change_string_to_length("Other values:", var_print_width);
+        next_output += change_string_to_length("successful_parking_count " + std::to_string(successful_parking_count), var_print_width);
+        next_output += change_string_to_length("intersection_turn_indication " + std::to_string(intersection_turn_indication), var_print_width);
         set_color(&next_output, 0, 0);
         next_output += "\n";
         set_color(&next_output, 30, 47);
         next_output += change_string_to_length("speed_limit " + std::to_string(speed_limit), var_print_width);
+        next_output += change_string_to_length("current_velocity " + std::to_string(current_velocity), var_print_width);
         set_color(&next_output, 0, 0);
-        next_output += "\n";
+        next_output += "\n\n";
 
+        next_output += "----------------------------------------------------------------\n";
+        next_output += "Behavior Tree Model:\n";
+        next_output += "----------------------------------------------------------------\n\n";
+        
+        //The tree itself
         set_color(&next_output, 0, 0);
         tree->print_tree(&next_output, 0);
 
+        //Print everything
         std::cout << next_output;
         last_output_length = number_of_lines(next_output);
         last_output = next_output;
