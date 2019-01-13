@@ -16,6 +16,7 @@
 //Fixed parameters
 std::string mode;
 int tick_frequency;
+int tick_freq_ms;
 float general_max_speed;
 float general_max_speed_cautious;
 float min_sign_react_distance;
@@ -92,6 +93,9 @@ void read_launch_file(ros::NodeHandle *nh) {
     nh->getParam("behavior_tree/start_value__successful_parking_coung", successful_parking_count);
     nh->getParam("behavior_tree/start_value__give_way", give_way);
 
+    //Convert tick frequency to waiting-milliseconds
+    if(tick_frequency == 0) tick_freq_ms = 0;
+    else tick_freq_ms = (1 / tick_frequency) * 1000;
     //Read start states
     std::string states;
     nh->getParam("behavior_tree/initial_states", states);
@@ -200,7 +204,7 @@ int main(int argc, char **argv) {
     RosInterface ros_interface(nh);
 
     //Create the tree instance
-    tree = new BT::Tree(head, tick_frequency, clean_output);
+    tree = new BT::Tree(head, tick_freq_ms, clean_output);
     //If start states have been set in the launch file, apply them
     if(initial_states->size() > 0) tree->reset_state(initial_states);
     //Fire up the tree

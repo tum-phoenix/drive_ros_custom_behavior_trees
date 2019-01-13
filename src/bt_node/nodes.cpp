@@ -102,6 +102,7 @@ namespace NODES {
     /* ---------- ParkingInProgress ---------- */
     ParkingInProgress::ParkingInProgress(std::string name) : BT::ActionNode(name) {}
     void ParkingInProgress::tick() { //TODO
+        successful_parking_count++;
         set_state(SUCCESS);
     }
 
@@ -131,9 +132,14 @@ namespace NODES {
             set_state(FAILURE); //Break infinite drive loop to re-enter parking mode
         }
         else {
-            trajectory_msg.control_metadata = drive_ros_msgs::TrajectoryMetaInput::STANDARD;
-            trajectory_msg.max_speed = fmin(speed_limit, 
-                EnvModel::in_sharp_turn() ? sharp_turn_speed : EnvModel::in_very_sharp_turn() ? very_sharp_turn_speed : general_max_speed);
+            if(EnvModel::get_current_lane() == LANE_LEFT || EnvModel::get_current_lane() == LANE_RIGHT) {
+                trajectory_msg.control_metadata = drive_ros_msgs::TrajectoryMetaInput::STANDARD;
+                trajectory_msg.max_speed = fmin(speed_limit, 
+                    EnvModel::in_sharp_turn() ? sharp_turn_speed : EnvModel::in_very_sharp_turn() ? very_sharp_turn_speed : general_max_speed);
+            }
+            else { //Car is out of track
+                
+            }
             publish_trajectory_metadata(trajectory_msg);
         }
     }
