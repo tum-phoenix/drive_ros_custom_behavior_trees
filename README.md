@@ -46,7 +46,7 @@ Parameter name | Possible values / variable type | Description
 **Uncategorized parameters** | | 
 mode | "PARKING", "OBSTACLES" | Specifies the (CaroloCup) driving mode
 clean_output | bool | After every cycle some brief information about the state of the tree is printed. If clean_output is true, the first output will be updated, while false will make it output new lines every time.
-tick_frequency | int | IMPORTANT: This specifies the desired frequency IN MILLISECONDS. So it's rather a "cycle duration" than a frequency. Example: tick_frequency = 100 will result in ~10 cycles per second.
+tick_frequency | int | Cylcles per second // Frequency in Hz
 object_following_break_factor | float | This value should only be changed when testing. Its internal use is to specify how quickly the car breaks when coming too close to the object it is following. The value should therefore be *somewhere* in the region of 1.
 break_distance_safety_factor | float | The BT EnvModel is able to approximate the break distance pretty well. Nevertheless, the computed break distance is multiplied with this factor for safety reasons.
 **Speeds** | | 
