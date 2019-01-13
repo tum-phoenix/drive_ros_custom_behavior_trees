@@ -12,7 +12,6 @@ namespace BT {
         void set_clean_output(bool co);
     private:
         bool clean_output;
-        std::string last_output;
     };
 }
 

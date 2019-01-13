@@ -4,6 +4,7 @@
       <!-- possible modes: "PARKING", "OBSTACLES"-->
       <param name="mode" value="PARKING"/>
       <param name="clean_output" value="true"/>
+      <param name="output_show_computation_time" value="true"/>
       <param name="tick_frequency" value="10"/>
       <param name="object_following_break_factor" value="0.8"/>
       <param name="break_distance_safety_factor" value="1.6"/>

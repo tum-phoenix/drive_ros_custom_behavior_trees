@@ -15,6 +15,7 @@
 /* ---------- GLOBAL DATA ---------- */
 //Fixed parameters
 std::string mode;
+bool output_show_computation_time;
 int tick_frequency;
 int tick_freq_ms;
 float general_max_speed;
@@ -60,6 +61,7 @@ std::set<std::string> *initial_states;
 void read_launch_file(ros::NodeHandle *nh) {
     nh->getParam("behavior_tree/mode", mode);
     nh->getParam("behavior_tree/clean_output", clean_output);
+    nh->getParam("behavior_tree/output_show_computation_time", output_show_computation_time);
     nh->getParam("behavior_tree/break_distance_safety_factor", break_distance_safety_factor);
     nh->getParam("behavior_tree/tick_frequency", tick_frequency);
     nh->getParam("behavior_tree/object_following_break_factor", object_following_break_factor);

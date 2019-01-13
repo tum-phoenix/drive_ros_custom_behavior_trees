@@ -3,6 +3,7 @@
 #include "bt_lib/tree_printer.h"
 #include <algorithm>
 
+extern bool output_show_computation_time;
 extern float break_distance;
 extern std::string mode;
 
@@ -45,6 +46,7 @@ namespace BT {
     }
 
     int last_output_length = 0;
+    std::string last_output = "";
 
     void TreePrinter::printTree(TreeNode *tree, int timeDif) {
         int var_print_width = 32;
@@ -54,7 +56,9 @@ namespace BT {
         //Header
         next_output += "\n\n"; //A little distance to tree-generation related output
         next_output += "----------------------------------------------------------------\n";
-        next_output += "Live-updated behavior tree status (Computation time: " + std::to_string(timeDif) + " ns)\n";
+        next_output += "Live-updated behavior tree status";
+        if(output_show_computation_time) next_output += "(Computation time: " + std::to_string(timeDif) + " ns)";
+        next_output += "\n";
         next_output += "----------------------------------------------------------------\n";
         set_color(&next_output, 30, 47);
 
@@ -90,7 +94,7 @@ namespace BT {
         next_output += "\n";
         set_color(&next_output, 30, 47);
         next_output += change_string_to_length("speed_limit " + std::to_string(speed_limit), var_print_width);
-        next_output += change_string_to_length("current_velocity " + std::to_string(current_velocity), var_print_width);
+        next_output += change_string_to_length("current_velocity " + std::to_string(current_velocity).substr(0, 3), var_print_width);
         set_color(&next_output, 0, 0);
         next_output += "\n\n";
 
@@ -103,9 +107,11 @@ namespace BT {
         tree->print_tree(&next_output, 0);
 
         //Print everything
-        std::cout << next_output;
-        last_output_length = number_of_lines(next_output);
-        last_output = next_output;
+        if(next_output.compare(last_output)) {
+            std::cout << next_output;
+            last_output = next_output;
+            last_output_length = number_of_lines(next_output);
+        }
     }
 
     void TreePrinter::set_clean_output(bool co) {
