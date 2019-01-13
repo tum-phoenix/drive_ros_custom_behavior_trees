@@ -28,8 +28,9 @@ namespace BT {
     void ControlNode::print_tree(std::string *str, int indent) {
         for(int i = 0; i < indent; i++) {*str += "\t";}
         if(get_state() == RUNNING) *str += "\e[" + std::to_string(32) + "m\e[" + std::to_string(47) + "m";
-        *str += get_name() + "\n";
+        *str += get_name();
         if(get_state() == RUNNING) *str += "\e[" + std::to_string(0) + "m\e[" + std::to_string(0) + "m";
+        *str += "\n";
         for(int i = 0; i < children.size(); i++) {
             children.at(i)->print_tree(str, indent + 1);
         }

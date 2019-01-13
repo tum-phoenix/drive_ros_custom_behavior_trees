@@ -46,29 +46,36 @@ namespace BT {
 
         next_output += "Live-updated tree status (Computation time: " + std::to_string(timeDif) + " ns)\n";
         set_color(&next_output, 30, 47);
-        next_output += change_string_to_length("Flags:", var_print_width) + "\n";
+        next_output += change_string_to_length("Flags:", var_print_width);
+        set_color(&next_output, 0, 0);
+        next_output += "\n";
         set_color(&next_output, overtaking_forbidden_zone ? 32 : 31, 47);
-        next_output += change_string_to_length("overtaking_forbidden_zone", var_print_width) + "\n";
+        next_output += change_string_to_length("overtaking_forbidden_zone", var_print_width);
+        set_color(&next_output, 0, 0);
+        next_output += "\n";
         set_color(&next_output, express_way ? 32 : 31, 47);
-        next_output += change_string_to_length("express_way", var_print_width) + "\n";
+        next_output += change_string_to_length("express_way", var_print_width);
+        set_color(&next_output, 0, 0);
+        next_output += "\n";
         set_color(&next_output, priority_road ? 32 : 31, 47);
-        next_output += change_string_to_length("priority_road", var_print_width) + "\n";
+        next_output += change_string_to_length("priority_road", var_print_width);
+        set_color(&next_output, 0, 0);
+        next_output += "\n";
         set_color(&next_output, on_bridge ? 32 : 31, 47);
-        next_output += change_string_to_length("on_bridge", var_print_width) + "\n\n";
+        next_output += change_string_to_length("on_bridge", var_print_width);
+        set_color(&next_output, 0, 0);
+        next_output += "\n\n";
 
         set_color(&next_output, 30, 47);
-        next_output += change_string_to_length("Other values:", var_print_width) + "\n";
-        next_output += change_string_to_length("speed_limit " + std::to_string(speed_limit), var_print_width) + "\n";
+        next_output += change_string_to_length("Other values:", var_print_width);
+        set_color(&next_output, 0, 0);
+        next_output += "\n";
+        set_color(&next_output, 30, 47);
+        next_output += change_string_to_length("speed_limit " + std::to_string(speed_limit), var_print_width);
+        set_color(&next_output, 0, 0);
+        next_output += "\n";
 
         set_color(&next_output, 0, 0);
-        next_output += "Current node: ";
-        std::set<TreeNode *> running_nodes;
-        tree->currently_running_nodes(&running_nodes);
-
-        for(auto it : running_nodes) {
-            next_output += it->get_name() + " ";
-        }
-        next_output += "\n";
         if(clean_output) erase_last_n_lines(&next_output, last_output_length);
         tree->print_tree(&next_output, 0);
         last_output_length = number_of_lines(next_output);
