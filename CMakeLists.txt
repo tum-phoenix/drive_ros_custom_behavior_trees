@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   std_msgs
   drive_ros_msgs
+  drive_ros_uavcan
   message_generation
   dynamic_reconfigure
 )

@@ -3,7 +3,7 @@
 #include "dynamic_reconfigure/server.h"
 #include "drive_ros_custom_behavior_trees/BehaviorTreeConfig.h"
 #include "drive_ros_msgs/TrajectoryMetaInput.h"
-#include "drive_ros_uavcan/DriveState.h"
+#include "drive_ros_uavcan/phoenix_msgs__DriveState.h"
 #include "bt_node/environment_model.h"
 
 extern std::string mode;
@@ -36,6 +36,7 @@ extern bool give_way;
 extern int speed_limit;
 extern int successful_parking_count;
 extern int intersection_turn_indication;
+extern float current_velocity;
 
 void dynamic_reconfigure_callback(drive_ros_custom_behavior_trees::BehaviorTreeConfig &config, uint32_t level) {
     if(!config.mode.compare("NONE")) mode = config.mode;
@@ -71,7 +72,7 @@ void dynamic_reconfigure_callback(drive_ros_custom_behavior_trees::BehaviorTreeC
     }
 }
 
-void car_data_callback(const drive_ros_uavcan::DriveState &msg ) {
+void car_data_callback(const drive_ros_uavcan::phoenix_msgs__DriveState &msg ) {
     current_velocity = msg.v;
 }
 
