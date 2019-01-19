@@ -3,6 +3,7 @@
 #include "dynamic_reconfigure/server.h"
 #include "drive_ros_custom_behavior_trees/BehaviorTreeConfig.h"
 #include "drive_ros_msgs/TrajectoryMetaInput.h"
+#include "drive_ros_uavcan/DriveState.h"
 #include "bt_node/environment_model.h"
 
 extern float min_sign_react_distance;
@@ -15,8 +16,8 @@ void dynamic_reconfigure_callback(drive_ros_custom_behavior_trees::BehaviorTreeC
     mode = config.mode;
 }
 
-void car_data_callback(/* const drive_ros_msgs::Message &msg */) {
-    //current_velocity = msg.velocity;
+void car_data_callback(const drive_ros_uavcan::DriveState &msg ) {
+    current_velocity = msg.v;
 }
 
 ros::Subscriber environment_model_subscriber;

@@ -95,7 +95,7 @@ void read_launch_file(ros::NodeHandle *nh) {
     nh->getParam("behavior_tree/start_value__successful_parking_coung", successful_parking_count);
     nh->getParam("behavior_tree/start_value__give_way", give_way);
 
-    //Convert tick frequency to waiting-milliseconds
+    //Convert tick frequency to waiting-milliseconds 
     if(tick_frequency == 0) tick_freq_ms = 0;
     else tick_freq_ms = (1 / tick_frequency) * 1000;
     //Read start states
