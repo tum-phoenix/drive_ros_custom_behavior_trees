@@ -16,6 +16,7 @@
 //Fixed parameters
 std::string mode;
 bool output_show_computation_time;
+bool dynamic_reconfigure_overwrite_runtime_vals;
 int tick_frequency;
 int tick_freq_ms;
 float general_max_speed;
@@ -62,6 +63,7 @@ void read_launch_file(ros::NodeHandle *nh) {
     nh->getParam("behavior_tree/mode", mode);
     nh->getParam("behavior_tree/clean_output", clean_output);
     nh->getParam("behavior_tree/output_show_computation_time", output_show_computation_time);
+    nh->getParam("behavior_tree/dynamic_reconfigure_overwrite_runtime_vals", dynamic_reconfigure_overwrite_runtime_vals);
     nh->getParam("behavior_tree/break_distance_safety_factor", break_distance_safety_factor);
     nh->getParam("behavior_tree/tick_frequency", tick_frequency);
     nh->getParam("behavior_tree/object_following_break_factor", object_following_break_factor);
