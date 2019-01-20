@@ -1,4 +1,6 @@
 <launch>
+    <arg name="meta_command_out" default="/trajectory_meta_commands"/>
+
     <node name="behavior_tree" pkg="drive_ros_custom_behavior_trees" type="BehaviorTree" output="screen">
       <!-- "random" variables (factors, etc) -->
       <!-- possible modes: "PARKING", "OBSTACLES"-->
@@ -39,5 +41,8 @@
       <param name="start_value__give_way" value="false"/>
       <!-- Seperate the states with '|' if necessary !-->
       <param name="initial_states" type="str" value="Track property"/>
+
+      <!-- remap topics with arguments -->
+      <remap from="trajectory_metadata" to="$(arg meta_command_out)"/>
     </node>
 </launch>
