@@ -14,7 +14,7 @@ extern float max_sign_react_distance;
 extern float max_start_box_distance;
 extern float general_max_speed;
 extern float break_distance_safety_factor;
-extern float intersection_min_obj_distance;
+extern float intersection_max_obj_distance;
 
 extern bool priority_road;
 extern bool force_stop;
@@ -95,7 +95,7 @@ namespace EnvModel {
 
     bool intersection_no_object() {
         for(int i = 0; i < env_msg.obstacles.size(); i++) {
-            if(abs(env_msg.obstacles[i].obj_lateral_offset) > intersection_min_obj_distance) {
+            if(abs(env_msg.obstacles[i].obj_lateral_offset) < intersection_max_obj_distance) {
                 return false;
             }
         }
@@ -105,7 +105,7 @@ namespace EnvModel {
     bool intersection_no_object_right() {
         for(int i = 0; i < env_msg.obstacles.size(); i++) {
             if(env_msg.obstacles[i].obj_lateral_offset > -0.3 
-                && env_msg.obstacles[i].obj_lateral_offset < intersection_min_obj_distance) {
+                && env_msg.obstacles[i].obj_lateral_offset < intersection_max_obj_distance) {
                 return false;
             }
         }

@@ -25,7 +25,7 @@
       <param name="barred_area_react_distance" value="0.5"/>
       <param name="oncoming_traffic_clearance" value="3"/>
       <param name="max_start_box_distance" value="20.0"/>
-      <param name="intersection_min_obj_distance" value="0.8"/>
+      <param name="intersection_max_obj_distance" value="0.8"/>
 
       <!-- These are usually set by the BT and may be changed for testing purposes only!-->
       <param name="dynamic_reconfigure_overwrite_runtime_vals" value="false"/>
