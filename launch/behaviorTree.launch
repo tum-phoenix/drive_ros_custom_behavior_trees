@@ -23,7 +23,7 @@
       <param name="max_sign_react_distance" value="0.5"/>
       <param name="overtake_distance" value="1.5"/>
       <param name="barred_area_react_distance" value="0.5"/>
-      <param name="oncoming_traffic_clearance" value="3"/>
+      <param name="oncoming_traffic_clearance" value="5.0"/>
       <param name="max_start_box_distance" value="20.0"/>
       <param name="intersection_max_obj_distance" value="0.8"/>
 

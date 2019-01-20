@@ -201,11 +201,21 @@ namespace NODES {
         if(EnvModel::get_current_lane() == LANE_RIGHT) {
             set_state(SUCCESS);
         }
-        else { //No surprises are to be expected here.
+        else {
             drive_ros_msgs::TrajectoryMetaInput *msg = new drive_ros_msgs::TrajectoryMetaInput();
-            msg->control_metadata = drive_ros_msgs::TrajectoryMetaInput::SWITCH_RIGHT;
-            msg->max_speed = fmin(max_lane_switch_speed, speed_limit);
-            msg_handler.addMessageSuggestion(msg);
+            //If there's at least some space on the right lane, go there.
+            if((EnvModel::object_min_lane_distance(LANE_RIGHT) != -1 || EnvModel::object_min_lane_distance(LANE_RIGHT) > 0.5)
+                && (EnvModel::barred_area_right_distance() != -1 || EnvModel::barred_area_right_distance() > 0.5)) {
+                msg->control_metadata = drive_ros_msgs::TrajectoryMetaInput::SWITCH_RIGHT;
+                msg->max_speed = fmin(max_lane_switch_speed, speed_limit);
+                msg_handler.addMessageSuggestion(msg);    
+            }
+            //Otherwise slowly go forward and switch to the right lane as soon as possible.
+            else {
+                msg->control_metadata = drive_ros_msgs::TrajectoryMetaInput::STANDARD;
+                msg->max_speed = general_max_speed_cautious;
+                msg_handler.addMessageSuggestion(msg);
+            }
         }
     }
 
@@ -332,7 +342,7 @@ namespace NODES {
                 (!priority_road AND 
                     ((no one on the right AND waited for 3sec) OR
                      ((!give_way AND no one on right) OR 
-                     (give_way AND no one anywhere)))
+                     (give_way AND no one anywhere))))
         */
         if(priority_road 
             || (!priority_road 
@@ -354,6 +364,7 @@ namespace NODES {
     IntersectionDrive::IntersectionDrive(std::string name) : BT::ActionNode(name) {}
     void IntersectionDrive::tick() {
         if(EnvModel::get_current_lane() != LANE_UNDEFINED) { //On normal track again
+            intersection_turn_indication = 0;
             set_state(SUCCESS);
         }
         else {
