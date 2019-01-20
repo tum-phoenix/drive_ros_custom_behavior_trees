@@ -3,7 +3,7 @@
 
 namespace BT {
 
-    ParallelNode::ParallelNode(std::string name, void (*activationFunction)(std::vector<TreeNode *> *), bool stayAlive = true) : ControlNode (name) {
+    ParallelNode::ParallelNode(std::string name, void (*activationFunction)(std::vector<TreeNode *> *), bool stayAlive) : ControlNode (name) {
         this->stayAlive = stayAlive;
         this->activationFunction = activationFunction;
     }

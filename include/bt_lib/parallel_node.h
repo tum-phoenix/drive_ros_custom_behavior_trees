@@ -10,7 +10,7 @@ namespace BT {
 
     class ParallelNode : public ControlNode {
     public:
-        ParallelNode(std::string name, void (*activationFunction)(std::vector<TreeNode *> *), bool stayAlive);
+        ParallelNode(std::string name, void (*activationFunction)(std::vector<TreeNode *> *), bool stayAlive = false);
         virtual void tick();
         virtual bool reset_state(std::set<std::string> *new_states);
         virtual void currently_running_nodes(std::set<TreeNode *> *nodes);

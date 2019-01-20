@@ -4,7 +4,7 @@
 
 namespace BT {
 
-    SequenceNode::SequenceNode(std::string name, bool repeatOnSuccess = false, bool skipFailedChild = false) : ControlNode(name) {
+    SequenceNode::SequenceNode(std::string name, bool repeatOnSuccess, bool skipFailedChild) : ControlNode(name) {
         this->repeatOnSuccess = repeatOnSuccess;
         this->skipFailedChild = skipFailedChild;
         currentChildIndex = 0;
