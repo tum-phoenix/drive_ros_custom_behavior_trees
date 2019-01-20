@@ -182,7 +182,7 @@ namespace NODES {
         }
         else if(EnvModel::get_current_lane() == LANE_RIGHT) {
             if(EnvModel::object_min_lane_distance(LANE_LEFT) > oncoming_traffic_clearance) {
-                msg->max_speed = fmin(max_lane_switch_speed, speed_limit);
+                msg->max_speed = max_lane_switch_speed;
                 msg->control_metadata = drive_ros_msgs::TrajectoryMetaInput::SWITCH_LEFT;
                 msg_handler.addMessageSuggestion(msg);
             }
@@ -198,7 +198,7 @@ namespace NODES {
             } else {
                 msg->control_metadata = drive_ros_msgs::TrajectoryMetaInput::SWITCH_RIGHT;
             }
-            msg->max_speed = fmin(max_lane_switch_speed, speed_limit);
+            msg->max_speed = max_lane_switch_speed;
             msg_handler.addMessageSuggestion(msg);
         }
     }
@@ -215,7 +215,7 @@ namespace NODES {
             if((EnvModel::object_min_lane_distance(LANE_RIGHT) != -1 || EnvModel::object_min_lane_distance(LANE_RIGHT) > 0.5)
                 && (EnvModel::barred_area_right_distance() != -1 || EnvModel::barred_area_right_distance() > 0.5)) {
                 msg->control_metadata = drive_ros_msgs::TrajectoryMetaInput::SWITCH_RIGHT;
-                msg->max_speed = fmin(max_lane_switch_speed, speed_limit);
+                msg->max_speed = max_lane_switch_speed;
                 msg_handler.addMessageSuggestion(msg);    
             }
             //Otherwise slowly go forward and switch to the right lane as soon as possible.
@@ -244,9 +244,9 @@ namespace NODES {
             drive_ros_msgs::TrajectoryMetaInput *msg = new drive_ros_msgs::TrajectoryMetaInput();
             msg->control_metadata = drive_ros_msgs::TrajectoryMetaInput::STANDARD;
             if(EnvModel::object_min_lane_distance(LANE_RIGHT) < overtake_distance - 0.3) 
-                msg->max_speed = fmin(last_speed * object_following_break_factor, speed_limit); //Increase distance
+                msg->max_speed = last_speed * object_following_break_factor; //Increase distance
             else 
-                msg->max_speed = fmin(last_speed * (1 / object_following_break_factor), speed_limit); //Reduce distance
+                msg->max_speed = last_speed * (1 / object_following_break_factor); //Reduce distance
             last_speed = msg->max_speed;
             msg_handler.addMessageSuggestion(msg);
         }
@@ -268,7 +268,7 @@ namespace NODES {
             else {
                 drive_ros_msgs::TrajectoryMetaInput *msg = new drive_ros_msgs::TrajectoryMetaInput();
                 msg->control_metadata = drive_ros_msgs::TrajectoryMetaInput::STANDARD;
-                msg->max_speed = fmin(general_max_speed, speed_limit); //Spend as little time as possible on left lane
+                msg->max_speed = general_max_speed; //Spend as little time as possible on left lane
                 msg_handler.addMessageSuggestion(msg);
             }
         }
@@ -294,18 +294,22 @@ namespace NODES {
     void CrosswalkBreak::tick() {
         if(EnvModel::crosswalk_distance() == -1) set_state(FAILURE);
         else {
-            if(EnvModel::num_of_pedestrians() == 0 || current_velocity < speed_zero_tolerance) {
+            drive_ros_msgs::TrajectoryMetaInput *msg = new drive_ros_msgs::TrajectoryMetaInput();
+            if(EnvModel::num_of_pedestrians() == 0) {
+                msg->control_metadata = drive_ros_msgs::TrajectoryMetaInput::STANDARD;
+                msg->max_speed = general_max_speed;
+                msg_handler.addMessageSuggestion(msg);
+            } else if (current_velocity < speed_zero_tolerance) {
                 set_state(SUCCESS);
             }
             else {
-                drive_ros_msgs::TrajectoryMetaInput *msg = new drive_ros_msgs::TrajectoryMetaInput();
                 if(EnvModel::crosswalk_distance() < EnvModel::current_break_distance()) {
                     msg->control_metadata = drive_ros_msgs::TrajectoryMetaInput::STANDARD;
                     msg->max_speed = 0;
                 }
                 else {
                     msg->control_metadata = drive_ros_msgs::TrajectoryMetaInput::STANDARD;
-                    msg->max_speed = fmin(general_max_speed_cautious, speed_limit);
+                    msg->max_speed = general_max_speed_cautious;
                     msg_handler.addMessageSuggestion(msg);
                 }
             }
@@ -315,8 +319,12 @@ namespace NODES {
     /* ---------- class:CrosswalkWait ---------- */
     CrosswalkWait::CrosswalkWait(std::string name) : BT::ActionNode(name) {}
     void CrosswalkWait::tick() {
-        if(EnvModel::num_of_pedestrians() == 0 
-            || (EnvModel::pedestrians_on_track() == 0 && EnvModel::was_pedestrian_on_track())) {
+        if(EnvModel::num_of_pedestrians() == 0) {
+            msg->control_metadata = drive_ros_msgs::TrajectoryMetaInput::STANDARD;
+            msg->max_speed = general_max_speed;
+            msg_handler.addMessageSuggestion(msg);
+        }
+        else if(EnvModel::pedestrians_on_track() == 0 && EnvModel::was_pedestrian_on_track()) {
             if(already_waiting
                 && std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - waiting_started).count() > 500) {
                 set_state(SUCCESS);
@@ -382,7 +390,7 @@ namespace NODES {
             } else {
                 msg->control_metadata = intersection_turn_indication == 0 ? drive_ros_msgs::TrajectoryMetaInput::STRAIGHT_FORWARD : intersection_turn_indication;
             }
-            msg->max_speed = intersection_turn_indication == 0 ? fmin(general_max_speed_cautious, speed_limit) : intersection_turn_speed;
+            msg->max_speed = intersection_turn_indication == 0 ? speed_limit : intersection_turn_speed;
             msg_handler.addMessageSuggestion(msg);
         }
     }
