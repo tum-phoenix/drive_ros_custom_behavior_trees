@@ -102,8 +102,15 @@ namespace NODES {
     /* ---------- ParkingInProgress ---------- */
     ParkingInProgress::ParkingInProgress(std::string name) : BT::ActionNode(name) {}
     void ParkingInProgress::tick() { //TODO
-        successful_parking_count++;
-        set_state(SUCCESS);
+        if(EnvModel::get_current_lane() == LANE_UNDEFINED) {
+            successful_parking_count++;
+            set_state(SUCCESS);
+        } 
+        else {
+            trajectory_msg.control_metadata = DRIVE_CONTROL_SWITCH_RIGHT;
+            trajectory_msg.max_speed = general_max_speed_cautious;
+            publish_trajectory_metadata(trajectory_msg);
+        }
     }
 
     /* ---------- ParkingReverse ---------- */
@@ -113,12 +120,12 @@ namespace NODES {
           set_state(SUCCESS); //Car is back on track  
         }
         else if(EnvModel::get_current_lane() == LANE_UNDEFINED) { 
-            //TODO
+            trajectory_msg.control_metadata = DRIVE_CONTROL_SWITCH_LEFT;
+            trajectory_msg.max_speed = general_max_speed_cautious;
+            publish_trajectory_metadata(trajectory_msg);
         }
         else { //Car is on left lane, error reset!
-            //Skipping only because parking is not yet implemented
-            set_state(SUCCESS);
-            //reset_tree_state(tree);
+            reset_tree_state(tree);
         }
     }
 
