@@ -319,6 +319,7 @@ namespace NODES {
     /* ---------- class:CrosswalkWait ---------- */
     CrosswalkWait::CrosswalkWait(std::string name) : BT::ActionNode(name) {}
     void CrosswalkWait::tick() {
+        drive_ros_msgs::TrajectoryMetaInput *msg = new drive_ros_msgs::TrajectoryMetaInput();
         if(EnvModel::num_of_pedestrians() == 0) {
             msg->control_metadata = drive_ros_msgs::TrajectoryMetaInput::STANDARD;
             msg->max_speed = general_max_speed;
@@ -336,7 +337,6 @@ namespace NODES {
             }
         }
         else {
-            drive_ros_msgs::TrajectoryMetaInput *msg = new drive_ros_msgs::TrajectoryMetaInput();
             msg->control_metadata = msg->STANDARD;
             msg->max_speed = 0;
             msg_handler.addMessageSuggestion(msg);
