@@ -9,8 +9,8 @@
       <param name="object_following_break_factor" value="0.8"/>
       <param name="break_distance_safety_factor" value="1.6"/>
       <!-- Speeds -->
-      <param name="general_max_speed" value="3.0"/>
-      <param name="general_max_speed_cautious" value="1.0"/>
+      <param name="general_max_speed" value="0.5"/>
+      <param name="general_max_speed_cautious" value="0.2"/>
       <param name="max_bridge_speed" value="1.5"/>
       <param name="parking_spot_search_speed" value="0.5"/>
       <param name="max_lane_switch_speed" value="2.5"/>
