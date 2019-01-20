@@ -334,6 +334,8 @@ namespace EnvModel {
                 break;
             case SIGN_STOP:
                 priority_road = false;
+                //Maybe the express_way_end was not detected...
+                express_way = false;
                 force_stop = true;
                 break;
             case SIGN_NO_PASSING_ZONE:
@@ -344,9 +346,12 @@ namespace EnvModel {
                 break;
             case SIGN_EXPRESSWAY_BEGIN:
                 express_way = true;
+                //Should increase robustness, esp. at falsely detected intersections.
+                priority_road = true;
                 break;
             case SIGN_EXPRESSWAY_END:
                 express_way = false;
+                priority_road = true;
                 break;
             default:
                 break; //All other signs are used differently, e.g. by asking for them directly. These were just passive states.

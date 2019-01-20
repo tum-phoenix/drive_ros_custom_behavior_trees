@@ -1,10 +1,13 @@
+#include "bt_lib/tree.h"
+
 #include "bt_node/ros_communication.h"
+#include "bt_node/environment_model.h"
+#include "bt_node/node_reset.h"
 
 #include "dynamic_reconfigure/server.h"
 #include "drive_ros_custom_behavior_trees/BehaviorTreeConfig.h"
 #include "drive_ros_msgs/TrajectoryMetaInput.h"
 #include "drive_ros_uavcan/phoenix_msgs__DriveState.h"
-#include "bt_node/environment_model.h"
 
 extern std::string mode;
 extern bool dynamic_reconfigure_overwrite_runtime_vals;
@@ -37,6 +40,8 @@ extern int speed_limit;
 extern int successful_parking_count;
 extern int intersection_turn_indication;
 extern float current_velocity;
+
+extern BT::Tree *tree;
 
 void dynamic_reconfigure_callback(drive_ros_custom_behavior_trees::BehaviorTreeConfig &config, uint32_t level) {
     if(!config.mode.compare("NONE")) mode = config.mode;
@@ -72,8 +77,11 @@ void dynamic_reconfigure_callback(drive_ros_custom_behavior_trees::BehaviorTreeC
     }
 }
 
-void car_data_callback(const drive_ros_uavcan::phoenix_msgs__DriveState &msg ) {
+bool previously_armed = false;
+void car_data_callback(const drive_ros_uavcan::phoenix_msgs__DriveState &msg) {
     current_velocity = msg.v;
+    if(previously_armed && !msg.arm) reset_tree_state(tree);
+    previously_armed = msg.arm;
 }
 
 ros::Subscriber environment_model_subscriber;
