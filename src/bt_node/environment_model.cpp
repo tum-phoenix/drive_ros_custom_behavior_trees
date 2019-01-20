@@ -79,6 +79,7 @@ namespace EnvModel {
         if(f_barred_area_right_distance) return v_barred_area_right_distance;
 
         float d = get_traffic_mark_distance(MARKING_BARRED_AREA_RIGHT);
+        if(d == -1) d = get_traffic_mark_distance(SIGN_YIELD_ONCOMING_TRAFFIC);
         v_barred_area_right_distance = d;
         f_barred_area_right_distance = true;
         return d;
