@@ -41,7 +41,7 @@ namespace NODES {
     drive_ros_msgs::TrajectoryMetaInput trajectory_msg;
     TrackPropertyMessageHandler msg_handler;
 
-    /* ---------- WaitForStart ---------- */
+    /* ---------- class:WaitForStart ---------- */
     WaitForStart::WaitForStart(std::string name) : BT::ActionNode(name) {}
     void WaitForStart::tick() {
         if(EnvModel::start_box_open()) {
@@ -55,7 +55,7 @@ namespace NODES {
         }
     }
 
-    /* ---------- InitialDriving ---------- */
+    /* ---------- class:InitialDriving ---------- */
     InitialDriving::InitialDriving(std::string name) : BT::ActionNode(name) {}
     void InitialDriving::tick() {
         //To improve robustness of the system, InitialDriving is completed when either the start line of the Parking Zone sign is detected.
@@ -64,13 +64,14 @@ namespace NODES {
             set_state(SUCCESS);
         }
         else {
+            //To avoid confusion of line detection etc. because of the merging curve at the start, the car shall go straight forward.
             trajectory_msg.control_metadata = drive_ros_msgs::TrajectoryMetaInput::STRAIGHT_FORWARD;
             trajectory_msg.max_speed = fmin(general_max_speed_cautious, speed_limit); 
             publish_trajectory_metadata(trajectory_msg);
         }
     }
 
-    /* ---------- ParkingSpotSearch ---------- */
+    /* ---------- class:ParkingSpotSearch ---------- */
     ParkingSpotSearch::ParkingSpotSearch(std::string name) : BT::ActionNode(name) {}
     void ParkingSpotSearch::tick() {
         if(successful_parking_count >= 2) {
@@ -86,7 +87,7 @@ namespace NODES {
         }
     }
 
-    /* ---------- ParkingBreaking ---------- */
+    /* ---------- class:ParkingBreaking ---------- */
     ParkingBreaking::ParkingBreaking(std::string name) : BT::ActionNode(name) {}
     void ParkingBreaking::tick() {
         if(current_velocity < speed_zero_tolerance) {
@@ -99,28 +100,28 @@ namespace NODES {
         }
     }
 
-    /* ---------- ParkingInProgress ---------- */
+    /* ---------- class:ParkingInProgress ---------- */
     ParkingInProgress::ParkingInProgress(std::string name) : BT::ActionNode(name) {}
-    void ParkingInProgress::tick() { //TODO
+    void ParkingInProgress::tick() {
         if(EnvModel::get_current_lane() == LANE_UNDEFINED) {
             successful_parking_count++;
             set_state(SUCCESS);
         } 
         else {
-            trajectory_msg.control_metadata = DRIVE_CONTROL_SWITCH_RIGHT;
+            trajectory_msg.control_metadata = drive_ros_msgs::TrajectoryMetaInput::SWITCH_RIGHT;
             trajectory_msg.max_speed = general_max_speed_cautious;
             publish_trajectory_metadata(trajectory_msg);
         }
     }
 
-    /* ---------- ParkingReverse ---------- */
+    /* ---------- class:ParkingReverse ---------- */
     ParkingReverse::ParkingReverse(std::string name) : BT::ActionNode(name) {}
     void ParkingReverse::tick() {
         if(EnvModel::get_current_lane() == LANE_RIGHT) {
           set_state(SUCCESS); //Car is back on track  
         }
         else if(EnvModel::get_current_lane() == LANE_UNDEFINED) { 
-            trajectory_msg.control_metadata = DRIVE_CONTROL_SWITCH_LEFT;
+            trajectory_msg.control_metadata = drive_ros_msgs::TrajectoryMetaInput::SWITCH_LEFT;
             trajectory_msg.max_speed = general_max_speed_cautious;
             publish_trajectory_metadata(trajectory_msg);
         }
@@ -129,7 +130,7 @@ namespace NODES {
         }
     }
 
-    /* ---------- FreeDrive ---------- */
+    /* ---------- class:FreeDrive ---------- */
     FreeDrive::FreeDrive(std::string name) : BT::ActionNode(name) {}
     void FreeDrive::tick() {
         if(EnvModel::intersection_immediately_upfront()) {
@@ -151,7 +152,7 @@ namespace NODES {
         }
     }
 
-    /* ---------- FreeDriveIntersectionWait ---------- */
+    /* ---------- class:FreeDriveIntersectionWait ---------- */
     FreeDriveIntersectionWait::FreeDriveIntersectionWait(std::string name) : BT::ActionNode(name) {
         start_waiting = 0;
     }
@@ -172,7 +173,7 @@ namespace NODES {
         }
     }
 
-    /* ---------- SwitchToLeftLane ---------- */
+    /* ---------- class:SwitchToLeftLane ---------- */
     SwitchToLeftLane::SwitchToLeftLane(std::string name) : BT::ActionNode(name) {}
     void SwitchToLeftLane::tick() {
         drive_ros_msgs::TrajectoryMetaInput *msg = new drive_ros_msgs::TrajectoryMetaInput();
@@ -202,7 +203,7 @@ namespace NODES {
         }
     }
 
-    /* ---------- SwitchToRightLane ---------- */
+    /* ---------- class:SwitchToRightLane ---------- */
     SwitchToRightLane::SwitchToRightLane(std::string name) : BT::ActionNode(name) {}
     void SwitchToRightLane::tick() {
         if(EnvModel::get_current_lane() == LANE_RIGHT) {
@@ -226,18 +227,18 @@ namespace NODES {
         }
     }
 
-    /* ---------- FollowingObject ---------- */
+    /* ---------- class:FollowingObject ---------- */
     FollowingObject::FollowingObject(std::string name) : BT::ActionNode(name) {
         last_speed = 0;
     }
     void FollowingObject::tick() {
-        if(!EnvModel::object_on_lane(EnvModel::get_current_lane())) { //Cancel folowing; there's no object in the way any more.
+        if(!EnvModel::object_on_lane(EnvModel::get_current_lane())) { //Cancel following; there's no object in the way any more.
             set_state(FAILURE);
         } else if(!(EnvModel::intersection_immediately_upfront() || overtaking_forbidden_zone)
-            && EnvModel::object_min_lane_distance(LANE_RIGHT) < overtake_distance) {
+            && EnvModel::object_min_lane_distance(LANE_RIGHT) < overtake_distance) { //According to the regulations, there's nothing on the left lane when an obstacle is in front of you.
             set_state(SUCCESS);
         }
-        else {
+        else { //Can't yet overtake, just follow the object.
             if(last_speed == 0) last_speed = current_velocity;
 
             drive_ros_msgs::TrajectoryMetaInput *msg = new drive_ros_msgs::TrajectoryMetaInput();
@@ -251,7 +252,7 @@ namespace NODES {
         }
     }
     
-    /* ---------- LeftLaneDrive ---------- */
+    /* ---------- class:LeftLaneDrive ---------- */
     LeftLaneDrive::LeftLaneDrive(std::string name) : BT::ActionNode(name) {}
     void LeftLaneDrive::tick() {
         if(!EnvModel::object_on_lane(LANE_RIGHT) 
@@ -273,7 +274,7 @@ namespace NODES {
         }
     }
 
-    /* ---------- BarredAreaAnticipate ---------- */
+    /* ---------- class:BarredAreaAnticipate ---------- */
     BarredAreaAnticipate::BarredAreaAnticipate(std::string name) : BT::ActionNode(name) {}
     void BarredAreaAnticipate::tick() {
         if(EnvModel::barred_area_right_distance() < barred_area_react_distance
@@ -288,7 +289,7 @@ namespace NODES {
         }
     }
 
-    /* ---------- CrosswalkBreak ---------- */
+    /* ---------- class:CrosswalkBreak ---------- */
     CrosswalkBreak::CrosswalkBreak(std::string name) : BT::ActionNode(name) {}
     void CrosswalkBreak::tick() {
         if(EnvModel::crosswalk_distance() == -1) set_state(FAILURE);
@@ -311,7 +312,7 @@ namespace NODES {
         }
     }
 
-    /* ---------- CrosswalkWait ---------- */
+    /* ---------- class:CrosswalkWait ---------- */
     CrosswalkWait::CrosswalkWait(std::string name) : BT::ActionNode(name) {}
     void CrosswalkWait::tick() {
         if(EnvModel::num_of_pedestrians() == 0 
@@ -334,7 +335,7 @@ namespace NODES {
         }
     }
 
-    /* ---------- IntersectionWait ---------- */
+    /* ---------- class:IntersectionWait ---------- */
     IntersectionWait::IntersectionWait(std::string name) : BT::ActionNode(name) {
         start_waiting = true;
     }
@@ -367,7 +368,7 @@ namespace NODES {
         }
     }
 
-    /* ---------- IntersectionDrive ---------- */
+    /* ---------- class:IntersectionDrive ---------- */
     IntersectionDrive::IntersectionDrive(std::string name) : BT::ActionNode(name) {}
     void IntersectionDrive::tick() {
         if(EnvModel::get_current_lane() != LANE_UNDEFINED) { //On normal track again

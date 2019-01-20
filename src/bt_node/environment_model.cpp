@@ -6,6 +6,8 @@
 #include "drive_ros_msgs/TrafficMarkEnvironment.h"
 #include "drive_ros_msgs/Lane.h"
 
+#include "drive_ros_msgs/TrajectoryMetaInput.h"
+
 #include <math.h>
 #include <map>
 
@@ -319,10 +321,10 @@ namespace EnvModel {
                 }
                 break;
             case SIGN_TURN_LEFT:
-                intersection_turn_indication = DRIVE_CONTROL_TURN_LEFT;
+                intersection_turn_indication = drive_ros_msgs::TrajectoryMetaInput::TURN_LEFT;
                 break;
             case SIGN_TURN_RIGHT:
-                intersection_turn_indication = DRIVE_CONTROL_TURN_RIGHT;
+                intersection_turn_indication = drive_ros_msgs::TrajectoryMetaInput::TURN_RIGHT;
                 break;
             case SIGN_PRIORITY_ROAD:
                 priority_road = true;
