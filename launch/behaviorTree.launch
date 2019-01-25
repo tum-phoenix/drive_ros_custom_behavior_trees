@@ -1,46 +1,85 @@
 <launch>
     <arg name="meta_command_out" default="/trajectory_meta_commands"/>
+    <!-- Arguments passed from global launch file -->
+
+    <!-- "random" variables (factors, etc) -->
+    <!-- possible modes: "PARKING", "OBSTACLES"-->
+    <arg name="mode" default="OBSTACLES"/>
+    <arg name="clean_output" default="false"/>
+    <arg name="output_show_computation_time" default="false"/>
+    <arg name="tick_frequency" default="50"/>
+    <arg name="object_following_break_factor" default="0.8"/>
+    <arg name="break_distance_safety_factor" default="1.6"/>
+    <!-- Speeds -->
+    <arg name="general_max_speed" default="1.0"/>
+    <arg name="general_max_speed_cautious" default="0.8"/>
+    <arg name="max_bridge_speed" default="1.5"/>
+    <arg name="parking_spot_search_speed" default="0.5"/>
+    <arg name="max_lane_switch_speed" default="2.5"/>
+    <arg name="intersection_turn_speed" default="1.0"/>
+    <arg name="sharp_turn_speed" default="2.5"/>
+    <arg name="very_sharp_turn_speed" default="2.0"/>
+    <arg name="speed_zero_tolerance" default="0.05"/>
+    <!-- Distances -->
+    <arg name="min_sign_react_distance" default="0.1"/>
+    <arg name="max_sign_react_distance" default="0.5"/>
+    <arg name="overtake_distance" default="1.5"/> <!-- According to the regulations this value must be at least 0.3-->
+    <arg name="barred_area_react_distance" default="0.5"/>
+    <arg name="oncoming_traffic_clearance" default="5.0"/>
+    <arg name="max_start_box_distance" default="20.0"/>
+    <arg name="intersection_max_obj_distance" default="0.8"/>
+
+    <!-- These are usually set by the BT and may be changed for testing purposes only!-->
+    <arg name="dynamic_reconfigure_overwrite_runtime_vals" default="false"/>
+    <arg name="start_value__overtaking_forbidden_zone" default="false"/>
+    <arg name="start_value__express_way" default="false"/>
+    <arg name="start_value__priority_road" default="false"/>
+    <arg name="start_value__force_stop" default="false"/>
+    <arg name="start_value__on_bridge" default="false"/>
+    <arg name="start_value__speed_limit" default="100.0"/>
+    <arg name="start_value__successful_parking_count" default="2"/>
+    <arg name="start_value__give_way" default="false"/>
+    <!-- Seperate the states with '|' if necessary !-->
+    <arg name="initial_states" type="str" default="Track property"/>
 
     <node name="behavior_tree" pkg="drive_ros_custom_behavior_trees" type="BehaviorTree" output="screen">
-      <!-- "random" variables (factors, etc) -->
-      <!-- possible modes: "PARKING", "OBSTACLES"-->
-      <param name="mode" value="OBSTACLES"/>
-      <param name="clean_output" value="false"/>
-      <param name="output_show_computation_time" value="false"/>
-      <param name="tick_frequency" value="50"/>
-      <param name="object_following_break_factor" value="0.8"/>
-      <param name="break_distance_safety_factor" value="1.6"/>
-      <!-- Speeds -->
-      <param name="general_max_speed" value="1.0"/>
-      <param name="general_max_speed_cautious" value="0.8"/>
-      <param name="max_bridge_speed" value="1.5"/>
-      <param name="parking_spot_search_speed" value="0.5"/>
-      <param name="max_lane_switch_speed" value="2.5"/>
-      <param name="intersection_turn_speed" value="1.0"/>
-      <param name="sharp_turn_speed" value="2.5"/>
-      <param name="very_sharp_turn_speed" value="2.0"/>
-      <param name="speed_zero_tolerance" value="0.05"/>
-      <!-- Distances -->
-      <param name="min_sign_react_distance" value="0.1"/>
-      <param name="max_sign_react_distance" value="0.5"/>
-      <param name="overtake_distance" value="1.5"/> <!-- According to the regulations this value must be at least 0.3-->
-      <param name="barred_area_react_distance" value="0.5"/>
-      <param name="oncoming_traffic_clearance" value="5.0"/>
-      <param name="max_start_box_distance" value="20.0"/>
-      <param name="intersection_max_obj_distance" value="0.8"/>
+      <param name="mode" value="$(arg mode)"/>
+      <param name="clean_output" value="$(arg clean_output)"/>
+      <param name="output_show_computation_time" value="$(arg output_show_computation_time)"/>
+      <param name="tick_frequency" value="$(arg tick_frequency)"/>
+      <param name="object_following_break_factor" value="$(arg object_following_break_factor)"/>
+      <param name="break_distance_safety_factor" value="$(arg break_distance_safety_factor)"/>
+      
+      <param name="general_max_speed" value="$(arg general_max_speed)"/>
+      <param name="general_max_speed_cautious" value="$(arg general_max_speed_cautious)"/>
+      <param name="max_bridge_speed" value="$(arg max_bridge_speed)"/>
+      <param name="parking_spot_search_speed" value="$(arg parking_spot_search_speed)"/>
+      <param name="max_lane_switch_speed" value="$(arg max_lane_switch_speed)"/>
+      <param name="intersection_turn_speed" value="$(arg intersection_turn_speed)"/>
+      <param name="sharp_turn_speed" value="$(arg sharp_turn_speed)"/>
+      <param name="very_sharp_turn_speed" value="$(arg very_sharp_turn_speed)"/>
+      <param name="speed_zero_tolerance" value="$(arg speed_zero_tolerance)"/>
+      
+      <param name="min_sign_react_distance" value="$(arg min_sign_react_distance)"/>
+      <param name="max_sign_react_distance" value="$(arg max_sign_react_distance)"/>
+      <param name="overtake_distance" value="$(arg overtake_distance)"/>
+      <param name="barred_area_react_distance" value="$(arg barred_area_react_distance)"/>
+      <param name="oncoming_traffic_clearance" value="$(arg oncoming_traffic_clearance)"/>
+      <param name="max_start_box_distance" value="$(arg max_start_box_distance)"/>
+      <param name="intersection_max_obj_distance" value="$(arg intersection_max_obj_distance)"/>
 
-      <!-- These are usually set by the BT and may be changed for testing purposes only!-->
-      <param name="dynamic_reconfigure_overwrite_runtime_vals" value="false"/>
-      <param name="start_value__overtaking_forbidden_zone" value="false"/>
-      <param name="start_value__express_way" value="false"/>
-      <param name="start_value__priority_road" value="false"/>
-      <param name="start_value__force_stop" value="false"/>
-      <param name="start_value__on_bridge" value="false"/>
-      <param name="start_value__speed_limit" value="100.0"/>
-      <param name="start_value__successful_parking_count" value="2"/>
-      <param name="start_value__give_way" value="false"/>
-      <!-- Seperate the states with '|' if necessary !-->
-      <param name="initial_states" type="str" value="Track property"/>
+      
+      <param name="dynamic_reconfigure_overwrite_runtime_vals" value="$(arg dynamic_reconfigure_overwrite_runtime_vals)"/>
+      <param name="start_value__overtaking_forbidden_zone" value="$(arg start_value__overtaking_forbidden_zone)"/>
+      <param name="start_value__express_way" value="$(arg start_value__express_way)"/>
+      <param name="start_value__priority_road" value="$(arg start_value__priority_road)"/>
+      <param name="start_value__force_stop" value="$(arg start_value__force_stop)"/>
+      <param name="start_value__on_bridge" value="$(arg start_value__on_bridge)"/>
+      <param name="start_value__speed_limit" value="$(arg start_value__speed_limit)"/>
+      <param name="start_value__successful_parking_count" value="$(arg start_value__successful_parking_count)"/>
+      <param name="start_value__give_way" value="$(arg start_value__give_way)"/>
+      
+      <param name="initial_states" type="str" value="$(arg initial_states)"/>
 
       <!-- remap topics with arguments -->
       <remap from="trajectory_metadata" to="$(arg meta_command_out)"/>
