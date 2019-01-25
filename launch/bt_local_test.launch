@@ -1,0 +1,48 @@
+<launch>
+    <arg name="meta_command_out" default="/trajectory_meta_commands"/>
+
+    <node name="behavior_tree" pkg="drive_ros_custom_behavior_trees" type="BehaviorTree" output="screen">
+      <!-- "random" variables (factors, etc) -->
+      <!-- possible modes: "PARKING", "OBSTACLES"-->
+      <param name="mode" value="OBSTACLES"/>
+      <param name="clean_output" value="false"/>
+      <param name="output_show_computation_time" value="false"/>
+      <param name="tick_frequency" value="50"/>
+      <param name="object_following_break_factor" value="0.8"/>
+      <param name="break_distance_safety_factor" value="1.6"/>
+      <!-- Speeds -->
+      <param name="general_max_speed" value="1.0"/>
+      <param name="general_max_speed_cautious" value="0.8"/>
+      <param name="max_bridge_speed" value="1.5"/>
+      <param name="parking_spot_search_speed" value="0.5"/>
+      <param name="max_lane_switch_speed" value="2.5"/>
+      <param name="intersection_turn_speed" value="1.0"/>
+      <param name="sharp_turn_speed" value="2.5"/>
+      <param name="very_sharp_turn_speed" value="2.0"/>
+      <param name="speed_zero_tolerance" value="0.05"/>
+      <!-- Distances -->
+      <param name="min_sign_react_distance" value="0.1"/>
+      <param name="max_sign_react_distance" value="0.5"/>
+      <param name="overtake_distance" value="1.5"/> <!-- According to the regulations this value must be at least 0.3-->
+      <param name="barred_area_react_distance" value="0.5"/>
+      <param name="oncoming_traffic_clearance" value="5.0"/>
+      <param name="max_start_box_distance" value="20.0"/>
+      <param name="intersection_max_obj_distance" value="0.8"/>
+
+      <!-- These are usually set by the BT and may be changed for testing purposes only!-->
+      <param name="dynamic_reconfigure_overwrite_runtime_vals" value="false"/>
+      <param name="start_value__overtaking_forbidden_zone" value="false"/>
+      <param name="start_value__express_way" value="false"/>
+      <param name="start_value__priority_road" value="false"/>
+      <param name="start_value__force_stop" value="false"/>
+      <param name="start_value__on_bridge" value="false"/>
+      <param name="start_value__speed_limit" value="100.0"/>
+      <param name="start_value__successful_parking_count" value="2"/>
+      <param name="start_value__give_way" value="false"/>
+      <!-- Seperate the states with '|' if necessary !-->
+      <param name="initial_states" type="str" value="Track property"/>
+
+      <!-- remap topics with arguments -->
+      <remap from="trajectory_metadata" to="$(arg meta_command_out)"/>
+    </node>
+</launch>
