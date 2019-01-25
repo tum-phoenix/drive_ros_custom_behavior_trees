@@ -95,8 +95,8 @@ void setup_ros_communication(ros::NodeHandle *nh) {
     dr_server.setCallback(dr_callback);
 
     /* Topic Subscribers Setup */
-    environment_model_subscriber = nh->subscribe("env_out", 4, &EnvModel::subscriber_callback);
-    car_data_subscriber = nh->subscribe("/canros/msg/phoenix_msgs/DriveState", 4, &car_data_callback);
+    environment_model_subscriber = nh->subscribe("env_in", 4, &EnvModel::subscriber_callback);
+    car_data_subscriber = nh->subscribe("drive_state_out", 4, &car_data_callback);
 
     /* Topic Publishers Setup */
     trajectory_publisher = nh->advertise<drive_ros_msgs::TrajectoryMetaInput>("trajectory_metadata", 64);
