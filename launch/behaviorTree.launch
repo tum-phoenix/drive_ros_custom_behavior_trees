@@ -3,44 +3,44 @@
     <!-- Arguments passed from global launch file -->
 
     <!-- "random" variables (factors, etc) -->
-    <!-- possible modes: "PARKING", "OBSTACLES"-->
-    <arg name="mode" default="OBSTACLES"/>
-    <arg name="clean_output" default="false"/>
-    <arg name="output_show_computation_time" default="false"/>
-    <arg name="tick_frequency" default="50"/>
-    <arg name="object_following_break_factor" default="0.8"/>
-    <arg name="break_distance_safety_factor" default="1.6"/>
-    <!-- Speeds -->
-    <arg name="general_max_speed" default="1.0"/>
-    <arg name="general_max_speed_cautious" default="0.8"/>
-    <arg name="max_bridge_speed" default="1.5"/>
-    <arg name="parking_spot_search_speed" default="0.5"/>
-    <arg name="max_lane_switch_speed" default="2.5"/>
-    <arg name="intersection_turn_speed" default="1.0"/>
-    <arg name="sharp_turn_speed" default="2.5"/>
-    <arg name="very_sharp_turn_speed" default="2.0"/>
-    <arg name="speed_zero_tolerance" default="0.05"/>
-    <!-- Distances -->
-    <arg name="min_sign_react_distance" default="0.1"/>
-    <arg name="max_sign_react_distance" default="0.5"/>
-    <arg name="overtake_distance" default="1.5"/> <!-- According to the regulations this value must be at least 0.3-->
-    <arg name="barred_area_react_distance" default="0.5"/>
-    <arg name="oncoming_traffic_clearance" default="5.0"/>
-    <arg name="max_start_box_distance" default="20.0"/>
-    <arg name="intersection_max_obj_distance" default="0.8"/>
+        <!-- possible modes: "PARKING", "OBSTACLES"-->
+        <arg name="mode"/>
+        <arg name="clean_output"/>
+        <arg name="output_show_computation_time"/>
+        <arg name="tick_frequency"/>
+        <arg name="object_following_break_factor"/>
+        <arg name="break_distance_safety_factor"/>
+        <!-- Speeds -->
+        <arg name="general_max_speed"/>
+        <arg name="general_max_speed_cautious"/>
+        <arg name="max_bridge_speed"/>
+        <arg name="parking_spot_search_speed"/>
+        <arg name="max_lane_switch_speed"/>
+        <arg name="intersection_turn_speed"/>
+        <arg name="sharp_turn_speed"/>
+        <arg name="very_sharp_turn_speed"/>
+        <arg name="speed_zero_tolerance"/>
+        <!-- Distances -->
+        <arg name="min_sign_react_distance"/>
+        <arg name="max_sign_react_distance"/>
+        <arg name="overtake_distance"/> <!-- According to the regulations this value must be at least 0.3-->
+        <arg name="barred_area_react_distance"/>
+        <arg name="oncoming_traffic_clearance"/>
+        <arg name="max_start_box_distance"/>
+        <arg name="intersection_max_obj_distance"/>
 
-    <!-- These are usually set by the BT and may be changed for testing purposes only!-->
-    <arg name="dynamic_reconfigure_overwrite_runtime_vals" default="false"/>
-    <arg name="start_value__overtaking_forbidden_zone" default="false"/>
-    <arg name="start_value__express_way" default="false"/>
-    <arg name="start_value__priority_road" default="false"/>
-    <arg name="start_value__force_stop" default="false"/>
-    <arg name="start_value__on_bridge" default="false"/>
-    <arg name="start_value__speed_limit" default="100.0"/>
-    <arg name="start_value__successful_parking_count" default="2"/>
-    <arg name="start_value__give_way" default="false"/>
-    <!-- Seperate the states with '|' if necessary !-->
-    <arg name="initial_states" type="str" default="Track property"/>
+        <!-- These are usually set by the BT and may be changed for testing purposes only!-->
+        <arg name="dynamic_reconfigure_overwrite_runtime_vals"/>
+        <arg name="start_value__overtaking_forbidden_zone"/>
+        <arg name="start_value__express_way"/>
+        <arg name="start_value__priority_road"/>
+        <arg name="start_value__force_stop"/>
+        <arg name="start_value__on_bridge"/>
+        <arg name="start_value__speed_limit"/>
+        <arg name="start_value__successful_parking_count"/>
+        <arg name="start_value__give_way"/>
+        <!-- Seperate the states with '|' if necessary !-->
+        <arg name="initial_states" type="str"/>
 
     <node name="behavior_tree" pkg="drive_ros_custom_behavior_trees" type="BehaviorTree" output="screen">
       <param name="mode" value="$(arg mode)"/>
