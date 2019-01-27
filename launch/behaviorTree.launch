@@ -37,10 +37,10 @@
     <arg name="start_value__force_stop" default="false"/>
     <arg name="start_value__on_bridge" default="false"/>
     <arg name="start_value__speed_limit" default="100.0"/>
-    <arg name="start_value__successful_parking_count" default="2"/>
+    <arg name="start_value__successful_parking_count" default="0"/>
     <arg name="start_value__give_way" default="false"/>
     <!-- Seperate the states with '|' if necessary !-->
-    <arg name="initial_states" default="Track property"/>
+    <arg name="initial_states" default=""/>
 
     <arg name="env_in" default="/environment_model"/>
     <arg name="drive_state_in" default="/canros/msg/phoenix_msgs/DriveState"/>
