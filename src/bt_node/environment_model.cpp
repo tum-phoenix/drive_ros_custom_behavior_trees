@@ -190,7 +190,7 @@ namespace EnvModel {
     }
 
     bool start_box_open() {
-        return object_min_lane_distance(LANE_RIGHT) > max_start_box_distance;
+        return fmin(object_min_lane_distance(LANE_LEFT), object_min_lane_distance(LANE_RIGHT)) > max_start_box_distance;
     }
 
     bool object_on_lane(int lane) {
