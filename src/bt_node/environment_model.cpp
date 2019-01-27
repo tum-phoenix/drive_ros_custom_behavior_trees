@@ -189,8 +189,10 @@ namespace EnvModel {
         return false;
     }
 
+    bool start_box_was_closed = false;
     bool start_box_open() {
-        return fmin(object_min_lane_distance(LANE_LEFT), object_min_lane_distance(LANE_RIGHT)) > max_start_box_distance;
+        if(fmin(object_min_lane_distance(LANE_LEFT), object_min_lane_distance(LANE_RIGHT)) > max_start_box_distance) start_box_was_closed = true;
+        return start_box_was_closed && fmin(object_min_lane_distance(LANE_LEFT), object_min_lane_distance(LANE_RIGHT)) > max_start_box_distance;
     }
 
     bool object_on_lane(int lane) {
