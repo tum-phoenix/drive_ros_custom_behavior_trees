@@ -5,7 +5,7 @@
     <!-- "random" variables (factors, etc) -->
     <!-- possible modes: "PARKING", "OBSTACLES"-->
     <arg name="mode" default="OBSTACLES"/>
-    <arg name="clean_output" default="false"/>
+    <arg name="clean_output" default="true"/>
     <arg name="output_show_computation_time" default="false"/>
     <arg name="tick_frequency" default="50"/>
     <arg name="object_following_break_factor" default="0.8"/>
