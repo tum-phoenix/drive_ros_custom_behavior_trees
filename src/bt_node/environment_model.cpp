@@ -8,6 +8,8 @@
 
 #include "drive_ros_msgs/TrajectoryMetaInput.h"
 
+#include "general.h"
+
 #include <math.h>
 #include <map>
 
@@ -26,6 +28,7 @@ extern int intersection_turn_indication;
 extern float speed_limit;
 extern float current_velocity;
 
+extern std::string mode;
 
 namespace EnvModel {
     //Working copy of the most recently received message. Only to be used in the environment_model.cpp!!!
@@ -45,11 +48,7 @@ namespace EnvModel {
         return -1;
     }
 
-    bool f_object_min_lane_distance = false;
-    float v_object_min_lane_distance;
     float object_min_lane_distance(int lane) {
-        if(f_object_min_lane_distance) return v_object_min_lane_distance;
-
         float shortest_distance = 100000;
         for(int i = 0; i < env_msg.obstacles.size(); i++) {
             if(env_msg.obstacles[i].obj_lane.obj_lane == lane
@@ -57,8 +56,6 @@ namespace EnvModel {
                 && env_msg.obstacles[i].obj_track_distance > 0) 
                     shortest_distance = env_msg.obstacles[i].obj_track_distance;
         }
-        v_object_min_lane_distance = shortest_distance;
-        f_object_min_lane_distance = true;
         return shortest_distance;
     }
 
@@ -191,7 +188,10 @@ namespace EnvModel {
 
     bool start_box_was_closed = false;
     bool start_box_open() {
-        if(fmin(object_min_lane_distance(LANE_LEFT), object_min_lane_distance(LANE_RIGHT)) > max_start_box_distance) start_box_was_closed = true;
+        if(!start_box_was_closed && fmin(object_min_lane_distance(LANE_LEFT), object_min_lane_distance(LANE_RIGHT)) < max_start_box_distance) {
+            start_box_was_closed = true;
+            ROS_INFO_STREAM("Start box detected");
+        }
         return start_box_was_closed && fmin(object_min_lane_distance(LANE_LEFT), object_min_lane_distance(LANE_RIGHT)) > max_start_box_distance;
     }
 
@@ -271,97 +271,98 @@ namespace EnvModel {
         }
 
         //Check for global sign flags to be set
-        for(int i = 0; i < msg.traffic_marks.size(); i++) {
-            switch(msg.traffic_marks[i].id) {
-            case SIGN_SPEED_ZONE_10:
-                if(msg.traffic_marks[i].track_distance < break_distance_to(to_real_speed(10))) {
-                    speed_limit = to_real_speed(10);
+        if(!mode.compare("OBSTACLES")) {
+            for(int i = 0; i < msg.traffic_marks.size(); i++) {
+                switch(msg.traffic_marks[i].id) {
+                case SIGN_SPEED_ZONE_10:
+                    if(msg.traffic_marks[i].track_distance < break_distance_to(to_real_speed(10))) {
+                        speed_limit = to_real_speed(10);
+                    }
+                    break;
+                case SIGN_SPEED_ZONE_20:
+                    if(msg.traffic_marks[i].track_distance < break_distance_to(to_real_speed(20))) {
+                        speed_limit = to_real_speed(20);
+                    }
+                    break;
+                case SIGN_SPEED_ZONE_30:
+                    if(msg.traffic_marks[i].track_distance < break_distance_to(to_real_speed(30))) {
+                        speed_limit = to_real_speed(30);
+                    }
+                    break;
+                case SIGN_SPEED_ZONE_40:
+                    if(msg.traffic_marks[i].track_distance < break_distance_to(to_real_speed(40))) {
+                        speed_limit = to_real_speed(40);
+                    }
+                    break;
+                case SIGN_SPEED_ZONE_50:
+                    if(msg.traffic_marks[i].track_distance < break_distance_to(to_real_speed(50))) {
+                        speed_limit = to_real_speed(50);
+                    }
+                    break;
+                case SIGN_SPEED_ZONE_60:
+                    if(msg.traffic_marks[i].track_distance < break_distance_to(to_real_speed(60))) {
+                        speed_limit = to_real_speed(60);
+                    }
+                    break;
+                case SIGN_SPEED_ZONE_70:
+                    if(msg.traffic_marks[i].track_distance < break_distance_to(to_real_speed(70))) {
+                        speed_limit = to_real_speed(70);
+                    }
+                    break;
+                case SIGN_SPEED_ZONE_80:
+                    if(msg.traffic_marks[i].track_distance < break_distance_to(to_real_speed(80))) {
+                        speed_limit = to_real_speed(80);
+                    }
+                    break;
+                case SIGN_SPEED_ZONE_90:
+                    if(msg.traffic_marks[i].track_distance < break_distance_to(to_real_speed(90))) {
+                        speed_limit = to_real_speed(90);
+                    }
+                    break;
+                case SIGN_SPEED_ZONE_END:
+                    if(msg.traffic_marks[i].track_distance < min_sign_react_distance) {
+                        speed_limit = general_max_speed;
+                    }
+                    break;
+                case SIGN_TURN_LEFT:
+                    intersection_turn_indication = drive_ros_msgs::TrajectoryMetaInput::TURN_LEFT;
+                    break;
+                case SIGN_TURN_RIGHT:
+                    intersection_turn_indication = drive_ros_msgs::TrajectoryMetaInput::TURN_RIGHT;
+                    break;
+                case SIGN_PRIORITY_ROAD:
+                    priority_road = true;
+                    break;
+                case SIGN_GIVE_WAY:
+                    priority_road = false;
+                    break;
+                case SIGN_STOP:
+                    priority_road = false;
+                    //Maybe the express_way_end was not detected...
+                    express_way = false;
+                    force_stop = true;
+                    break;
+                case SIGN_NO_PASSING_ZONE:
+                    overtaking_forbidden_zone = true;
+                    break;
+                case SIGN_NO_PASSING_ZONE_END:
+                    overtaking_forbidden_zone = false;
+                    break;
+                case SIGN_EXPRESSWAY_BEGIN:
+                    express_way = true;
+                    //Should increase robustness, esp. at falsely detected intersections.
+                    priority_road = true;
+                    break;
+                case SIGN_EXPRESSWAY_END:
+                    express_way = false;
+                    priority_road = true;
+                    break;
+                default:
+                    break; //All other signs are used differently, e.g. by asking for them directly. These were just passive states.
                 }
-                break;
-            case SIGN_SPEED_ZONE_20:
-                if(msg.traffic_marks[i].track_distance < break_distance_to(to_real_speed(20))) {
-                    speed_limit = to_real_speed(20);
-                }
-                break;
-            case SIGN_SPEED_ZONE_30:
-                if(msg.traffic_marks[i].track_distance < break_distance_to(to_real_speed(30))) {
-                    speed_limit = to_real_speed(30);
-                }
-                break;
-            case SIGN_SPEED_ZONE_40:
-                if(msg.traffic_marks[i].track_distance < break_distance_to(to_real_speed(40))) {
-                    speed_limit = to_real_speed(40);
-                }
-                break;
-            case SIGN_SPEED_ZONE_50:
-                if(msg.traffic_marks[i].track_distance < break_distance_to(to_real_speed(50))) {
-                    speed_limit = to_real_speed(50);
-                }
-                break;
-            case SIGN_SPEED_ZONE_60:
-                if(msg.traffic_marks[i].track_distance < break_distance_to(to_real_speed(60))) {
-                    speed_limit = to_real_speed(60);
-                }
-                break;
-            case SIGN_SPEED_ZONE_70:
-                if(msg.traffic_marks[i].track_distance < break_distance_to(to_real_speed(70))) {
-                    speed_limit = to_real_speed(70);
-                }
-                break;
-            case SIGN_SPEED_ZONE_80:
-                if(msg.traffic_marks[i].track_distance < break_distance_to(to_real_speed(80))) {
-                    speed_limit = to_real_speed(80);
-                }
-                break;
-            case SIGN_SPEED_ZONE_90:
-                if(msg.traffic_marks[i].track_distance < break_distance_to(to_real_speed(90))) {
-                    speed_limit = to_real_speed(90);
-                }
-                break;
-            case SIGN_SPEED_ZONE_END:
-                if(msg.traffic_marks[i].track_distance < min_sign_react_distance) {
-                    speed_limit = general_max_speed;
-                }
-                break;
-            case SIGN_TURN_LEFT:
-                intersection_turn_indication = drive_ros_msgs::TrajectoryMetaInput::TURN_LEFT;
-                break;
-            case SIGN_TURN_RIGHT:
-                intersection_turn_indication = drive_ros_msgs::TrajectoryMetaInput::TURN_RIGHT;
-                break;
-            case SIGN_PRIORITY_ROAD:
-                priority_road = true;
-                break;
-            case SIGN_GIVE_WAY:
-                priority_road = false;
-                break;
-            case SIGN_STOP:
-                priority_road = false;
-                //Maybe the express_way_end was not detected...
-                express_way = false;
-                force_stop = true;
-                break;
-            case SIGN_NO_PASSING_ZONE:
-                overtaking_forbidden_zone = true;
-                break;
-            case SIGN_NO_PASSING_ZONE_END:
-                overtaking_forbidden_zone = false;
-                break;
-            case SIGN_EXPRESSWAY_BEGIN:
-                express_way = true;
-                //Should increase robustness, esp. at falsely detected intersections.
-                priority_road = true;
-                break;
-            case SIGN_EXPRESSWAY_END:
-                express_way = false;
-                priority_road = true;
-                break;
-            default:
-                break; //All other signs are used differently, e.g. by asking for them directly. These were just passive states.
             }
         }
         //Invalidate all previously computed data
-        f_object_min_lane_distance = false;
         f_barred_area_left_distance = false;
         f_barred_area_right_distance = false;
         f_pass_by_on_right_distance = false;

@@ -106,6 +106,7 @@ void read_launch_file(ros::NodeHandle *nh) {
     std::vector<std::string> initial_states_vector;
     boost::split(initial_states_vector, states, [](char c){return c == '|';});
     initial_states = new std::set<std::string>(initial_states_vector.begin(), initial_states_vector.end());
+    while(initial_states->find("") != initial_states->end()) {initial_states->erase("");}
 }
 
 
@@ -211,7 +212,10 @@ int main(int argc, char **argv) {
     //Create the tree instance
     tree = new BT::Tree(head, tick_freq_ms, clean_output);
     //If start states have been set in the launch file, apply them
-    if(initial_states->size() > 0) tree->reset_state(initial_states);
+    if(initial_states->size() > 0) {
+        tree->reset_state(initial_states);
+        ROS_INFO_STREAM("" << initial_states->size() << " start state(s) manually set, applying...");
+    }
     //Fire up the tree
     tree->execute();
 }

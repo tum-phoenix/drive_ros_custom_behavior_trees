@@ -16,7 +16,6 @@ namespace BT {
     int Tree::execute() {
         ROS_INFO("Starting tree execution");
         std::chrono::system_clock::time_point tick_start = std::chrono::system_clock::now();
-
         
         while(ros::ok()) {
             tick_start = std::chrono::system_clock::now();

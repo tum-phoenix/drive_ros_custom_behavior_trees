@@ -7,7 +7,7 @@
       <param name="mode" value="OBSTACLES"/>
       <param name="clean_output" value="false"/>
       <param name="output_show_computation_time" value="false"/>
-      <param name="tick_frequency" value="50"/>
+      <param name="tick_frequency" value="5"/>
       <param name="object_following_break_factor" value="0.8"/>
       <param name="break_distance_safety_factor" value="1.6"/>
       <!-- Speeds -->
@@ -26,7 +26,7 @@
       <param name="overtake_distance" value="1.5"/> <!-- According to the regulations this value must be at least 0.3-->
       <param name="barred_area_react_distance" value="0.5"/>
       <param name="oncoming_traffic_clearance" value="5.0"/>
-      <param name="max_start_box_distance" value="20.0"/>
+      <param name="max_start_box_distance" value="0.9"/>
       <param name="intersection_max_obj_distance" value="0.8"/>
 
       <!-- These are usually set by the BT and may be changed for testing purposes only!-->
@@ -40,7 +40,7 @@
       <param name="start_value__successful_parking_count" value="2"/>
       <param name="start_value__give_way" value="false"/>
       <!-- Seperate the states with '|' if necessary !-->
-      <param name="initial_states" type="str" value="Track property"/>
+      <param name="initial_states" type="str" value=""/>
 
       <!-- remap topics with arguments -->
       <remap from="trajectory_metadata" to="$(arg meta_command_out)"/>

@@ -44,7 +44,6 @@ namespace NODES {
     /* ---------- class:WaitForStart ---------- */
     WaitForStart::WaitForStart(std::string name) : BT::ActionNode(name) {}
     void WaitForStart::tick() {
-        ROS_INFO_STREAM("Waiting "<<(EnvModel::start_box_open()));
         if(EnvModel::start_box_open()) {
             set_state(SUCCESS);
         }
@@ -391,7 +390,7 @@ namespace NODES {
             } else {
                 msg->control_metadata = intersection_turn_indication == 0 ? drive_ros_msgs::TrajectoryMetaInput::STRAIGHT_FORWARD : intersection_turn_indication;
             }
-            msg->max_speed = intersection_turn_indication == 0 ? speed_limit : intersection_turn_speed;
+            msg->max_speed = intersection_turn_indication == 0 ? general_max_speed_cautious : intersection_turn_speed;
             msg_handler.addMessageSuggestion(msg);
         }
     }
