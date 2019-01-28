@@ -65,7 +65,7 @@ namespace NODES {
         }
         else {
             //To avoid confusion of line detection etc. because of the merging curve at the start, the car shall go straight forward.
-            trajectory_msg.control_metadata = drive_ros_msgs::TrajectoryMetaInput::STRAIGHT_FORWARD;
+            trajectory_msg.control_metadata = drive_ros_msgs::TrajectoryMetaInput::STANDARD;
             trajectory_msg.max_speed = fmin(general_max_speed_cautious, speed_limit); 
             publish_trajectory_metadata(trajectory_msg);
         }
