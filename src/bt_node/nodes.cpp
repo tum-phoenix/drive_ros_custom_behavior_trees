@@ -44,7 +44,6 @@ namespace NODES {
     /* ---------- class:WaitForStart ---------- */
     WaitForStart::WaitForStart(std::string name) : BT::ActionNode(name) {}
     void WaitForStart::tick() {
-        ROS_INFO_STREAM("Waiting "<<(EnvModel::start_box_open()));
         if(EnvModel::start_box_open()) {
             set_state(SUCCESS);
         }

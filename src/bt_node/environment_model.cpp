@@ -8,6 +8,8 @@
 
 #include "drive_ros_msgs/TrajectoryMetaInput.h"
 
+#include "general.h"
+
 #include <math.h>
 #include <map>
 
@@ -45,11 +47,7 @@ namespace EnvModel {
         return -1;
     }
 
-    bool f_object_min_lane_distance = false;
-    float v_object_min_lane_distance;
     float object_min_lane_distance(int lane) {
-        if(f_object_min_lane_distance) return v_object_min_lane_distance;
-
         float shortest_distance = 100000;
         for(int i = 0; i < env_msg.obstacles.size(); i++) {
             if(env_msg.obstacles[i].obj_lane.obj_lane == lane
@@ -57,8 +55,6 @@ namespace EnvModel {
                 && env_msg.obstacles[i].obj_track_distance > 0) 
                     shortest_distance = env_msg.obstacles[i].obj_track_distance;
         }
-        v_object_min_lane_distance = shortest_distance;
-        f_object_min_lane_distance = true;
         return shortest_distance;
     }
 
@@ -191,7 +187,10 @@ namespace EnvModel {
 
     bool start_box_was_closed = false;
     bool start_box_open() {
-        if(fmin(object_min_lane_distance(LANE_LEFT), object_min_lane_distance(LANE_RIGHT)) > max_start_box_distance) start_box_was_closed = true;
+        if(!start_box_was_closed && fmin(object_min_lane_distance(LANE_LEFT), object_min_lane_distance(LANE_RIGHT)) < max_start_box_distance) {
+            start_box_was_closed = true;
+            ROS_INFO_STREAM("Start box detected");
+        }
         return start_box_was_closed && fmin(object_min_lane_distance(LANE_LEFT), object_min_lane_distance(LANE_RIGHT)) > max_start_box_distance;
     }
 
@@ -361,7 +360,6 @@ namespace EnvModel {
             }
         }
         //Invalidate all previously computed data
-        f_object_min_lane_distance = false;
         f_barred_area_left_distance = false;
         f_barred_area_right_distance = false;
         f_pass_by_on_right_distance = false;
