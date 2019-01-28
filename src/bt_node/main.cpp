@@ -106,7 +106,7 @@ void read_launch_file(ros::NodeHandle *nh) {
     std::vector<std::string> initial_states_vector;
     boost::split(initial_states_vector, states, [](char c){return c == '|';});
     initial_states = new std::set<std::string>(initial_states_vector.begin(), initial_states_vector.end());
-    if(initial_states->size() == 1 && (*initial_states->begin()).length() == 0) initial_states->clear();
+    while(initial_states->find("") != initial_states->end()) {initial_states->erase("");}
 }
 
 
