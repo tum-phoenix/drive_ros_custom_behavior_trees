@@ -108,7 +108,7 @@ namespace NODES {
             set_state(SUCCESS);
         } 
         else {
-            trajectory_msg.control_metadata = drive_ros_msgs::TrajectoryMetaInput::SWITCH_RIGHT;
+            trajectory_msg.control_metadata = drive_ros_msgs::TrajectoryMetaInput::PARKING;
             trajectory_msg.max_speed = general_max_speed_cautious;
             publish_trajectory_metadata(trajectory_msg);
         }
@@ -121,7 +121,7 @@ namespace NODES {
           set_state(SUCCESS); //Car is back on track  
         }
         else if(EnvModel::get_current_lane() == LANE_UNDEFINED) { 
-            trajectory_msg.control_metadata = drive_ros_msgs::TrajectoryMetaInput::SWITCH_LEFT;
+            trajectory_msg.control_metadata = drive_ros_msgs::TrajectoryMetaInput::PARKING_REVERSE;
             trajectory_msg.max_speed = general_max_speed_cautious;
             publish_trajectory_metadata(trajectory_msg);
         }
@@ -348,24 +348,18 @@ namespace NODES {
         start_waiting = true;
     }
     void IntersectionWait::tick() {
-        if(start_waiting) {
+        //Only start waiting when the car has stopped
+        if(current_velocity < speed_zero_tolerance && start_waiting) {
             waiting_started = std::chrono::system_clock::now();
             start_waiting = false;
         }
 
-        /* The logic is: 
-            priority_road OR 
-                (!priority_road AND 
-                    ((no one on the right AND waited for 3sec) OR
-                     ((!give_way AND no one on right) OR 
-                     (give_way AND no one anywhere))))
-        */
-        if(priority_road 
-            || (!priority_road 
-                && ((EnvModel::intersection_no_object_right() 
-                        && std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - waiting_started).count() > 3000)
-                    || ((!give_way && EnvModel::intersection_no_object_right()) 
-                        || (give_way && EnvModel::intersection_no_object()))))) {
+        //Cases where waiting can be stopped
+        if(priority_road
+            //!start_waiting is needed so that only a correctly set timestamp is being compared.
+            || (EnvModel::intersection_no_object() && !start_waiting && std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - waiting_started).count() > 3000)
+            || (give_way && EnvModel::intersection_no_object())
+            || (!give_way && EnvModel::intersection_no_object_right())) {
             set_state(SUCCESS);
         }
         else {
@@ -381,14 +375,16 @@ namespace NODES {
     void IntersectionDrive::tick() {
         if(EnvModel::get_current_lane() != LANE_UNDEFINED) { //On normal track again
             intersection_turn_indication = 0;
-            set_state(SUCCESS);
+            set_state(SUCCESS);\\nreturn;
         }
         else {
             drive_ros_msgs::TrajectoryMetaInput *msg = new drive_ros_msgs::TrajectoryMetaInput();
+            //This node is used in both modes, with different requirements
             if(!mode.compare("PARKING")) {
                 msg->control_metadata = drive_ros_msgs::TrajectoryMetaInput::STRAIGHT_FORWARD;
             } else {
-                msg->control_metadata = intersection_turn_indication == 0 ? drive_ros_msgs::TrajectoryMetaInput::STRAIGHT_FORWARD : intersection_turn_indication;
+                msg->control_metadata = intersection_turn_indication == 0 ? 
+                    drive_ros_msgs::TrajectoryMetaInput::STRAIGHT_FORWARD : intersection_turn_indication;
             }
             msg->max_speed = intersection_turn_indication == 0 ? general_max_speed_cautious : intersection_turn_speed;
             msg_handler.addMessageSuggestion(msg);

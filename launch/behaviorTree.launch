@@ -7,27 +7,27 @@
     <arg name="mode" default="OBSTACLES"/>
     <arg name="clean_output" default="true"/>
     <arg name="output_show_computation_time" default="false"/>
-    <arg name="tick_frequency" default="50"/>
+    <arg name="tick_frequency" default="60"/>
     <arg name="object_following_break_factor" default="0.8"/>
     <arg name="break_distance_safety_factor" default="1.6"/>
     <!-- Speeds -->
     <arg name="general_max_speed" default="1.0"/>
     <arg name="general_max_speed_cautious" default="0.8"/>
     <arg name="max_bridge_speed" default="1.5"/>
-    <arg name="parking_spot_search_speed" default="0.5"/>
+    <arg name="parking_spot_search_speed" default="0.6"/>
     <arg name="max_lane_switch_speed" default="2.5"/>
-    <arg name="intersection_turn_speed" default="1.0"/>
-    <arg name="sharp_turn_speed" default="2.5"/>
-    <arg name="very_sharp_turn_speed" default="2.0"/>
+    <arg name="intersection_turn_speed" default="0.8"/>
+    <arg name="sharp_turn_speed" default="1.8"/>
+    <arg name="very_sharp_turn_speed" default="1.5"/>
     <arg name="speed_zero_tolerance" default="0.05"/>
     <!-- Distances -->
     <arg name="min_sign_react_distance" default="0.1"/>
     <arg name="max_sign_react_distance" default="0.5"/>
-    <arg name="overtake_distance" default="1.5"/> <!-- According to the regulations this value must be at least 0.3-->
-    <arg name="barred_area_react_distance" default="0.5"/>
-    <arg name="oncoming_traffic_clearance" default="5.0"/>
-    <arg name="max_start_box_distance" default="20.0"/>
-    <arg name="intersection_max_obj_distance" default="0.8"/>
+    <arg name="overtake_distance" default="0.5"/> <!-- According to the regulations this value must be at least 0.3-->
+    <arg name="barred_area_react_distance" default="0.3"/>
+    <arg name="oncoming_traffic_clearance" default="2.5"/>
+    <arg name="max_start_box_distance" default="0.9"/>
+    <arg name="intersection_max_obj_distance" default="0.9"/>
 
     <!-- These are usually set by the BT and may be changed for testing purposes only!-->
     <arg name="dynamic_reconfigure_overwrite_runtime_vals" default="false"/>

@@ -104,7 +104,7 @@ namespace EnvModel {
 
     bool intersection_no_object_right() {
         for(int i = 0; i < env_msg.obstacles.size(); i++) {
-            if(env_msg.obstacles[i].obj_lateral_offset > -0.3 
+            if(env_msg.obstacles[i].obj_lateral_offset > -0.4 
                 && env_msg.obstacles[i].obj_lateral_offset < intersection_max_obj_distance) {
                 return false;
             }
@@ -124,7 +124,9 @@ namespace EnvModel {
     float crosswalk_distance() {
         if(f_crosswalk_distance) return v_crosswalk_distance;
 
-        float d =  get_traffic_mark_distance(MARKING_CROSSWALK);
+        float cd =  get_traffic_mark_distance(MARKING_CROSSWALK);
+        float pd = get_traffic_mark_distance(PEDESTRIAN);
+        float d = (cd == -1 && pd == -1) ? -1 : fmax(cd, pd);
         v_crosswalk_distance = d;
         f_crosswalk_distance = true;
         return d;
