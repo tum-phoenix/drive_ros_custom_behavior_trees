@@ -375,7 +375,7 @@ namespace NODES {
     void IntersectionDrive::tick() {
         if(EnvModel::get_current_lane() != LANE_UNDEFINED) { //On normal track again
             intersection_turn_indication = 0;
-            set_state(SUCCESS);\\nreturn;
+            set_state(SUCCESS);
         }
         else {
             drive_ros_msgs::TrajectoryMetaInput *msg = new drive_ros_msgs::TrajectoryMetaInput();
