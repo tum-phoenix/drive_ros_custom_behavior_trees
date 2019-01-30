@@ -19,6 +19,9 @@ namespace NODES {
     public:
         InitialDriving(std::string name);
         void tick();
+    private:
+        bool clock_started;
+        std::chrono::system_clock::time_point driving_start;
     };
 
     class ParkingSpotSearch : public BT::ActionNode {

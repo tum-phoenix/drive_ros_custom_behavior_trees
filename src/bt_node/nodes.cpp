@@ -56,11 +56,18 @@ namespace NODES {
     }
 
     /* ---------- class:InitialDriving ---------- */
-    InitialDriving::InitialDriving(std::string name) : BT::ActionNode(name) {}
+    InitialDriving::InitialDriving(std::string name) : BT::ActionNode(name) {
+        clock_started = false;
+    }
     void InitialDriving::tick() {
+        if(!clock_started) {
+            driving_start = std::chrono::system_clock::now();
+            clock_started = true;
+        }
         //To improve robustness of the system, InitialDriving is completed when either the start line of the Parking Zone sign is detected.
         if((EnvModel::start_line_distance() != -1 && EnvModel::start_line_distance() < 0.2)
-            || (EnvModel::parking_sign_distance() != -1 && EnvModel::parking_sign_distance() < 0.2)) {
+            || (EnvModel::parking_sign_distance() != -1 && EnvModel::parking_sign_distance() < 0.2)
+            || (clock_started && std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - driving_start).count()) > 1000) {
             set_state(SUCCESS);
         }
         else {
@@ -375,7 +382,7 @@ namespace NODES {
     void IntersectionDrive::tick() {
         if(EnvModel::get_current_lane() != LANE_UNDEFINED) { //On normal track again
             intersection_turn_indication = 0;
-            set_state(SUCCESS);\\nreturn;
+            set_state(SUCCESS);
         }
         else {
             drive_ros_msgs::TrajectoryMetaInput *msg = new drive_ros_msgs::TrajectoryMetaInput();
