@@ -73,8 +73,10 @@ int main(int argc, char **argv) {
     if(speed_limit == 0) ROS_WARN("WARNING: speed_limit is set to 0. Check behaviorTree.launch if you'd like to change it.");
     if(general_max_speed == 0) ROS_WARN("WARNING: general_max_speed is set to 0. Check behaviorTree.launch if you'd like to change it.");
     
-    ROS_INFO("Waiting for button input specifying the driving mode");
-    mode = get_driving_mode();
+    if(mode.length() == 0) {
+        ROS_INFO("Waiting for button input specifying the driving mode");
+        mode = get_driving_mode();
+    }
     ROS_INFO("Creating Behavior Tree for %s mode", mode.c_str());
 
 

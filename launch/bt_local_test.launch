@@ -7,7 +7,7 @@
       <param name="mode" value="OBSTACLES"/>
       <param name="clean_output" value="false"/>
       <param name="output_show_computation_time" value="false"/>
-      <param name="tick_frequency" value="1"/>
+      <param name="tick_frequency" value="4"/>
       <param name="object_following_break_factor" value="0.8"/>
       <param name="break_distance_safety_factor" value="1.6"/>
       <!-- Speeds -->
@@ -40,7 +40,7 @@
       <param name="start_value__successful_parking_count" value="2"/>
       <param name="start_value__give_way" value="false"/>
       <!-- Seperate the states with '|' if necessary !-->
-      <param name="initial_states" type="str" value="Track property"/>
+      <param name="initial_states" type="str" value=""/>
 
       <!-- remap topics with arguments -->
       <remap from="trajectory_metadata" to="$(arg meta_command_out)"/>

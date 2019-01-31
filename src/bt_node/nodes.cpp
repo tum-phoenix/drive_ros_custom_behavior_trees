@@ -68,7 +68,7 @@ namespace NODES {
         //To improve robustness of the system, InitialDriving is completed when either the start line of the Parking Zone sign is detected.
         if((EnvModel::start_line_distance() != -1 && EnvModel::start_line_distance() < 0.2)
             || (EnvModel::parking_sign_distance() != -1 && EnvModel::parking_sign_distance() < 0.2)
-            || (clock_started && std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - driving_start).count()) > 1000) {
+            || (clock_started && (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - driving_start).count()) > 1000)) {
             set_state(SUCCESS);
         }
         else {
