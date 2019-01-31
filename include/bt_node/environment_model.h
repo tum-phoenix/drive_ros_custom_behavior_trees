@@ -8,6 +8,7 @@ namespace EnvModel {
     bool was_pedestrian_on_track();
     bool intersection_immediately_upfront();
     bool start_box_open();
+    bool arrived_at_parking_spot();
     bool object_on_lane(int lane);
     bool crosswalk_clear();
     bool in_sharp_turn();

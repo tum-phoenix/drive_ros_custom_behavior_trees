@@ -5,7 +5,6 @@
 #include "drive_ros_msgs/PedestrianEnvironment.h"
 #include "drive_ros_msgs/TrafficMarkEnvironment.h"
 #include "drive_ros_msgs/Lane.h"
-
 #include "drive_ros_msgs/TrajectoryMetaInput.h"
 
 #include "general.h"
@@ -68,6 +67,30 @@ namespace EnvModel {
         v_barred_area_left_distance = d;
         f_barred_area_left_distance = true;
         return d;
+    }
+
+    bool arrived_at_parking_spot() {
+        //Collect all constraints
+        std::vector<float> constraint_distances;
+        for(int i = 0; i < env_msg.obstacles.size(); i++) {
+            if(env_msg.obstacles[i].obj_lane.obj_lane == drive_ros_msgs::Lane::RIGHT_SIDE) 
+                constraint_distances.push_back(env_msg.obstacles[i].obj_track_distance);
+        }
+        for(int i = 0; i < env_msg.traffic_marks.size(); i++) {
+            if(env_msg.traffic_marks[i].id == MARKING_PARKING_SPOT_BLOCKED 
+                && env_msg.traffic_marks[i].obj_lane.obj_lane == drive_ros_msgs::Lane::RIGHT_SIDE)
+                constraint_distances.push_back(env_msg.traffic_marks[i].track_distance);
+        }
+
+        //Sort them in ascending order
+        std::sort(constraint_distances.begin(), constraint_distances.end(), std::greater<float>());
+        //Try to find a parking spot
+        for(int i = 0; i < constraint_distances.size() - 1; i++) {
+            if(constraint_distances[i + 1] - constraint_distances[i] > 0.85) {
+                return constraint_distances[i + 1] - 0.7 < 0.2;
+            }
+        }
+        return false;
     }
 
     bool f_barred_area_right_distance = false;
@@ -190,11 +213,11 @@ namespace EnvModel {
 
     bool start_box_was_closed = false;
     bool start_box_open() {
-        if(!start_box_was_closed && fmin(object_min_lane_distance(LANE_LEFT), object_min_lane_distance(LANE_RIGHT)) < max_start_box_distance) {
+        if(!start_box_was_closed && fmin(object_min_lane_distance(drive_ros_msgs::Lane::LEFT), object_min_lane_distance(drive_ros_msgs::Lane::RIGHT)) < max_start_box_distance) {
             start_box_was_closed = true;
             ROS_INFO_STREAM("Start box detected");
         }
-        return start_box_was_closed && fmin(object_min_lane_distance(LANE_LEFT), object_min_lane_distance(LANE_RIGHT)) > max_start_box_distance;
+        return start_box_was_closed && fmin(object_min_lane_distance(drive_ros_msgs::Lane::LEFT), object_min_lane_distance(drive_ros_msgs::Lane::RIGHT)) > max_start_box_distance;
     }
 
     bool object_on_lane(int lane) {
@@ -210,7 +233,7 @@ namespace EnvModel {
         if(f_crosswalk_clear) return v_crosswalk_clear;
         bool flag = true;
         for(int i = 0; i < env_msg.obstacles.size(); i++) {
-            if(env_msg.obstacles[i].obj_lane.obj_lane == LANE_LEFT || env_msg.obstacles[i].obj_lane.obj_lane == LANE_RIGHT)
+            if(env_msg.obstacles[i].obj_lane.obj_lane == drive_ros_msgs::Lane::LEFT || env_msg.obstacles[i].obj_lane.obj_lane == drive_ros_msgs::Lane::RIGHT)
                 if(env_msg.obstacles[i].obj_track_distance > crosswalk_distance() - 0.1 && env_msg.obstacles[i].obj_track_distance < crosswalk_distance() + 0.6)
                     flag = false;
         }

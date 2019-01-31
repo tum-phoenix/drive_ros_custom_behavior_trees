@@ -121,6 +121,7 @@ int main(int argc, char **argv) {
 
     BT::SequenceNode *head = new BT::SequenceNode("CaroloCup2019", false, true);
 
+    ROS_INFO("Waiting for button input specifying the driving mode");
     mode = get_driving_mode();
 
     if(!mode.compare("PARKING")) {
