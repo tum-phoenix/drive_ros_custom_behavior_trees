@@ -10,6 +10,7 @@
 
 void setup_ros_communication(ros::NodeHandle *nh);
 void publish_trajectory_metadata(drive_ros_msgs::TrajectoryMetaInput msg);
+std::string get_driving_mode();
 
 class RosInterface {
 public:

@@ -8,6 +8,7 @@
 #include "drive_ros_custom_behavior_trees/BehaviorTreeConfig.h"
 #include "drive_ros_msgs/TrajectoryMetaInput.h"
 #include "drive_ros_uavcan/phoenix_msgs__DriveState.h"
+#include "drive_ros_uavcan/phoenix_msgs__UserButtons.h"
 
 extern std::string mode;
 extern bool dynamic_reconfigure_overwrite_runtime_vals;
@@ -82,6 +83,18 @@ void car_data_callback(const drive_ros_uavcan::phoenix_msgs__DriveState &msg) {
     current_velocity = msg.v;
     if(previously_armed && !msg.arm) reset_tree_state(tree);
     previously_armed = msg.arm;
+}
+
+int user_button_state = 0;
+void user_button_callback(const drive_ros_uavcan::phoenix_msgs__UserButtons &msg) {
+    user_button_state = msg.bit_but;
+}
+
+std::string get_driving_mode() {
+    for(;;) {
+        if(user_button_state && 0b01) return "OBSTACLES";
+        if(user_button_state && 0b10) return "PARKING";
+    }
 }
 
 ros::Subscriber environment_model_subscriber;

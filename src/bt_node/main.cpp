@@ -120,6 +120,9 @@ int main(int argc, char **argv) {
     ROS_INFO("Creating Behavior Tree for %s mode", mode.c_str());
 
     BT::SequenceNode *head = new BT::SequenceNode("CaroloCup2019", false, true);
+
+    mode = get_driving_mode();
+
     if(!mode.compare("PARKING")) {
         //Create nodes
         NODES::WaitForStart *node_waitForStart = new NODES::WaitForStart("Waiting for gate");
