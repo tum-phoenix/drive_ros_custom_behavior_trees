@@ -59,6 +59,47 @@ BT::Tree *tree;
 
 std::set<std::string> *initial_states;
 
+void read_launch_file(ros::NodeHandle *nh);
+void construct_parkingmode_tree(BT::SequenceNode *head);
+void construct_obstaclesmode_tree(BT::SequenceNode *head);
+
+
+int main(int argc, char **argv) {
+    ros::init(argc, argv, "BehaviorTree");
+    ros::NodeHandle nh;
+    setup_ros_communication(&nh);
+    read_launch_file(&nh);
+    
+    if(speed_limit == 0) ROS_WARN("WARNING: speed_limit is set to 0. Check behaviorTree.launch if you'd like to change it.");
+    if(general_max_speed == 0) ROS_WARN("WARNING: general_max_speed is set to 0. Check behaviorTree.launch if you'd like to change it.");
+    
+    ROS_INFO("Waiting for button input specifying the driving mode");
+    mode = get_driving_mode();
+    ROS_INFO("Creating Behavior Tree for %s mode", mode.c_str());
+
+
+    BT::SequenceNode *head = new BT::SequenceNode("CaroloCup2019", false, true);
+
+    if(!mode.compare("PARKING")) construct_parkingmode_tree(head);
+    else if(!mode.compare("OBSTACLES")) construct_obstaclesmode_tree(head);
+    else {
+        ROS_ERROR("Driving mode not properly declared. Please check behaviorTree.launch");
+        return -1;
+    }
+
+    RosInterface ros_interface(nh);
+
+    //Create the tree instance
+    tree = new BT::Tree(head, tick_freq_ms, clean_output);
+    //If start states have been set in the launch file, apply them
+    if(initial_states->size() > 0) {
+        tree->reset_state(initial_states);
+        ROS_INFO_STREAM("" << initial_states->size() << " start state(s) manually set, applying...");
+    }
+    //Fire up the tree
+    tree->execute();
+}
+
 void read_launch_file(ros::NodeHandle *nh) {
     nh->getParam("behavior_tree/mode", mode);
     nh->getParam("behavior_tree/clean_output", clean_output);
@@ -110,116 +151,87 @@ void read_launch_file(ros::NodeHandle *nh) {
 }
 
 
-int main(int argc, char **argv) {
-    ros::init(argc, argv, "BehaviorTree");
-    ros::NodeHandle nh;
-    setup_ros_communication(&nh);
-    read_launch_file(&nh);
-    if(speed_limit == 0) ROS_WARN("WARNING: speed_limit is set to 0. Check behaviorTree.launch if you'd like to change it.");
-    if(general_max_speed == 0) ROS_WARN("WARNING: general_max_speed is set to 0. Check behaviorTree.launch if you'd like to change it.");
-    ROS_INFO("Creating Behavior Tree for %s mode", mode.c_str());
+void construct_parkingmode_tree(BT::SequenceNode *head) {
+    //Create nodes
+    NODES::WaitForStart *node_waitForStart = new NODES::WaitForStart("Waiting for gate");
+    NODES::InitialDriving *node_initialDriving = new NODES::InitialDriving("Initial Driving");
+    BT::SequenceNode *node_doCourse = new BT::SequenceNode("Course loop", true, true);
 
-    BT::SequenceNode *head = new BT::SequenceNode("CaroloCup2019", false, true);
+    BT::SequenceNode *node_parkingPending = new BT::SequenceNode("Parking");
+    BT::SequenceNode *node_driving = new BT::SequenceNode("Driving", true, false);
 
-    ROS_INFO("Waiting for button input specifying the driving mode");
-    mode = get_driving_mode();
+    NODES::ParkingSpotSearch *node_parkingSpotSearch = new NODES::ParkingSpotSearch("Parking Spot Search");
+    NODES::ParkingBreaking *node_parkingBreaking = new NODES::ParkingBreaking("Breaking (parking)");
+    NODES::ParkingInProgress *node_parkingInProgress = new NODES::ParkingInProgress("Parking in progress");
+    NODES::ParkingReverse *node_parkingReverse = new NODES::ParkingReverse("Parking reverse");
 
-    if(!mode.compare("PARKING")) {
-        //Create nodes
-        NODES::WaitForStart *node_waitForStart = new NODES::WaitForStart("Waiting for gate");
-        NODES::InitialDriving *node_initialDriving = new NODES::InitialDriving("Initial Driving");
-        BT::SequenceNode *node_doCourse = new BT::SequenceNode("Course loop", true, true);
+    NODES::FreeDrive *node_freeDrive = new NODES::FreeDrive("Free Drive");
+    NODES::FreeDriveIntersectionWait *node_freeDriveIntersectionWait = new NODES::FreeDriveIntersectionWait("Waiting at intersection");
+    NODES::IntersectionDrive *node_freeDriveIntersectionDrive = new NODES::IntersectionDrive("Crossing intersection");
 
-        BT::SequenceNode *node_parkingPending = new BT::SequenceNode("Parking");
-        BT::SequenceNode *node_driving = new BT::SequenceNode("Driving", true, false);
+    //Link them in a meaningful way
+    head->addChild(node_waitForStart);
+    head->addChild(node_initialDriving);
+    head->addChild(node_doCourse);
 
-        NODES::ParkingSpotSearch *node_parkingSpotSearch = new NODES::ParkingSpotSearch("Parking Spot Search");
-        NODES::ParkingBreaking *node_parkingBreaking = new NODES::ParkingBreaking("Breaking (parking)");
-        NODES::ParkingInProgress *node_parkingInProgress = new NODES::ParkingInProgress("Parking in progress");
-        NODES::ParkingReverse *node_parkingReverse = new NODES::ParkingReverse("Parking reverse");
+    node_doCourse->addChild(node_parkingPending);
+    node_doCourse->addChild(node_driving);
 
-        NODES::FreeDrive *node_freeDrive = new NODES::FreeDrive("Free Drive");
-        NODES::FreeDriveIntersectionWait *node_freeDriveIntersectionWait = new NODES::FreeDriveIntersectionWait("Waiting at intersection");
-        NODES::IntersectionDrive *node_freeDriveIntersectionDrive = new NODES::IntersectionDrive("Crossing intersection");
+    node_parkingPending->addChild(node_parkingSpotSearch);
+    node_parkingPending->addChild(node_parkingBreaking);
+    node_parkingPending->addChild(node_parkingInProgress);
+    node_parkingPending->addChild(node_parkingReverse);
 
-        //Link them in a meaningful way
-        head->addChild(node_waitForStart);
-        head->addChild(node_initialDriving);
-        head->addChild(node_doCourse);
+    node_driving->addChild(node_freeDrive);
+    node_driving->addChild(node_freeDriveIntersectionWait);
+    node_driving->addChild(node_freeDriveIntersectionDrive);
+}
 
-        node_doCourse->addChild(node_parkingPending);
-        node_doCourse->addChild(node_driving);
+void construct_obstaclesmode_tree(BT::SequenceNode *head) {
+    //Create nodes
+    NODES::WaitForStart *node_waitForStart = new NODES::WaitForStart("Waiting for gate");
+    NODES::InitialDriving *node_initialDriving = new NODES::InitialDriving("Initial Driving");
+    BT::ParallelNode *node_trackProperty = new BT::ParallelNode("Track property", &NODES::trackPropertyCallback, true);
 
-        node_parkingPending->addChild(node_parkingSpotSearch);
-        node_parkingPending->addChild(node_parkingBreaking);
-        node_parkingPending->addChild(node_parkingInProgress);
-        node_parkingPending->addChild(node_parkingReverse);
+    BT::SequenceNode *node_objectAvoiding = new BT::SequenceNode("Handling object");
+    BT::SequenceNode *node_barredArea = new BT::SequenceNode("Handling barred area");
+    BT::SequenceNode *node_crosswalk = new BT::SequenceNode("Handling crosswalk");
+    BT::SequenceNode *node_intersection = new BT::SequenceNode("Handling intersection");
 
-        node_driving->addChild(node_freeDrive);
-        node_driving->addChild(node_freeDriveIntersectionWait);
-        node_driving->addChild(node_freeDriveIntersectionDrive);
-    }
-    else if(!mode.compare("OBSTACLES")) {
-        //Create nodes
-        NODES::WaitForStart *node_waitForStart = new NODES::WaitForStart("Waiting for gate");
-        NODES::InitialDriving *node_initialDriving = new NODES::InitialDriving("Initial Driving");
-        BT::ParallelNode *node_trackProperty = new BT::ParallelNode("Track property", &NODES::trackPropertyCallback, true);
+    NODES::FollowingObject *node_followingObject = new NODES::FollowingObject("Following object");
+    NODES::SwitchToLeftLane *node_objectSwitchToLeft = new NODES::SwitchToLeftLane("Switching to left lane (object)");
+    NODES::LeftLaneDrive *node_overtakeObject = new NODES::LeftLaneDrive("Overtake object");
+    NODES::SwitchToRightLane *node_objectSwitchToRight = new NODES::SwitchToRightLane("Switching to right lane (object)");
 
-        BT::SequenceNode *node_objectAvoiding = new BT::SequenceNode("Handling object");
-        BT::SequenceNode *node_barredArea = new BT::SequenceNode("Handling barred area");
-        BT::SequenceNode *node_crosswalk = new BT::SequenceNode("Handling crosswalk");
-        BT::SequenceNode *node_intersection = new BT::SequenceNode("Handling intersection");
+    NODES::BarredAreaAnticipate *node_barredAreaAnticipate = new NODES::BarredAreaAnticipate("Anticipating barred area");
+    NODES::SwitchToLeftLane *node_barredAreaSwitchToLeft = new NODES::SwitchToLeftLane("Switching to left lane (barred area)");
+    NODES::LeftLaneDrive *node_barredAreaPass = new NODES::LeftLaneDrive("Passing barred area");
+    NODES::SwitchToRightLane *node_barredAreaSwitchToRight = new NODES::SwitchToRightLane("Switching to right lane (barred area)");
 
-        NODES::FollowingObject *node_followingObject = new NODES::FollowingObject("Following object");
-        NODES::SwitchToLeftLane *node_objectSwitchToLeft = new NODES::SwitchToLeftLane("Switching to left lane (object)");
-        NODES::LeftLaneDrive *node_overtakeObject = new NODES::LeftLaneDrive("Overtake object");
-        NODES::SwitchToRightLane *node_objectSwitchToRight = new NODES::SwitchToRightLane("Switching to right lane (object)");
+    NODES::CrosswalkBreak *node_crosswalkBreak = new NODES::CrosswalkBreak("Breaking (crosswalk)");
+    NODES::CrosswalkWait *node_crosswalkWait = new NODES::CrosswalkWait("Waiting at crosswalk");
 
-        NODES::BarredAreaAnticipate *node_barredAreaAnticipate = new NODES::BarredAreaAnticipate("Anticipating barred area");
-        NODES::SwitchToLeftLane *node_barredAreaSwitchToLeft = new NODES::SwitchToLeftLane("Switching to left lane (barred area)");
-        NODES::LeftLaneDrive *node_barredAreaPass = new NODES::LeftLaneDrive("Passing barred area");
-        NODES::SwitchToRightLane *node_barredAreaSwitchToRight = new NODES::SwitchToRightLane("Switching to right lane (barred area)");
+    NODES::IntersectionWait *node_intersectionWait = new NODES::IntersectionWait("Waiting at intersection");
+    NODES::IntersectionDrive *node_intersectionDrive = new NODES::IntersectionDrive("Crossing intersection");
 
-        NODES::CrosswalkBreak *node_crosswalkBreak = new NODES::CrosswalkBreak("Breaking (crosswalk)");
-        NODES::CrosswalkWait *node_crosswalkWait = new NODES::CrosswalkWait("Waiting at crosswalk");
-
-        NODES::IntersectionWait *node_intersectionWait = new NODES::IntersectionWait("Waiting at intersection");
-        NODES::IntersectionDrive *node_intersectionDrive = new NODES::IntersectionDrive("Crossing intersection");
-
-        //Link them in a meaningful way
-        head->addChild(node_waitForStart);
-        head->addChild(node_initialDriving);
-        head->addChild(node_trackProperty);
-        node_trackProperty->addChild(node_objectAvoiding);
-        node_trackProperty->addChild(node_barredArea);
-        node_trackProperty->addChild(node_crosswalk);
-        node_trackProperty->addChild(node_intersection);
-        node_objectAvoiding->addChild(node_followingObject);
-        node_objectAvoiding->addChild(node_objectSwitchToLeft);
-        node_objectAvoiding->addChild(node_overtakeObject);
-        node_objectAvoiding->addChild(node_objectSwitchToRight);
-        node_barredArea->addChild(node_barredAreaAnticipate);
-        node_barredArea->addChild(node_barredAreaSwitchToLeft);
-        node_barredArea->addChild(node_barredAreaPass);
-        node_barredArea->addChild(node_barredAreaSwitchToRight);
-        node_crosswalk->addChild(node_crosswalkBreak);
-        node_crosswalk->addChild(node_crosswalkWait);
-        node_intersection->addChild(node_intersectionWait);
-        node_intersection->addChild(node_intersectionDrive);
-    }
-    else {
-        ROS_ERROR("Driving mode not properly declared. Please check behaviorTree.launch");
-        return -1;
-    }
-    RosInterface ros_interface(nh);
-
-    //Create the tree instance
-    tree = new BT::Tree(head, tick_freq_ms, clean_output);
-    //If start states have been set in the launch file, apply them
-    if(initial_states->size() > 0) {
-        tree->reset_state(initial_states);
-        ROS_INFO_STREAM("" << initial_states->size() << " start state(s) manually set, applying...");
-    }
-    //Fire up the tree
-    tree->execute();
+    //Link them in a meaningful way
+    head->addChild(node_waitForStart);
+    head->addChild(node_initialDriving);
+    head->addChild(node_trackProperty);
+    node_trackProperty->addChild(node_objectAvoiding);
+    node_trackProperty->addChild(node_barredArea);
+    node_trackProperty->addChild(node_crosswalk);
+    node_trackProperty->addChild(node_intersection);
+    node_objectAvoiding->addChild(node_followingObject);
+    node_objectAvoiding->addChild(node_objectSwitchToLeft);
+    node_objectAvoiding->addChild(node_overtakeObject);
+    node_objectAvoiding->addChild(node_objectSwitchToRight);
+    node_barredArea->addChild(node_barredAreaAnticipate);
+    node_barredArea->addChild(node_barredAreaSwitchToLeft);
+    node_barredArea->addChild(node_barredAreaPass);
+    node_barredArea->addChild(node_barredAreaSwitchToRight);
+    node_crosswalk->addChild(node_crosswalkBreak);
+    node_crosswalk->addChild(node_crosswalkWait);
+    node_intersection->addChild(node_intersectionWait);
+    node_intersection->addChild(node_intersectionDrive);
 }
