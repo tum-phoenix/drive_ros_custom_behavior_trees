@@ -17,13 +17,29 @@ namespace BT {
         ROS_INFO("Starting tree execution");
         std::chrono::system_clock::time_point tick_start = std::chrono::system_clock::now();
         
+        //The main tick-loop of any BT
         while(ros::ok()) {
             tick_start = std::chrono::system_clock::now();
 
-            if(head->get_state() == IDLE || head->get_state() == RUNNING) head->tick();
+            //Tick the tree
+            if(head->get_state() == IDLE || head->get_state() == RUNNING) {
+                head->tick();
+            }
+            //Case of (overall) success
+            else if(head->get_state() == SUCCESS) {
+                ROS_INFO("Behavior tree succeeded. Closing BT execution.");
+                break;
+            }
+            //Case of (overall) failure
+            else if(head->get_state() == FAILURE) {
+                ROS_INFO("Behavior tree failed. Closing BT execution.");
+                break;
+            }
 
+            //Output
             print(std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now() - tick_start).count());
 
+            //Sync with given tick frequency
             std::this_thread::sleep_until(tick_start + tick_freq_ms);
         }
         return 0;

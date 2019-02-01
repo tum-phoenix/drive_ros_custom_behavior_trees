@@ -29,6 +29,7 @@ namespace BT {
                 currentChildIndex = 0;
                 break;
             case RUNNING:
+                children.at(currentChildIndex)->tick();
                 newState = RUNNING;
                 break;
         }

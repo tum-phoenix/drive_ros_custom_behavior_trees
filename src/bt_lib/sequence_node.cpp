@@ -10,49 +10,6 @@ namespace BT {
         currentChildIndex = 0;
     }
 
-    void SequenceNode::state_switch(int *newState) {
-        switch(children.at(currentChildIndex)->get_state()) {
-            case FAILURE:
-                if(skipFailedChild) {
-                    *newState = RUNNING;
-                    children.at(currentChildIndex)->set_state(IDLE);
-                    currentChildIndex++;
-                    currentChildIndex %= children.size();
-                    state_switch(newState);
-                } else {    
-                    *newState = FAILURE;
-                    children.at(currentChildIndex)->set_state(IDLE);
-                    currentChildIndex = 0;
-                }
-                break;
-            case SUCCESS:
-                children.at(currentChildIndex)->set_state(IDLE);
-                if(currentChildIndex < children.size() - 1) {
-                    currentChildIndex++;
-                    children.at(currentChildIndex)->set_state(RUNNING);
-                    *newState = RUNNING;
-                    state_switch(newState);
-                }
-                else if(repeatOnSuccess) {
-                    currentChildIndex = 0;
-                    children.at(currentChildIndex)->set_state(RUNNING);
-                    *newState = RUNNING;
-                    state_switch(newState);
-                }
-                else {
-                    *newState = SUCCESS;
-                    currentChildIndex = 0;
-                }
-                break;
-            case RUNNING:
-                children.at(currentChildIndex)->tick();
-                if(children.at(currentChildIndex)->get_state() == SUCCESS 
-                    || children.at(currentChildIndex)->get_state() == FAILURE)
-                    state_switch(newState);
-                *newState = RUNNING;
-                break;
-        }
-    }
 
     void SequenceNode::tick() {
         int newState = IDLE;
@@ -79,5 +36,60 @@ namespace BT {
         }
         if(!flag) set_state(IDLE);
         return flag;
+    }
+
+    void SequenceNode::state_switch(int *newState) {
+        switch(children.at(currentChildIndex)->get_state()) {
+            //Usually, a failed child leads to failure of the whole sequence node.
+            case FAILURE:
+                //In case this special property is active, the tree goes on anyways, just as if it would have succeeded.
+                if(skipFailedChild) {
+                    go_to_next_child(newState);
+                } 
+                //Otherwise, the node itself fails and resets the child counter.
+                else {
+                    *newState = FAILURE;
+                    children.at(currentChildIndex)->set_state(IDLE);
+                    currentChildIndex = 0;
+                }
+                break;
+            //When a child succeeded it just transitions to the next child.
+            case SUCCESS:
+                go_to_next_child(newState);
+                break;
+            //Usually, running nodes are only ticked and the node remains RUNNING.
+            case RUNNING:
+                children.at(currentChildIndex)->tick();
+                *newState = RUNNING;
+                //But when the child succeeded or failed this time, immediate state-reevaluation is called.
+                if(children.at(currentChildIndex)->get_state() == SUCCESS 
+                    || children.at(currentChildIndex)->get_state() == FAILURE)
+                    state_switch(newState);
+                break;
+        }
+    }
+
+
+    void SequenceNode::go_to_next_child(int *newState) {
+        children.at(currentChildIndex)->set_state(IDLE);
+        //If it wasn't the last child, just go to the next one.
+        if(currentChildIndex < children.size() - 1) {
+            currentChildIndex++;
+            children.at(currentChildIndex)->set_state(RUNNING);
+            *newState = RUNNING;
+            state_switch(newState);
+        }
+        //If it was, but the node shall repeat, it activates the first child again.
+        else if(repeatOnSuccess) {
+            currentChildIndex = 0;
+            children.at(currentChildIndex)->set_state(RUNNING);
+            *newState = RUNNING;
+            state_switch(newState);
+        }
+        //Last child succeeded and the node shall not repeat
+        else {
+            *newState = SUCCESS;
+            currentChildIndex = 0;
+        }
     }
 }
