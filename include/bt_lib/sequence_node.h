@@ -16,6 +16,7 @@ namespace BT  {
         bool repeatOnSuccess;
         bool skipFailedChild;
         int currentChildIndex;
+        void state_switch(int *newState);
     };
 
 }

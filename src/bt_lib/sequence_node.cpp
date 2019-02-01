@@ -10,22 +10,17 @@ namespace BT {
         currentChildIndex = 0;
     }
 
-    void SequenceNode::tick() {
-        int newState = IDLE;
-        
-        if(children.at(currentChildIndex)->get_state() == IDLE) {
-            children.at(currentChildIndex)->set_state(RUNNING);
-        }
-        
+    void SequenceNode::state_switch(int *newState) {
         switch(children.at(currentChildIndex)->get_state()) {
             case FAILURE:
                 if(skipFailedChild) {
-                    newState = RUNNING;
+                    *newState = RUNNING;
                     children.at(currentChildIndex)->set_state(IDLE);
                     currentChildIndex++;
                     currentChildIndex %= children.size();
+                    state_switch(newState);
                 } else {    
-                    newState = FAILURE;
+                    *newState = FAILURE;
                     children.at(currentChildIndex)->set_state(IDLE);
                     currentChildIndex = 0;
                 }
@@ -35,23 +30,39 @@ namespace BT {
                 if(currentChildIndex < children.size() - 1) {
                     currentChildIndex++;
                     children.at(currentChildIndex)->set_state(RUNNING);
-                    newState = RUNNING;
+                    *newState = RUNNING;
+                    state_switch(newState);
                 }
                 else if(repeatOnSuccess) {
                     currentChildIndex = 0;
                     children.at(currentChildIndex)->set_state(RUNNING);
-                    newState = RUNNING;
+                    *newState = RUNNING;
+                    state_switch(newState);
                 }
                 else {
-                    newState = SUCCESS;
+                    *newState = SUCCESS;
                     currentChildIndex = 0;
                 }
                 break;
             case RUNNING:
                 children.at(currentChildIndex)->tick();
-                newState = RUNNING;
+                if(children.at(currentChildIndex)->get_state() == SUCCESS 
+                    || children.at(currentChildIndex)->get_state() == FAILURE)
+                    state_switch(newState);
+                *newState = RUNNING;
                 break;
         }
+    }
+
+    void SequenceNode::tick() {
+        int newState = IDLE;
+        
+        if(children.at(currentChildIndex)->get_state() == IDLE) {
+            children.at(currentChildIndex)->set_state(RUNNING);
+        }
+        
+        state_switch(&newState);
+        
         set_state(newState);
     }
 
