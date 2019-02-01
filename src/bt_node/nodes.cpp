@@ -377,9 +377,9 @@ namespace NODES {
         //Cases where waiting can be stopped
         if(priority_road
             //!start_waiting is needed so that only a correctly set timestamp is being compared.
-            || (EnvModel::intersection_no_object() && !start_waiting && std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - waiting_started).count() > 3000)
-            || (give_way && EnvModel::intersection_no_object())
-            || (!give_way && EnvModel::intersection_no_object_right())) {
+            || ((EnvModel::intersection_no_object() && !start_waiting && std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - waiting_started).count() > 3000)
+                && (give_way && EnvModel::intersection_no_object())
+                    || (!give_way && EnvModel::intersection_no_object_right()))) {
             set_state(SUCCESS);
         }
         else {
