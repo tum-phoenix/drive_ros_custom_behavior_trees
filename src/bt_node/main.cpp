@@ -60,6 +60,7 @@ BT::Tree *tree;
 std::set<std::string> *initial_states;
 
 void read_launch_file(ros::NodeHandle *nh);
+void check_parameter_values();
 void construct_parkingmode_tree(BT::SequenceNode *head);
 void construct_obstaclesmode_tree(BT::SequenceNode *head);
 
@@ -69,27 +70,23 @@ int main(int argc, char **argv) {
     ros::NodeHandle nh;
     setup_ros_communication(&nh);
     read_launch_file(&nh);
-    
-    if(speed_limit == 0) ROS_WARN("WARNING: speed_limit is set to 0. Check behaviorTree.launch if you'd like to change it.");
-    if(general_max_speed == 0) ROS_WARN("WARNING: general_max_speed is set to 0. Check behaviorTree.launch if you'd like to change it.");
+    check_parameter_values();
+    RosInterface ros_interface(nh);
     
     if(mode.length() == 0) {
         ROS_INFO("Waiting for button input specifying the driving mode");
         mode = get_driving_mode();
     }
-    ROS_INFO("Creating Behavior Tree for %s mode", mode.c_str());
 
-
+    //Try to construct the tree
     BT::SequenceNode *head = new BT::SequenceNode("CaroloCup2019", false, true);
-
+    ROS_INFO("Creating Behavior Tree for %s mode", mode.c_str());
     if(!mode.compare("PARKING")) construct_parkingmode_tree(head);
     else if(!mode.compare("OBSTACLES")) construct_obstaclesmode_tree(head);
     else {
-        ROS_ERROR("Driving mode not properly declared. Please check behaviorTree.launch");
+        ROS_ERROR("Driving mode not properly declared. Please check launch file");
         return -1;
     }
-
-    RosInterface ros_interface(nh);
 
     //Create the tree instance
     tree = new BT::Tree(head, tick_freq_ms, clean_output);
@@ -150,6 +147,12 @@ void read_launch_file(ros::NodeHandle *nh) {
     boost::split(initial_states_vector, states, [](char c){return c == '|';});
     initial_states = new std::set<std::string>(initial_states_vector.begin(), initial_states_vector.end());
     while(initial_states->find("") != initial_states->end()) {initial_states->erase("");}
+}
+
+void check_parameter_values() {
+    if(speed_limit == 0) ROS_WARN("WARNING: speed_limit is set to 0. Check launch file if you'd like to change it.");
+    if(general_max_speed == 0) ROS_WARN("WARNING: general_max_speed is set to 0. Check launch file if you'd like to change it.");
+    if(general_max_speed_cautious == 0) ROS_WARN("WARNING: general_max_speed_cautious is set to 0. Check launch file if you'd like to change it.");
 }
 
 

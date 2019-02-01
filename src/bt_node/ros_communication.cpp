@@ -93,8 +93,9 @@ void user_button_callback(const drive_ros_uavcan::phoenix_msgs__UserButtons &msg
 std::string get_driving_mode() {
     ros::Rate r(10);
     for(;;) {
-        if(user_button_state && 0b01) return "OBSTACLES";
-        if(user_button_state && 0b10) return "PARKING";
+        //The user buttons are one-hot-encoded; least significant bit being the leftmost button.
+        if(user_button_state && 1) return "OBSTACLES";
+        if(user_button_state && 2) return "PARKING";
         ros::spinOnce();
         r.sleep();
     }

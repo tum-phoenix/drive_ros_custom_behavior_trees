@@ -7,7 +7,7 @@
       <param name="mode" value="OBSTACLES"/>
       <param name="clean_output" value="false"/>
       <param name="output_show_computation_time" value="false"/>
-      <param name="tick_frequency" value="4"/>
+      <param name="tick_frequency" value="1"/>
       <param name="object_following_break_factor" value="0.8"/>
       <param name="break_distance_safety_factor" value="1.6"/>
       <!-- Speeds -->

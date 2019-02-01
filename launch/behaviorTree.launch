@@ -1,6 +1,7 @@
 <launch>
     <arg name="meta_command_out" default="/trajectory_meta_commands"/>
     <!-- Arguments passed from global launch file -->
+    <!-- CHANGING THESE PARAMETERS WILL NOT HAVE ANY EFFECT. USE THE GLOBAL LAUNCH FILE!!!-->
 
     <!-- "random" variables (factors, etc) -->
     <!-- possible modes: "PARKING", "OBSTACLES"-->

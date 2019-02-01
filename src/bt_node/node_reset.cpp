@@ -37,15 +37,13 @@ void reset_tree_state(BT::Tree *tree) {
                 new_states.insert("Initial Driving");
             } else if(!s.compare("Initial Driving")) { //Most likely it didn't exit initial driving state early enough..
                 new_states.insert("Track property");
-            } else if(!s.compare("Track property")) { //No special track property was being applied
+            } else { //No special track property was being applied
                 new_states.insert("Track property"); //The TrackProperty node will evaluate the environment situation itself.
             }
-            //Some special track properties were being applied; then check if they should still be active.
-
         }
     }
     else {
-        ROS_ERROR("Driving mode not properly declared. Please check behaviorTree.launch");
+        ROS_ERROR("Driving mode not properly declared. Please check launch file");
         exit(-1);
     }
     tree->reset_state(&new_states);
