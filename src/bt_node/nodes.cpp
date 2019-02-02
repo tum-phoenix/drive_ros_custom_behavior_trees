@@ -314,9 +314,11 @@ namespace NODES {
             start_waiting = true;
         }
         else {
-            if(EnvModel::object_min_lane_distance(drive_ros_msgs::Lane::LEFT) < oncoming_traffic_clearance 
+            if((EnvModel::object_min_lane_distance(drive_ros_msgs::Lane::LEFT) < oncoming_traffic_clearance 
                 || (EnvModel::barred_area_left_distance() == -1 ? 10000 : EnvModel::barred_area_left_distance()) < oncoming_traffic_clearance
-                || (EnvModel::pass_by_on_right_distance() == -1 ? 10000 : EnvModel::pass_by_on_right_distance()) < oncoming_traffic_clearance) { //Abort, there's no room to overtake.
+                || (EnvModel::pass_by_on_right_distance() == -1 ? 10000 : EnvModel::pass_by_on_right_distance()) < oncoming_traffic_clearance)
+                && (!start_waiting 
+                    && (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - waiting_started).count() > 2000))) { //Abort, there's no room to overtake.
                     set_state(SUCCESS); //Go to "switch to right lane" and maybe then go back to "switch to left lane" again to try once more.
             }
             else {
