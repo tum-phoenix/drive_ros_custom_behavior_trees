@@ -99,15 +99,15 @@ namespace NODES {
     public:
         LeftLaneDrive(std::string name);
         void tick();
+    private:
+        bool start_waiting;
+        std::chrono::system_clock::time_point waiting_started;
     };
 
     class BarredAreaAnticipate : public BT::ActionNode {
     public:
         BarredAreaAnticipate(std::string name);
         void tick();
-    private:
-        bool start_waiting;
-        std::chrono::system_clock::time_point waiting_started;
     };
 
     class CrosswalkBreak : public BT::ActionNode {
