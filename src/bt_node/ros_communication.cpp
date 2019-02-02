@@ -29,6 +29,7 @@ extern float max_start_box_distance;
 extern float intersection_turn_speed;
 extern float break_distance_safety_factor;
 extern float intersection_max_obj_distance;
+extern float intersection_turn_duration;
 extern float speed_zero_tolerance;
 
 extern bool overtaking_forbidden_zone;
@@ -63,6 +64,7 @@ void dynamic_reconfigure_callback(drive_ros_custom_behavior_trees::BehaviorTreeC
     if(config.intersection_turn_speed != -1000) intersection_turn_speed = config.intersection_turn_speed;
     if(config.break_distance_safety_factor != -1000) break_distance_safety_factor = config.break_distance_safety_factor;
     if(config.intersection_max_obj_distance != -1000) intersection_max_obj_distance = config.intersection_max_obj_distance;
+    if(config.intersection_turn_duration != 0) intersection_turn_duration = config.intersection_turn_duration;
     if(config.speed_zero_tolerance != -1000) speed_zero_tolerance = config.speed_zero_tolerance; 
 
     if(dynamic_reconfigure_overwrite_runtime_vals) {

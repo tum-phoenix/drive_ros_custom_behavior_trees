@@ -10,6 +10,7 @@
       <param name="tick_frequency" value="1"/>
       <param name="object_following_break_factor" value="0.8"/>
       <param name="break_distance_safety_factor" value="1.6"/>
+      <param name="intersection_turn_duration" value="800"/>
       <!-- Speeds -->
       <param name="general_max_speed" value="1.0"/>
       <param name="general_max_speed_cautious" value="0.8"/>

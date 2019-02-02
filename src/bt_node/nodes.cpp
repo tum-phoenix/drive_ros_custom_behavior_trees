@@ -24,6 +24,7 @@ extern float barred_area_react_distance;
 extern float oncoming_traffic_clearance;
 extern float intersection_turn_speed;
 extern float speed_zero_tolerance;
+extern float intersection_turn_duration;
 
 extern bool overtaking_forbidden_zone;
 extern bool priority_road;
@@ -392,9 +393,11 @@ namespace NODES {
     }
 
     /* ---------- class:IntersectionDrive ---------- */
-    IntersectionDrive::IntersectionDrive(std::string name) : BT::ActionNode(name) {}
+    IntersectionDrive::IntersectionDrive(std::string name) : BT::ActionNode(name) {
+        started_driving = false;
+    }
     void IntersectionDrive::tick() {
-        if(EnvModel::get_current_lane() != drive_ros_msgs::EnvironmentModel::UNDEFINED) { //On normal track again
+        if(started_driving && std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - start_time).count() > intersection_turn_duration) { //On normal track again
             intersection_turn_indication = 0;
             set_state(SUCCESS);
         }

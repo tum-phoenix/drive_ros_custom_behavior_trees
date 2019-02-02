@@ -37,6 +37,7 @@ float max_start_box_distance;
 float intersection_turn_speed;
 float break_distance_safety_factor;
 float intersection_max_obj_distance;
+float intersection_turn_duration;
 float speed_zero_tolerance;
 
 //Dynamic values
@@ -107,6 +108,7 @@ void read_launch_file(ros::NodeHandle *nh) {
     nh->getParam("behavior_tree/break_distance_safety_factor", break_distance_safety_factor);
     nh->getParam("behavior_tree/tick_frequency", tick_frequency);
     nh->getParam("behavior_tree/object_following_break_factor", object_following_break_factor);
+    nh->getParam("behavior_tree/intersection_turn_duration", intersection_turn_duration);
 
     nh->getParam("behavior_tree/general_max_speed", general_max_speed);
     nh->getParam("behavior_tree/general_max_speed_cautious", general_max_speed_cautious);

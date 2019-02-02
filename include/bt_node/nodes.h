@@ -123,6 +123,9 @@ namespace NODES {
     public:
         IntersectionDrive(std::string name);
         void tick();
+    private:
+        bool driving_started;
+        std::chrono::system_clock::time_point start_time;
     };
 
 
