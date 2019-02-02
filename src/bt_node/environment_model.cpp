@@ -221,7 +221,7 @@ namespace EnvModel {
             start_box_was_closed = true;
             ROS_INFO_STREAM("Start box detected");
         }
-        return /*start_box_was_closed && */(env_msg.front_distance > max_start_box_distance);
+        return start_box_was_closed && (env_msg.front_distance > max_start_box_distance);
     }
 
     bool object_on_lane(int lane) {
