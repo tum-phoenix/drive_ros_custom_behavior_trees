@@ -353,7 +353,7 @@ namespace EnvModel {
                     break;
                 case SIGN_SPEED_ZONE_END:
                     if(msg.traffic_marks[i].track_distance < min_sign_react_distance) {
-                        speed_limit = general_max_speed;
+                        speed_limit = 100;
                     }
                     break;
                 case SIGN_TURN_LEFT:
