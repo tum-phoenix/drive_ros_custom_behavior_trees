@@ -105,6 +105,9 @@ namespace NODES {
     public:
         BarredAreaAnticipate(std::string name);
         void tick();
+    private:
+        bool start_waiting;
+        std::chrono::system_clock::time_point waiting_started;
     };
 
     class CrosswalkBreak : public BT::ActionNode {

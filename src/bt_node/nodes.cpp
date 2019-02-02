@@ -297,12 +297,21 @@ namespace NODES {
     }
     
     /* ---------- class:LeftLaneDrive ---------- */
-    LeftLaneDrive::LeftLaneDrive(std::string name) : BT::ActionNode(name) {}
+    LeftLaneDrive::LeftLaneDrive(std::string name) : BT::ActionNode(name) {
+        start_waiting = true;
+    }
     void LeftLaneDrive::tick() {
+        if(start_waiting) {
+            waiting_started = std::chrono::system_clock::now();
+            start_waiting = false;
+        }
         if(!EnvModel::object_on_lane(drive_ros_msgs::Lane::RIGHT) 
             && (EnvModel::barred_area_right_distance() > oncoming_traffic_clearance 
-                || EnvModel::barred_area_right_distance() == -1)) { //When overtaking / passing barred area is finished.
+                || EnvModel::barred_area_right_distance() == -1)
+            && !start_waiting 
+            && (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - waiting_started).count() > 800)) { //When overtaking / passing barred area is finished.
             set_state(SUCCESS);
+            start_waiting = true;
         }
         else {
             if(EnvModel::object_min_lane_distance(drive_ros_msgs::Lane::LEFT) < oncoming_traffic_clearance 
