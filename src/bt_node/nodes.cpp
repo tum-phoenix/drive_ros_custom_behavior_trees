@@ -442,6 +442,8 @@ namespace NODES {
         //Activate nodes when necessary
         //Nodes may only be activated when they are idling. 
         //Of course they can't be activated when already running, but they also shouldn't be when in SUCCESS or FAILURE state.
+        
+        ROS_INFO_STREAM("ac: " << (EnvModel::object_min_lane_distance(drive_ros_msgs::Lane::RIGHT) < 2 * overtake_distance));
         if((*nodes)[0]->get_state() == IDLE 
             && (EnvModel::object_min_lane_distance(drive_ros_msgs::Lane::RIGHT) < 2 * overtake_distance)) {
             (*nodes)[0]->set_state(RUNNING);
