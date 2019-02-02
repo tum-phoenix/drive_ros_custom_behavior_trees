@@ -217,7 +217,7 @@ namespace EnvModel {
 
     bool start_box_was_closed = false;
     bool start_box_open() {
-        if(!start_box_was_closed && (env_msg.front_distance == 0 ? 10000 : env_msg.front_distance < max_start_box_distance)) {
+        if(!start_box_was_closed && ((env_msg.front_distance == 0 ? 10000 : env_msg.front_distance) < max_start_box_distance)) {
             start_box_was_closed = true;
             ROS_INFO_STREAM("Start box detected");
         }
