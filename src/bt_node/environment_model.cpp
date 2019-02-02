@@ -263,7 +263,11 @@ namespace EnvModel {
     bool intersection_immediately_upfront() {
         if(f_intersection_immediately_upfront) return v_intersection_immediately_upfront;
 
-        int intersect_dist = get_traffic_mark_distance(MARKING_INTERSECTION);
+        float yd = get_traffic_mark_distance(MARKING_CROSSING_YIELD);
+        float sd = get_traffic_mark_distance(MARKING_CROSSING_STOP);
+        float id = get_traffic_mark_distance(MARKING_INTERSECTION);
+        float distance = fmin(fmin(yd == -1 ? 10000 : yd, sd == -1 ? 10000 : sd), id == -1 ? 10000 : id);
+        float intersect_dist = distance == 10000 ? -1 : distance;
         bool b = (intersect_dist == -1) ? false : intersect_dist < current_break_distance();
         v_intersection_immediately_upfront = b;
         f_intersection_immediately_upfront = true;
@@ -355,13 +359,28 @@ namespace EnvModel {
                 case SIGN_TURN_RIGHT:
                     intersection_turn_indication = drive_ros_msgs::TrajectoryMetaInput::TURN_RIGHT;
                     break;
+                case MARKING_ARROW_LEFT:
+                    intersection_turn_indication = drive_ros_msgs::TrajectoryMetaInput::TURN_LEFT;
+                    break;
+                case MARKING_ARROW_RIGHT:
+                    intersection_turn_indication = drive_ros_msgs::TrajectoryMetaInput::TURN_RIGHT;
+                    break;
                 case SIGN_PRIORITY_ROAD:
                     priority_road = true;
                     break;
                 case SIGN_GIVE_WAY:
                     priority_road = false;
                     break;
+                case MARKING_CROSSING_YIELD:
+                    priority_road = false;
+                    break;
                 case SIGN_STOP:
+                    priority_road = false;
+                    //Maybe the express_way_end was not detected...
+                    express_way = false;
+                    force_stop = true;
+                    break;
+                case MARKING_CROSSING_STOP:
                     priority_road = false;
                     //Maybe the express_way_end was not detected...
                     express_way = false;
