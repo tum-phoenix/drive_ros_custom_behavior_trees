@@ -57,7 +57,6 @@ namespace EnvModel {
                 && env_msg.obstacles[i].obj_track_distance > 0) 
                     shortest_distance = env_msg.obstacles[i].obj_track_distance;
         }
-        ROS_INFO_STREAM("Object distance on " << lane << "lane: " << shortest_distance);
         return shortest_distance;
     }
 
