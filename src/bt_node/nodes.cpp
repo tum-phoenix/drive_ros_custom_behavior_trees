@@ -111,7 +111,7 @@ namespace NODES {
     /* ---------- class:ParkingInProgress ---------- */
     ParkingInProgress::ParkingInProgress(std::string name) : BT::ActionNode(name) {}
     void ParkingInProgress::tick() {
-        if(EnvModel::get_current_lane() == drive_ros_msgs::Lane::UNDEFINED) {
+        if(EnvModel::get_current_lane() == drive_ros_msgs::EnvironmentModel::UNDEFINED) {
             successful_parking_count++;
             set_state(SUCCESS);
         }
@@ -128,7 +128,7 @@ namespace NODES {
         if(EnvModel::get_current_lane() == drive_ros_msgs::Lane::RIGHT) {
           set_state(SUCCESS); //Car is back on track  
         }
-        else if(EnvModel::get_current_lane() == drive_ros_msgs::Lane::UNDEFINED) { 
+        else if(EnvModel::get_current_lane() == drive_ros_msgs::EnvironmentModel::UNDEFINED) {
             trajectory_msg.control_metadata = drive_ros_msgs::TrajectoryMetaInput::PARKING_REVERSE;
             trajectory_msg.max_speed = general_max_speed_cautious;
             publish_trajectory_metadata(trajectory_msg);
@@ -393,7 +393,7 @@ namespace NODES {
     /* ---------- class:IntersectionDrive ---------- */
     IntersectionDrive::IntersectionDrive(std::string name) : BT::ActionNode(name) {}
     void IntersectionDrive::tick() {
-        if(EnvModel::get_current_lane() != drive_ros_msgs::Lane::UNDEFINED) { //On normal track again
+        if(EnvModel::get_current_lane() != drive_ros_msgs::EnvironmentModel::UNDEFINED) { //On normal track again
             intersection_turn_indication = 0;
             set_state(SUCCESS);
         }
