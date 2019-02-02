@@ -111,9 +111,18 @@ namespace NODES {
     }
 
     /* ---------- class:ParkingInProgress ---------- */
-    ParkingInProgress::ParkingInProgress(std::string name) : BT::ActionNode(name) {}
+    ParkingInProgress::ParkingInProgress(std::string name) : BT::ActionNode(name) {
+        start_waiting = true;
+    }
     void ParkingInProgress::tick() {
-        if(EnvModel::get_current_lane() == drive_ros_msgs::EnvironmentModel::UNDEFINED) {
+        if(current_velocity > speed_zero_tolerance) start_waiting = true;
+        if(start_waiting) {
+            waiting_started = std::chrono::system_clock::now();
+            start_waiting = false;
+        }
+        if(!start_waiting 
+            && (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - waiting_started).count() > 500)) {
+            start_waiting = true;
             successful_parking_count++;
             set_state(SUCCESS);
         }
@@ -125,10 +134,19 @@ namespace NODES {
     }
 
     /* ---------- class:ParkingReverse ---------- */
-    ParkingReverse::ParkingReverse(std::string name) : BT::ActionNode(name) {}
+    ParkingReverse::ParkingReverse(std::string name) : BT::ActionNode(name) {
+        start_waiting = true;
+    }
     void ParkingReverse::tick() {
-        if(EnvModel::get_current_lane() == drive_ros_msgs::Lane::RIGHT) {
-          set_state(SUCCESS); //Car is back on track  
+        if(current_velocity > speed_zero_tolerance) start_waiting = true;
+        if(start_waiting) {
+            waiting_started = std::chrono::system_clock::now();
+            start_waiting = false;
+        }
+        if(!start_waiting 
+            && (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - waiting_started).count() > 500)) {
+            start_waiting = true;
+            set_state(SUCCESS);
         }
         else if(EnvModel::get_current_lane() == drive_ros_msgs::EnvironmentModel::UNDEFINED) {
             trajectory_msg.control_metadata = drive_ros_msgs::TrajectoryMetaInput::PARKING_REVERSE;

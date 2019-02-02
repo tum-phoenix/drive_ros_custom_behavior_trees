@@ -89,7 +89,7 @@ namespace EnvModel {
         //Try to find a parking spot
         for(int i = 0; i < constraint_distances.size() - 1; i++) {
             if(constraint_distances[i + 1] - constraint_distances[i] > 0.85) {
-                return constraint_distances[i + 1] - 0.7 < 0.2;
+                return constraint_distances[i + 1] - 1.0 < 0.2;
             }
         }
         return false;
