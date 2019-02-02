@@ -13,6 +13,7 @@
 extern std::string mode;
 extern bool dynamic_reconfigure_overwrite_runtime_vals;
 extern int tick_freq_ms;
+extern int intersection_turn_duration;
 extern float general_max_speed;
 extern float general_max_speed_cautious;
 extern float max_bridge_speed;
@@ -29,7 +30,6 @@ extern float max_start_box_distance;
 extern float intersection_turn_speed;
 extern float break_distance_safety_factor;
 extern float intersection_max_obj_distance;
-extern float intersection_turn_duration;
 extern float speed_zero_tolerance;
 
 extern bool overtaking_forbidden_zone;

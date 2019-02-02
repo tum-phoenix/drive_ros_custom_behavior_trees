@@ -397,8 +397,10 @@ namespace NODES {
         started_driving = false;
     }
     void IntersectionDrive::tick() {
+        started_driving = true;
         if(started_driving && std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - start_time).count() > intersection_turn_duration) { //On normal track again
             intersection_turn_indication = 0;
+            started_driving = false;
             set_state(SUCCESS);
         }
         else {

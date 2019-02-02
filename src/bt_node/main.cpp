@@ -19,6 +19,7 @@ bool output_show_computation_time;
 bool dynamic_reconfigure_overwrite_runtime_vals;
 int tick_frequency;
 int tick_freq_ms;
+int intersection_turn_duration;
 float general_max_speed;
 float general_max_speed_cautious;
 float min_sign_react_distance;
@@ -37,7 +38,6 @@ float max_start_box_distance;
 float intersection_turn_speed;
 float break_distance_safety_factor;
 float intersection_max_obj_distance;
-float intersection_turn_duration;
 float speed_zero_tolerance;
 
 //Dynamic values
