@@ -214,6 +214,9 @@ namespace EnvModel {
 
     bool start_box_was_closed = false;
     bool start_box_open() {
+        ROS_INFO_STREAM("Already detected startbox: " << start_box_was_closed << ", d=" << fmin(
+                fmin(object_min_lane_distance(drive_ros_msgs::Lane::LEFT), object_min_lane_distance(drive_ros_msgs::Lane::RIGHT)), 
+                fmin(object_min_lane_distance(drive_ros_msgs::Lane::LEFT_SIDE), object_min_lane_distance(drive_ros_msgs::Lane::RIGHT_SIDE))));
         if(!start_box_was_closed && 
             (fmin(
                 fmin(object_min_lane_distance(drive_ros_msgs::Lane::LEFT), object_min_lane_distance(drive_ros_msgs::Lane::RIGHT)), 
@@ -222,7 +225,9 @@ namespace EnvModel {
             start_box_was_closed = true;
             ROS_INFO_STREAM("Start box detected");
         }
-        return start_box_was_closed && fmin(object_min_lane_distance(drive_ros_msgs::Lane::LEFT), object_min_lane_distance(drive_ros_msgs::Lane::RIGHT)) > max_start_box_distance;
+        return start_box_was_closed && fmin(
+                fmin(object_min_lane_distance(drive_ros_msgs::Lane::LEFT), object_min_lane_distance(drive_ros_msgs::Lane::RIGHT)), 
+                fmin(object_min_lane_distance(drive_ros_msgs::Lane::LEFT_SIDE), object_min_lane_distance(drive_ros_msgs::Lane::RIGHT_SIDE))) > max_start_box_distance;
     }
 
     bool object_on_lane(int lane) {
