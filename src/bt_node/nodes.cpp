@@ -204,6 +204,7 @@ namespace NODES {
     /* ---------- class:SwitchToLeftLane ---------- */
     SwitchToLeftLane::SwitchToLeftLane(std::string name) : BT::ActionNode(name) {}
     void SwitchToLeftLane::tick() {
+        ROS_INFO("Switching to left lane");
         drive_ros_msgs::TrajectoryMetaInput *msg = new drive_ros_msgs::TrajectoryMetaInput();
         if(EnvModel::get_current_lane() == drive_ros_msgs::Lane::LEFT) {
             set_state(SUCCESS);
@@ -260,7 +261,6 @@ namespace NODES {
         last_speed = 0;
     }
     void FollowingObject::tick() {
-        ROS_INFO("FOllowing");
         if(!EnvModel::object_on_lane(EnvModel::get_current_lane())) { //Cancel following; there's no object in the way any more.
             set_state(FAILURE);
         } else if(!(EnvModel::intersection_immediately_upfront() || overtaking_forbidden_zone)
