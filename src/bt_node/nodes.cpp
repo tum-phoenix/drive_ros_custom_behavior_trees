@@ -121,7 +121,7 @@ namespace NODES {
             start_waiting = false;
         }
         if(!start_waiting 
-            && (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - waiting_started).count() > 500)) {
+            && (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - waiting_started).count() > 1000)) {
             start_waiting = true;
             successful_parking_count++;
             set_state(SUCCESS);
@@ -144,7 +144,7 @@ namespace NODES {
             start_waiting = false;
         }
         if(!start_waiting 
-            && (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - waiting_started).count() > 500)) {
+            && (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - waiting_started).count() > 1000)) {
             start_waiting = true;
             set_state(SUCCESS);
         }
@@ -320,7 +320,9 @@ namespace NODES {
     /* ---------- class:CrosswalkBreak ---------- */
     CrosswalkBreak::CrosswalkBreak(std::string name) : BT::ActionNode(name) {}
     void CrosswalkBreak::tick() {
-        if(EnvModel::crosswalk_distance() == -1) set_state(FAILURE);
+        if(EnvModel::crosswalk_distance() == -1) {
+            set_state(FAILURE);
+        }
         else {
             drive_ros_msgs::TrajectoryMetaInput *msg = new drive_ros_msgs::TrajectoryMetaInput();
             if(EnvModel::num_of_pedestrians() == 0) {

@@ -93,8 +93,8 @@ int main(int argc, char **argv) {
     tree = new BT::Tree(head, tick_freq_ms, clean_output);
     //If start states have been set in the launch file, apply them
     if(initial_states->size() > 0) {
-        tree->reset_state(initial_states);
         ROS_INFO_STREAM("" << initial_states->size() << " start state(s) manually set, applying...");
+        tree->reset_state(initial_states);
     }
     //Fire up the tree
     tree->execute();

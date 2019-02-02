@@ -57,6 +57,7 @@ namespace EnvModel {
                 && env_msg.obstacles[i].obj_track_distance > 0) 
                     shortest_distance = env_msg.obstacles[i].obj_track_distance;
         }
+        ROS_INFO_STREAM("Object distance on " << lane << "lane: " << shortest_distance);
         return shortest_distance;
     }
 
@@ -142,7 +143,7 @@ namespace EnvModel {
         else return 0.1;
     }
     float current_break_distance() {
-        return break_distance_to(0);
+        return break_distance_to(0) + 0.1;
     }
 
     bool f_crosswalk_distance = false;
@@ -152,7 +153,7 @@ namespace EnvModel {
 
         float cd =  get_traffic_mark_distance(MARKING_CROSSWALK);
         float pd = get_traffic_mark_distance(PEDESTRIAN);
-        float d = (cd == -1 && pd == -1) ? -1 : fmax(cd, pd);
+        float d = fmax(cd, pd);
         v_crosswalk_distance = d;
         f_crosswalk_distance = true;
         return d;
