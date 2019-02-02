@@ -15,6 +15,7 @@
 extern float min_sign_react_distance;
 extern float max_sign_react_distance;
 extern float max_start_box_distance;
+extern float max_bridge_speed;
 extern float general_max_speed;
 extern float break_distance_safety_factor;
 extern float intersection_max_obj_distance;
@@ -137,7 +138,8 @@ namespace EnvModel {
     }
 
     float break_distance_to(float target_speed) {
-        return break_distance_safety_factor * 0.5 * (current_velocity - target_speed) * (current_velocity - target_speed) / 4;
+        if(target_speed < current_velocity) return break_distance_safety_factor * 0.5 * (current_velocity - target_speed) * (current_velocity - target_speed) / 4;
+        else return 0.1;
     }
     float current_break_distance() {
         return break_distance_to(0);
@@ -218,7 +220,7 @@ namespace EnvModel {
             start_box_was_closed = true;
             ROS_INFO_STREAM("Start box detected");
         }
-        return start_box_was_closed && env_msg.front_distance > max_start_box_distance;
+        return start_box_was_closed && (env_msg.front_distance > max_start_box_distance);
     }
 
     bool object_on_lane(int lane) {
@@ -370,16 +372,22 @@ namespace EnvModel {
                     priority_road = true;
                     break;
                 case SIGN_GIVE_WAY:
-                    priority_road = false;
+                    if(msg.traffic_marks[i].traffic_distance < min_sign_react_distance) {
+                        priority_road = false;
+                        express_way = false;
+                    }
                     break;
                 case MARKING_CROSSING_YIELD:
                     priority_road = false;
+                    express_way = false;
                     break;
                 case SIGN_STOP:
-                    priority_road = false;
-                    //Maybe the express_way_end was not detected...
-                    express_way = false;
-                    force_stop = true;
+                    if(msg.traffic_marks[i].traffic_distance < min_sign_react_distance) {
+                        priority_road = false;
+                        //Maybe the express_way_end was not detected...
+                        express_way = false;
+                        force_stop = true;
+                    }
                     break;
                 case MARKING_CROSSING_STOP:
                     priority_road = false;
@@ -388,22 +396,32 @@ namespace EnvModel {
                     force_stop = true;
                     break;
                 case SIGN_NO_PASSING_ZONE:
-                    overtaking_forbidden_zone = true;
+                    if(msg.traffic_marks[i].traffic_distance < min_sign_react_distance) {
+                        overtaking_forbidden_zone = true;
+                    }
                     break;
                 case SIGN_NO_PASSING_ZONE_END:
-                    overtaking_forbidden_zone = false;
+                    if(msg.traffic_marks[i].traffic_distance < min_sign_react_distance) {
+                        overtaking_forbidden_zone = false;
+                    }
                     break;
                 case SIGN_EXPRESSWAY_BEGIN:
-                    express_way = true;
-                    //Should increase robustness, esp. at falsely detected intersections.
-                    priority_road = true;
+                    if(msg.traffic_marks[i].traffic_distance < min_sign_react_distance) {
+                        express_way = true;
+                        //Should increase robustness, esp. at falsely detected intersections.
+                        priority_road = true;
+                    }
                     break;
                 case SIGN_EXPRESSWAY_END:
-                    express_way = false;
-                    priority_road = true;
+                    if(msg.traffic_marks[i].track_distance < min_sign_react_distance) {
+                        express_way = false;
+                        priority_road = true;
+                    }
                     break;
                 case SIGN_STEEP_INCLINE:
-                    on_bridge = true;
+                    if(msg.traffic_marks[i].track_distance < break_distance_to(max_bridge_speed)) {
+                        on_bridge = true;
+                    }   
                     break;
                 case SIGN_STEEP_DECLINE:
                     //We can already drive faster again when we are starting to leave the bridge.
