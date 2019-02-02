@@ -372,7 +372,7 @@ namespace EnvModel {
                     priority_road = true;
                     break;
                 case SIGN_GIVE_WAY:
-                    if(msg.traffic_marks[i].traffic_distance < min_sign_react_distance) {
+                    if(msg.traffic_marks[i].track_distance < min_sign_react_distance) {
                         priority_road = false;
                         express_way = false;
                     }
@@ -382,7 +382,7 @@ namespace EnvModel {
                     express_way = false;
                     break;
                 case SIGN_STOP:
-                    if(msg.traffic_marks[i].traffic_distance < min_sign_react_distance) {
+                    if(msg.traffic_marks[i].track_distance < min_sign_react_distance) {
                         priority_road = false;
                         //Maybe the express_way_end was not detected...
                         express_way = false;
@@ -396,17 +396,17 @@ namespace EnvModel {
                     force_stop = true;
                     break;
                 case SIGN_NO_PASSING_ZONE:
-                    if(msg.traffic_marks[i].traffic_distance < min_sign_react_distance) {
+                    if(msg.traffic_marks[i].track_distance < min_sign_react_distance) {
                         overtaking_forbidden_zone = true;
                     }
                     break;
                 case SIGN_NO_PASSING_ZONE_END:
-                    if(msg.traffic_marks[i].traffic_distance < min_sign_react_distance) {
+                    if(msg.traffic_marks[i].track_distance < min_sign_react_distance) {
                         overtaking_forbidden_zone = false;
                     }
                     break;
                 case SIGN_EXPRESSWAY_BEGIN:
-                    if(msg.traffic_marks[i].traffic_distance < min_sign_react_distance) {
+                    if(msg.traffic_marks[i].track_distance < min_sign_react_distance) {
                         express_way = true;
                         //Should increase robustness, esp. at falsely detected intersections.
                         priority_road = true;
