@@ -23,6 +23,7 @@ extern bool priority_road;
 extern bool force_stop;
 extern bool overtaking_forbidden_zone;
 extern bool express_way;
+extern bool on_bridge;
 extern int intersection_turn_indication;
 extern float speed_limit;
 extern float current_velocity;
@@ -400,6 +401,13 @@ namespace EnvModel {
                 case SIGN_EXPRESSWAY_END:
                     express_way = false;
                     priority_road = true;
+                    break;
+                case SIGN_STEEP_INCLINE:
+                    on_bridge = true;
+                    break;
+                case SIGN_STEEP_DECLINE:
+                    //We can already drive faster again when we are starting to leave the bridge.
+                    on_bridge = false;
                     break;
                 default:
                     break; //All other signs are used differently, e.g. by asking for them directly. These were just passive states.

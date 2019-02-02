@@ -28,6 +28,7 @@ extern float speed_zero_tolerance;
 extern bool overtaking_forbidden_zone;
 extern bool priority_road;
 extern bool give_way;
+extern bool on_bridge;
 extern int speed_limit;
 extern int successful_parking_count;
 extern int intersection_turn_indication;
@@ -441,8 +442,8 @@ namespace NODES {
     void TrackPropertyMessageHandler::evaluate_and_send() {
         //Initialize a minimum speed which already respects speed limits and some parameters (in case no special trackProperty is active)
         float speed = fmin(
-            EnvModel::in_sharp_turn() ? sharp_turn_speed :
-                EnvModel::in_very_sharp_turn() ? very_sharp_turn_speed : general_max_speed, speed_limit);
+            fmin(EnvModel::in_sharp_turn() ? sharp_turn_speed :
+                EnvModel::in_very_sharp_turn() ? very_sharp_turn_speed : general_max_speed, speed_limit), on_bridge ? max_bridge_speed : general_max_speed);
         //If nothing else is defined, just follow the track
         int metadata = drive_ros_msgs::TrajectoryMetaInput::STANDARD;
         //Iterate through all suggested messages and update the initialized values if the new ones are more strict.
