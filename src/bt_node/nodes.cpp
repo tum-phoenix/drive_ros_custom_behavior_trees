@@ -261,7 +261,7 @@ namespace NODES {
         last_speed = 0;
     }
     void FollowingObject::tick() {
-        if(!EnvModel::object_on_lane(EnvModel::get_current_lane())) { //Cancel following; there's no object in the way any more.
+        if(!EnvModel::object_on_lane(drive_ros_msgs::Lane::LANE_RIGHT)) { //Cancel following; there's no object in the way any more.
             set_state(FAILURE);
         } else if(!(EnvModel::intersection_immediately_upfront() || overtaking_forbidden_zone)
             && EnvModel::object_min_lane_distance(drive_ros_msgs::Lane::RIGHT) < overtake_distance) { //According to the regulations, there's nothing on the left lane when an obstacle is in front of you.
