@@ -49,6 +49,7 @@ clean_output | bool | After every cycle some brief information about the state o
 tick_frequency | int | Cylcles per second // Frequency in Hz
 object_following_break_factor | float | This value should only be changed when testing. Its internal use is to specify how quickly the car breaks when coming too close to the object it is following. The value should therefore be *somewhere* in the region of 1.
 break_distance_safety_factor | float | The BT EnvModel is able to approximate the break distance pretty well. Nevertheless, the computed break distance is multiplied with this factor for safety reasons.
+intersection_turn_duration | int | The car turns for this amount of milliseconds inside an intersection.
 **Speeds** | | 
 general_max_speed | float | What the car should be allowed to drive on the track (-> it will never go faster than this)
 general_max_speed_cautious | float | A max speed for situations where very exact sensing or quick breaking is required (e.g. when approaching a crosswalk but there's no need to radically break yet).
