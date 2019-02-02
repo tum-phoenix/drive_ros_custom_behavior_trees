@@ -202,12 +202,19 @@ namespace NODES {
     }
 
     /* ---------- class:SwitchToLeftLane ---------- */
-    SwitchToLeftLane::SwitchToLeftLane(std::string name) : BT::ActionNode(name) {}
+    SwitchToLeftLane::SwitchToLeftLane(std::string name) : BT::ActionNode(name) {
+        start_waiting = true;
+    }
     void SwitchToLeftLane::tick() {
-        ROS_INFO("Switching to left lane");
+        if(start_waiting) {
+            waiting_started = std::chrono::system_clock::now();
+            start_waiting = false;
+        }
         drive_ros_msgs::TrajectoryMetaInput *msg = new drive_ros_msgs::TrajectoryMetaInput();
-        if(EnvModel::get_current_lane() == drive_ros_msgs::Lane::LEFT) {
+        if(/*EnvModel::get_current_lane() == drive_ros_msgs::Lane::LEFT*/
+            !start_waiting && std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - waiting_started).count() > 1000) {
             set_state(SUCCESS);
+            start_waiting = true;
         }
         else if(EnvModel::get_current_lane() == drive_ros_msgs::Lane::RIGHT) {
             if(EnvModel::object_min_lane_distance(drive_ros_msgs::Lane::LEFT) > oncoming_traffic_clearance) {
@@ -233,10 +240,18 @@ namespace NODES {
     }
 
     /* ---------- class:SwitchToRightLane ---------- */
-    SwitchToRightLane::SwitchToRightLane(std::string name) : BT::ActionNode(name) {}
+    SwitchToRightLane::SwitchToRightLane(std::string name) : BT::ActionNode(name) {
+        start_waiting = true;
+    }
     void SwitchToRightLane::tick() {
-        if(EnvModel::get_current_lane() == drive_ros_msgs::Lane::RIGHT) {
+        if(start_waiting) {
+            waiting_started = std::chrono::system_clock::now();
+            start_waiting = false;
+        }
+        if(/*EnvModel::get_current_lane() == drive_ros_msgs::Lane::RIGHT*/
+            !start_waiting && std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - waiting_started).count() > 1000) {
             set_state(SUCCESS);
+            start_waiting = true;
         }
         else {
             drive_ros_msgs::TrajectoryMetaInput *msg = new drive_ros_msgs::TrajectoryMetaInput();
@@ -285,7 +300,8 @@ namespace NODES {
     LeftLaneDrive::LeftLaneDrive(std::string name) : BT::ActionNode(name) {}
     void LeftLaneDrive::tick() {
         if(!EnvModel::object_on_lane(drive_ros_msgs::Lane::RIGHT) 
-            && (EnvModel::barred_area_right_distance() > 4 || EnvModel::barred_area_right_distance() == -1)) { //When overtaking / passing barred area is finished.
+            && (EnvModel::barred_area_right_distance() > oncoming_traffic_clearance 
+                || EnvModel::barred_area_right_distance() == -1)) { //When overtaking / passing barred area is finished.
             set_state(SUCCESS);
         }
         else {
