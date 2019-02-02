@@ -212,7 +212,7 @@ namespace NODES {
         }
         drive_ros_msgs::TrajectoryMetaInput *msg = new drive_ros_msgs::TrajectoryMetaInput();
         if(/*EnvModel::get_current_lane() == drive_ros_msgs::Lane::LEFT*/
-            !start_waiting && std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - waiting_started).count() > 1000) {
+            !start_waiting && std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - waiting_started).count() > 700) {
             set_state(SUCCESS);
             start_waiting = true;
         }
@@ -249,7 +249,7 @@ namespace NODES {
             start_waiting = false;
         }
         if(/*EnvModel::get_current_lane() == drive_ros_msgs::Lane::RIGHT*/
-            !start_waiting && std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - waiting_started).count() > 1000) {
+            !start_waiting && std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - waiting_started).count() > 700) {
             set_state(SUCCESS);
             start_waiting = true;
         }
