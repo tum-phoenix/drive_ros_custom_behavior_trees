@@ -309,7 +309,7 @@ namespace NODES {
             && (EnvModel::barred_area_right_distance() > oncoming_traffic_clearance 
                 || EnvModel::barred_area_right_distance() == -1)
             && !start_waiting 
-            && (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - waiting_started).count() > 2000)) { //When overtaking / passing barred area is finished.
+            && (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - waiting_started).count() > 5000)) { //When overtaking / passing barred area is finished.
             set_state(SUCCESS);
             start_waiting = true;
         }
