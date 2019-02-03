@@ -65,7 +65,12 @@ namespace EnvModel {
     float barred_area_left_distance() {
         if(f_barred_area_left_distance) return v_barred_area_left_distance;
 
-        float d = get_traffic_mark_distance(MARKING_BARRED_AREA_LEFT);
+        float d = -1;
+        for(int i = 0; i < env_msg.traffic_marks.size(); i++) {
+            if(env_msg.traffic_marks[i].id == MARKING_BARRED_AREA_LEFT
+                && (d == -1 || env_msg.traffic_marks[i].track_distance < d)) 
+                d = env_msg.traffic_marks[i].track_distance;
+        }
         v_barred_area_left_distance = d;
         f_barred_area_left_distance = true;
         return d;
@@ -100,7 +105,12 @@ namespace EnvModel {
     float barred_area_right_distance() {
         if(f_barred_area_right_distance) return v_barred_area_right_distance;
 
-        float d = get_traffic_mark_distance(MARKING_BARRED_AREA_RIGHT);
+        float d = -1;
+        for(int i = 0; i < env_msg.traffic_marks.size(); i++) {
+            if(env_msg.traffic_marks[i].id == MARKING_BARRED_AREA_RIGHT
+                && (d == -1 || env_msg.traffic_marks[i].track_distance < d)) 
+                d = env_msg.traffic_marks[i].track_distance;
+        }
         if(d == -1) d = get_traffic_mark_distance(SIGN_YIELD_ONCOMING_TRAFFIC);
         v_barred_area_right_distance = d;
         f_barred_area_right_distance = true;
