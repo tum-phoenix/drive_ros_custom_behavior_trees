@@ -46,6 +46,7 @@
 
     <arg name="env_in" default="/environment_model"/>
     <arg name="drive_state_in" default="/canros/msg/phoenix_msgs/DriveState"/>
+    <arg name="user_buttons" default="/canros/msg/phoenix_msgs/UserButtons"/>
 
     <node name="behavior_tree" pkg="drive_ros_custom_behavior_trees" type="BehaviorTree" output="screen">
       <param name="mode" value="$(arg mode)"/>
@@ -91,5 +92,6 @@
       <remap from="trajectory_metadata" to="$(arg meta_command_out)"/>
       <remap from="env_in" to="$(arg env_in)"/>
       <remap from="drive_state_in" to="$(arg drive_state_in)"/>
+      <remap from="buttons" to="$(arg user_buttons"/>
     </node>
 </launch>

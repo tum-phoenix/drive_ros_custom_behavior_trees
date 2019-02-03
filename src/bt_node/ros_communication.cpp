@@ -105,6 +105,7 @@ std::string get_driving_mode() {
 
 ros::Subscriber environment_model_subscriber;
 ros::Subscriber car_data_subscriber;
+ros::Subscriber button_subscriber;
 ros::Publisher trajectory_publisher;
 void setup_ros_communication(ros::NodeHandle *nh) {
     /* Dynamic Reconfigure Setup */
@@ -116,6 +117,7 @@ void setup_ros_communication(ros::NodeHandle *nh) {
     /* Topic Subscribers Setup */
     environment_model_subscriber = nh->subscribe("env_in", 4, &EnvModel::subscriber_callback);
     car_data_subscriber = nh->subscribe("drive_state_in", 4, &car_data_callback);
+    button_subscriber = nh->subscribe("buttons", 1, &user_button_callback);
 
     /* Topic Publishers Setup */
     trajectory_publisher = nh->advertise<drive_ros_msgs::TrajectoryMetaInput>("trajectory_metadata", 64);

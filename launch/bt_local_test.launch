@@ -4,7 +4,7 @@
     <node name="behavior_tree" pkg="drive_ros_custom_behavior_trees" type="BehaviorTree" output="screen">
       <!-- "random" variables (factors, etc) -->
       <!-- possible modes: "PARKING", "OBSTACLES"-->
-      <param name="mode" value="OBSTACLES"/>
+      <param name="mode" value=""/>
       <param name="clean_output" value="false"/>
       <param name="output_show_computation_time" value="false"/>
       <param name="tick_frequency" value="1"/>
@@ -41,7 +41,7 @@
       <param name="start_value__successful_parking_count" value="2"/>
       <param name="start_value__give_way" value="false"/>
       <!-- Seperate the states with '|' if necessary !-->
-      <param name="initial_states" type="str" value="Waiting at crosswalk"/>
+      <param name="initial_states" type="str" value="Passing barred area"/>
 
       <!-- remap topics with arguments -->
       <remap from="trajectory_metadata" to="$(arg meta_command_out)"/>
