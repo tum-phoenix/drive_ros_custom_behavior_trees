@@ -212,7 +212,7 @@ namespace NODES {
         }
         drive_ros_msgs::TrajectoryMetaInput *msg = new drive_ros_msgs::TrajectoryMetaInput();
         if(/*EnvModel::get_current_lane() == drive_ros_msgs::Lane::LEFT*/
-            !start_waiting && std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - waiting_started).count() > 700) {
+            !start_waiting && std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - waiting_started).count() > 500) {
             set_state(SUCCESS);
             start_waiting = true;
         }
@@ -244,13 +244,12 @@ namespace NODES {
         start_waiting = true;
     }
     void SwitchToRightLane::tick() {
-        ROS_INFO("SWITCHING TO RIGHT LANE");
         if(start_waiting) {
             waiting_started = std::chrono::system_clock::now();
             start_waiting = false;
         }
         if(/*EnvModel::get_current_lane() == drive_ros_msgs::Lane::RIGHT*/
-            !start_waiting && std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - waiting_started).count() > 700) {
+            !start_waiting && std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - waiting_started).count() > 500) {
             set_state(SUCCESS);
             start_waiting = true;
         }
@@ -306,7 +305,6 @@ namespace NODES {
             waiting_started = std::chrono::system_clock::now();
             start_waiting = false;
         }
-        ROS_INFO_STREAM("waited " << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - waiting_started).count());
         if(!EnvModel::object_on_lane(drive_ros_msgs::Lane::RIGHT) 
             && (EnvModel::barred_area_right_distance() > oncoming_traffic_clearance 
                 || EnvModel::barred_area_right_distance() == -1)
