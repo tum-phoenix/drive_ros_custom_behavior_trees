@@ -244,6 +244,10 @@ namespace NODES {
         start_waiting = true;
     }
     void SwitchToRightLane::tick() {
+        //Currently, we don't need to explicitly send SWITCH_RIGHT.
+        set_state(SUCCESS);
+        return;
+        //Actual node code; currently unused ---------------------------------------------
         if(start_waiting) {
             waiting_started = std::chrono::system_clock::now();
             start_waiting = false;
@@ -321,7 +325,7 @@ namespace NODES {
             }
             else {*/
                 drive_ros_msgs::TrajectoryMetaInput *msg = new drive_ros_msgs::TrajectoryMetaInput();
-                msg->control_metadata = drive_ros_msgs::TrajectoryMetaInput::STANDARD;
+                msg->control_metadata = drive_ros_msgs::TrajectoryMetaInput::SWITCH_LEFT;
                 msg->max_speed = general_max_speed; //Spend as little time as possible on left lane
                 msg_handler.addMessageSuggestion(msg);
             /*}*/
