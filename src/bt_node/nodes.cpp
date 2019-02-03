@@ -305,6 +305,7 @@ namespace NODES {
             waiting_started = std::chrono::system_clock::now();
             start_waiting = false;
         }
+        ROS_INFO_STREAM("waited " << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - waiting_started).count());
         if(!EnvModel::object_on_lane(drive_ros_msgs::Lane::RIGHT) 
             && (EnvModel::barred_area_right_distance() > oncoming_traffic_clearance 
                 || EnvModel::barred_area_right_distance() == -1)
