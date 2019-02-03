@@ -54,6 +54,7 @@ float current_velocity = 0;
 
 //Miscellaneous
 bool clean_output;
+bool started_by_button = false;
 BT::Tree *tree;
 
 /* ---------- END OF GLOBAL DATA ---------- */
@@ -77,6 +78,7 @@ int main(int argc, char **argv) {
     if(mode.length() == 0) {
         ROS_INFO("Waiting for button input specifying the driving mode");
         mode = get_driving_mode();
+        started_by_button = true;
     }
 
     //Try to construct the tree
@@ -92,7 +94,7 @@ int main(int argc, char **argv) {
     //Create the tree instance
     tree = new BT::Tree(head, tick_freq_ms, clean_output);
     //If start states have been set in the launch file, apply them
-    if(initial_states->size() > 0) {
+    if(!started_by_button && initial_states->size() > 0) {
         ROS_INFO_STREAM("" << initial_states->size() << " start state(s) manually set, applying...");
         tree->reset_state(initial_states);
     }
