@@ -244,6 +244,7 @@ namespace NODES {
         start_waiting = true;
     }
     void SwitchToRightLane::tick() {
+        ROS_INFO("SWITCHING TO RIGHT LANE");
         if(start_waiting) {
             waiting_started = std::chrono::system_clock::now();
             start_waiting = false;
