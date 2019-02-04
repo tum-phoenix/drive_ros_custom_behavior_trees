@@ -92,6 +92,6 @@
       <remap from="trajectory_metadata" to="$(arg meta_command_out)"/>
       <remap from="env_in" to="$(arg env_in)"/>
       <remap from="drive_state_in" to="$(arg drive_state_in)"/>
-      <remap from="buttons" to="$(arg user_buttons"/>
+      <remap from="buttons" to="$(arg user_buttons)"/>
     </node>
 </launch>
