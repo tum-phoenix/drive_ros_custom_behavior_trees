@@ -120,6 +120,7 @@ namespace NODES {
         void tick();
     };
 
+    /* "OLD" CROSSWALK SUBTREE */
     class CrosswalkBreak : public BT::ActionNode {
     public:
         CrosswalkBreak(std::string name);
@@ -129,6 +130,16 @@ namespace NODES {
     class CrosswalkWait : public BT::ActionNode {
     public:
         CrosswalkWait(std::string name);
+        void tick();
+    private:
+        bool already_waiting;
+        std::chrono::system_clock::time_point waiting_started;
+    };
+
+    /* "NEW" CROSSWALK SUBTREE */
+    class Crosswalk : public BT::ActionNode {
+    public:
+        Crosswalk(std::string name);
         void tick();
     private:
         bool already_waiting;
