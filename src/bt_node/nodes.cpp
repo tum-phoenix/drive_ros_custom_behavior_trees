@@ -167,7 +167,7 @@ namespace NODES {
         }
         trajectory_msg.control_metadata = drive_ros_msgs::TrajectoryMetaInput::PARKING;
         trajectory_msg.max_speed = general_max_speed_cautious;
-        publish_trajectory_metadata(msg);
+        publish_trajectory_metadata(trajectory_msg);
     }
 
     /* ---------- class:FreeDrive ---------- */
