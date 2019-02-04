@@ -163,7 +163,7 @@ namespace NODES {
     Parking::Parking(std::string name) : BT::ActionNode(name) {}
     void Parking::tick() {
         if(parking_finished()) {
-            set_state(SUCCESS);
+            //set_state(SUCCESS);
         }
         trajectory_msg.control_metadata = drive_ros_msgs::TrajectoryMetaInput::PARKING;
         trajectory_msg.max_speed = general_max_speed_cautious;
