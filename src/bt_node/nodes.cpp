@@ -121,7 +121,7 @@ namespace NODES {
             start_waiting = false;
         }
         if(!start_waiting 
-            && (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - waiting_started).count() > 1000)) {
+            && (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - waiting_started).count() > 3000)) {
             start_waiting = true;
             successful_parking_count++;
             set_state(SUCCESS);
