@@ -170,7 +170,7 @@ void construct_parkingmode_tree(BT::SequenceNode *head) {
     BT::SequenceNode *node_driving = new BT::SequenceNode("Driving", true, false);
 
     NODES::ParkingSpotSearch *node_parkingSpotSearch = new NODES::ParkingSpotSearch("Parking Spot Search");
-    //NODES::ParkingBreaking *node_parkingBreaking = new NODES::ParkingBreaking("Breaking (parking)");
+    NODES::ParkingBreaking *node_parkingBreaking = new NODES::ParkingBreaking("Breaking (parking)");
     NODES::ParkingInProgress *node_parkingInProgress = new NODES::ParkingInProgress("Parking in progress");
     NODES::ParkingReverse *node_parkingReverse = new NODES::ParkingReverse("Parking reverse");
 
@@ -187,7 +187,7 @@ void construct_parkingmode_tree(BT::SequenceNode *head) {
     node_doCourse->addChild(node_driving);
 
     node_parkingPending->addChild(node_parkingSpotSearch);
-    node_parkingPending->addChild(node_parkingBreaking);
+    //node_parkingPending->addChild(node_parkingBreaking);
     node_parkingPending->addChild(node_parkingInProgress);
     node_parkingPending->addChild(node_parkingReverse);
 
