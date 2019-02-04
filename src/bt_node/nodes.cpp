@@ -163,6 +163,7 @@ namespace NODES {
     Parking::Parking(std::string name) : BT::ActionNode(name) {}
     void Parking::tick() {
         if(parking_finished()) {
+            ROS_INFO("Finished parking");
             set_state(SUCCESS);
         }
     }
