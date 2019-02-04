@@ -115,13 +115,14 @@ namespace NODES {
         start_waiting = true;
     }
     void ParkingInProgress::tick() {
+        publish_parking();
         if(current_velocity > speed_zero_tolerance) start_waiting = true;
         if(start_waiting) {
             waiting_started = std::chrono::system_clock::now();
             start_waiting = false;
         }
         if(!start_waiting 
-            && (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - waiting_started).count() > 3000)) {
+            && (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - waiting_started).count() > 2000)) {
             start_waiting = true;
             successful_parking_count++;
             set_state(SUCCESS);

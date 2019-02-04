@@ -9,6 +9,7 @@
 #include "drive_ros_msgs/TrajectoryMetaInput.h"
 #include "drive_ros_uavcan/phoenix_msgs__DriveState.h"
 #include "drive_ros_uavcan/phoenix_msgs__UserButtons.h"
+#include "drive_ros_uavcan/phoenix_msgs__StartParking.h"
 
 extern std::string mode;
 extern bool dynamic_reconfigure_overwrite_runtime_vals;
@@ -111,6 +112,7 @@ ros::Subscriber environment_model_subscriber;
 ros::Subscriber car_data_subscriber;
 ros::Subscriber button_subscriber;
 ros::Publisher trajectory_publisher;
+ros::Publisher parking_publisher;
 void setup_ros_communication(ros::NodeHandle *nh) {
     /* Dynamic Reconfigure Setup */
     dynamic_reconfigure::Server<drive_ros_custom_behavior_trees::BehaviorTreeConfig> dr_server;
@@ -125,10 +127,17 @@ void setup_ros_communication(ros::NodeHandle *nh) {
 
     /* Topic Publishers Setup */
     trajectory_publisher = nh->advertise<drive_ros_msgs::TrajectoryMetaInput>("trajectory_metadata", 64);
+    parking_publisher = nh->advertise<drive_ros_uavcan::phoenix_msgs__StartParking>("start_parking", 10);
 }
 
 void publish_trajectory_metadata(drive_ros_msgs::TrajectoryMetaInput msg) {
     trajectory_publisher.publish(msg);
+}
+
+void publish_parking() {
+    drive_ros_uavcan::phoenix_msgs__StartParking msg;
+    msg.start_flag = 1;
+    parking_publisher.publish(msg);
 }
 
 
