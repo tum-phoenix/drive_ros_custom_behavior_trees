@@ -162,7 +162,8 @@ namespace EnvModel {
 
         float cd =  get_traffic_mark_distance(MARKING_CROSSWALK);
         float pd = get_traffic_mark_distance(PEDESTRIAN);
-        float d = fmax(cd, pd);
+        float sd = get_traffic_mark_distance(SIGN_CROSSWALK);
+        float d = fmax(fmax(cd, pd), sd);
         v_crosswalk_distance = d;
         f_crosswalk_distance = true;
         return d;
