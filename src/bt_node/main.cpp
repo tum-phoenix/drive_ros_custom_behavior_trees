@@ -206,7 +206,7 @@ void construct_obstaclesmode_tree(BT::SequenceNode *head) {
 
     BT::SequenceNode *node_objectAvoiding = new BT::SequenceNode("Handling object");
     BT::SequenceNode *node_barredArea = new BT::SequenceNode("Handling barred area");
-    BT::SequenceNode *node_crosswalk = new BT::SequenceNode("Handling crosswalk");
+//    BT::SequenceNode *node_crosswalk = new BT::SequenceNode("Handling crosswalk");
     BT::SequenceNode *node_intersection = new BT::SequenceNode("Handling intersection");
 
     NODES::FollowingObject *node_followingObject = new NODES::FollowingObject("Following object");
@@ -218,9 +218,11 @@ void construct_obstaclesmode_tree(BT::SequenceNode *head) {
     NODES::SwitchToLeftLane *node_barredAreaSwitchToLeft = new NODES::SwitchToLeftLane("Switching to left lane (barred area)");
     NODES::LeftLaneDrive *node_barredAreaPass = new NODES::LeftLaneDrive("Passing barred area");
     NODES::SwitchToRightLane *node_barredAreaSwitchToRight = new NODES::SwitchToRightLane("Switching to right lane (barred area)");
-
+/*
     NODES::CrosswalkBreak *node_crosswalkBreak = new NODES::CrosswalkBreak("Breaking (crosswalk)");
     NODES::CrosswalkWait *node_crosswalkWait = new NODES::CrosswalkWait("Waiting at crosswalk");
+*/
+    NODES::Crosswalk *node_crosswalk = new NODES::Crosswalk("Crosswalk");
 
     NODES::IntersectionWait *node_intersectionWait = new NODES::IntersectionWait("Waiting at intersection");
     NODES::IntersectionDrive *node_intersectionDrive = new NODES::IntersectionDrive("Crossing intersection");

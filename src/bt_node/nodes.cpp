@@ -424,6 +424,35 @@ namespace NODES {
         }
     }
 
+    Crosswalk::Crosswalk(std::string name) : BT::ActionNode(name) {
+        already_waiting = false;
+    }
+    void Crosswalk::tick() {
+        drive_ros_msgs::TrajectoryMetaInput msg;
+        if(current_velocity < speed_zero_tolerance) {
+            if(already_waiting) {
+                if(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - waiting_started).count() > 6000) {
+                    set_state(SUCCESS);
+                    already_waiting = false;
+                }
+                else {
+                    msg.control_metadata = drive_ros_msgs::TrajectoryMetaInput::STRAIGHT_FORWARD;
+                    msg.max_speed = 0;
+                    msg_handler->addMessageSuggestion(msg);
+                }
+            }
+            else {
+                already_waiting = true;
+                waiting_started = std::chrono::system_clock::now();
+            }
+        }
+        else {
+            msg.control_metadata = drive_ros_msgs::TrajectoryMetaInput::STRAIGHT_FORWARD;
+            msg.max_speed = 0;
+            msg_handler->addMessageSuggestion(msg);
+        }
+    }
+
     /* ---------- class:IntersectionWait ---------- */
     IntersectionWait::IntersectionWait(std::string name) : BT::ActionNode(name) {
         start_waiting = true;
