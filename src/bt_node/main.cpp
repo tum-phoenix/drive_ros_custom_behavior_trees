@@ -243,8 +243,8 @@ void construct_obstaclesmode_tree(BT::SequenceNode *head) {
     node_barredArea->addChild(node_barredAreaSwitchToLeft);
     node_barredArea->addChild(node_barredAreaPass);
     node_barredArea->addChild(node_barredAreaSwitchToRight);
-    node_crosswalk->addChild(node_crosswalkBreak);
-    node_crosswalk->addChild(node_crosswalkWait);
+/*    node_crosswalk->addChild(node_crosswalkBreak);
+    node_crosswalk->addChild(node_crosswalkWait);*/
     node_intersection->addChild(node_intersectionWait);
     node_intersection->addChild(node_intersectionDrive);
 }

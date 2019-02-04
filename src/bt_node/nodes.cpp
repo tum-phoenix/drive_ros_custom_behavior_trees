@@ -428,7 +428,7 @@ namespace NODES {
         already_waiting = false;
     }
     void Crosswalk::tick() {
-        drive_ros_msgs::TrajectoryMetaInput msg;
+        drive_ros_msgs::TrajectoryMetaInput *msg = new drive_ros_msgs::TrajectoryMetaInput();
         if(current_velocity < speed_zero_tolerance) {
             if(already_waiting) {
                 if(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - waiting_started).count() > 6000) {
@@ -436,9 +436,9 @@ namespace NODES {
                     already_waiting = false;
                 }
                 else {
-                    msg.control_metadata = drive_ros_msgs::TrajectoryMetaInput::STRAIGHT_FORWARD;
-                    msg.max_speed = 0;
-                    msg_handler->addMessageSuggestion(msg);
+                    msg->control_metadata = drive_ros_msgs::TrajectoryMetaInput::STRAIGHT_FORWARD;
+                    msg->max_speed = 0;
+                    msg_handler.addMessageSuggestion(msg);
                 }
             }
             else {
@@ -447,9 +447,9 @@ namespace NODES {
             }
         }
         else {
-            msg.control_metadata = drive_ros_msgs::TrajectoryMetaInput::STRAIGHT_FORWARD;
-            msg.max_speed = 0;
-            msg_handler->addMessageSuggestion(msg);
+            msg->control_metadata = drive_ros_msgs::TrajectoryMetaInput::STRAIGHT_FORWARD;
+            msg->max_speed = 0;
+            msg_handler.addMessageSuggestion(msg);
         }
     }
 
