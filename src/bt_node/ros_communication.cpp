@@ -99,6 +99,7 @@ void car_data_callback(const drive_ros_uavcan::phoenix_msgs__DriveState &msg) {
 int user_button_state = 0;
 void user_button_callback(const drive_ros_uavcan::phoenix_msgs__UserButtons &msg) {
     user_button_state = msg.bit_but;
+    ROS_INFO_STREAM("Received " << user_button_state);
 }
 
 drive_ros_msgs::ParkingInProgress pip_msg;
@@ -116,8 +117,8 @@ std::string get_driving_mode() {
         msg.max_speed = 0;
         publish_trajectory_metadata(msg);
         //The user buttons are one-hot-encoded; least significant bit being the leftmost button.
-        if(user_button_state && 1) return "OBSTACLES";
-        if(user_button_state && 2) return "PARKING";
+        if(user_button_state & 1) return "OBSTACLES";
+        if(user_button_state & 2) return "PARKING";
         ros::spinOnce();
         r.sleep();
     }
