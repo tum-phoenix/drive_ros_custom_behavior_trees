@@ -24,6 +24,8 @@ namespace NODES {
         std::chrono::system_clock::time_point driving_start;
     };
 
+    /* "OLD" PARKING SUBTREE */
+
     class ParkingSpotSearch : public BT::ActionNode {
     public:
         ParkingSpotSearch(std::string name);
@@ -52,6 +54,14 @@ namespace NODES {
     private:
         bool start_waiting;
         std::chrono::system_clock::time_point waiting_started;
+    };
+
+    /* "NEW" PARKING SUBTREE */
+
+    class Parking : public BT::ActionNode {
+    public:
+        Parking(std::string name);
+        void tick();
     };
 
     class FreeDrive : public BT::ActionNode {

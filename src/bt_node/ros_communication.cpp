@@ -7,6 +7,7 @@
 #include "dynamic_reconfigure/server.h"
 #include "drive_ros_custom_behavior_trees/BehaviorTreeConfig.h"
 #include "drive_ros_msgs/TrajectoryMetaInput.h"
+#include "drive_ros_msgs/ParkingInProgress.h"
 #include "drive_ros_uavcan/phoenix_msgs__DriveState.h"
 #include "drive_ros_uavcan/phoenix_msgs__UserButtons.h"
 #include "drive_ros_uavcan/phoenix_msgs__StartParking.h"
@@ -45,6 +46,13 @@ extern int intersection_turn_indication;
 extern float current_velocity;
 
 extern BT::Tree *tree;
+
+ros::Subscriber environment_model_subscriber;
+ros::Subscriber car_data_subscriber;
+ros::Subscriber button_subscriber;
+ros::Publisher trajectory_publisher;
+ros::Publisher parking_publisher;
+ros::ServiceClient parking_finished_client;
 
 void dynamic_reconfigure_callback(drive_ros_custom_behavior_trees::BehaviorTreeConfig &config, uint32_t level) {
     if(!config.mode.compare("NONE")) mode = config.mode;
@@ -93,6 +101,13 @@ void user_button_callback(const drive_ros_uavcan::phoenix_msgs__UserButtons &msg
     user_button_state = msg.bit_but;
 }
 
+drive_ros_msgs::ParkingInProgress pip_msg;
+bool parking_finished() {
+    if(parking_finished_client.call(pip_msg)) {
+        return !pip_msg.response.parking_in_progress;
+    }
+}
+
 std::string get_driving_mode() {
     ros::Rate r(10);
     for(;;) {
@@ -108,11 +123,6 @@ std::string get_driving_mode() {
     }
 }
 
-ros::Subscriber environment_model_subscriber;
-ros::Subscriber car_data_subscriber;
-ros::Subscriber button_subscriber;
-ros::Publisher trajectory_publisher;
-ros::Publisher parking_publisher;
 void setup_ros_communication(ros::NodeHandle *nh) {
     /* Dynamic Reconfigure Setup */
     dynamic_reconfigure::Server<drive_ros_custom_behavior_trees::BehaviorTreeConfig> dr_server;
@@ -128,6 +138,9 @@ void setup_ros_communication(ros::NodeHandle *nh) {
     /* Topic Publishers Setup */
     trajectory_publisher = nh->advertise<drive_ros_msgs::TrajectoryMetaInput>("trajectory_metadata", 64);
     parking_publisher = nh->advertise<drive_ros_uavcan::phoenix_msgs__StartParking>("start_parking", 10);
+
+    /* Services setup */
+    parking_finished_client = nh->serviceClient<drive_ros_msgs::ParkingInProgress>("parking_finished");
 }
 
 void publish_trajectory_metadata(drive_ros_msgs::TrajectoryMetaInput msg) {

@@ -16,6 +16,8 @@ void publish_parking();
 
 std::string get_driving_mode();
 
+bool parking_finished();
+
 class RosInterface {
 public:
     RosInterface(ros::NodeHandle &nh);

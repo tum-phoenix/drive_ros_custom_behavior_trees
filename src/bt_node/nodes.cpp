@@ -159,14 +159,22 @@ namespace NODES {
         }
     }
 
+    /* ---------- class:Parking ---------- */
+    Parking::Parking(std::string name) : BT::ActionNode(name) {}
+    void Parking::tick() {
+        if(parking_finished()) {
+            set_state(SUCCESS);
+        }
+    }
+
     /* ---------- class:FreeDrive ---------- */
     FreeDrive::FreeDrive(std::string name) : BT::ActionNode(name) {}
     void FreeDrive::tick() {
         if(EnvModel::intersection_immediately_upfront()) {
-            set_state(SUCCESS);
+            //set_state(SUCCESS);
         }
         else if(EnvModel::start_line_distance() != -1 && (EnvModel::start_line_distance() < 0.2 || EnvModel::parking_sign_distance() < 0.2)) { //Start line/Parking sign detected
-            set_state(FAILURE); //Break infinite drive loop to re-enter parking mode
+            //set_state(FAILURE); //Break infinite drive loop to re-enter parking mode
         }
         else {
             if(EnvModel::get_current_lane() == drive_ros_msgs::Lane::LEFT || EnvModel::get_current_lane() == drive_ros_msgs::Lane::RIGHT) {
