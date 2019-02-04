@@ -103,6 +103,7 @@ void user_button_callback(const drive_ros_uavcan::phoenix_msgs__UserButtons &msg
 
 drive_ros_msgs::ParkingInProgress pip_msg;
 bool parking_finished() {
+    ROS_INFO("Calling parking state...");
     if(parking_finished_client.call(pip_msg)) {
         ROS_INFO_STREAM("Parking in progress=" << pip_msg.response.parking_in_progress);
         return !pip_msg.response.parking_in_progress;
