@@ -99,7 +99,6 @@ void car_data_callback(const drive_ros_uavcan::phoenix_msgs__DriveState &msg) {
 int user_button_state = 0;
 void user_button_callback(const drive_ros_uavcan::phoenix_msgs__UserButtons &msg) {
     user_button_state = msg.bit_but;
-    ROS_INFO_STREAM("Received " << user_button_state);
 }
 
 drive_ros_msgs::ParkingInProgress pip_msg;
