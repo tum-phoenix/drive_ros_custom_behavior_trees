@@ -6,7 +6,6 @@
 #include "bt_lib/action_node.h"
 #include "bt_node/ros_communication.h"
 
-#include <chrono>
 
 namespace NODES {
     class WaitForStart : public BT::ActionNode {
@@ -21,7 +20,7 @@ namespace NODES {
         void tick();
     private:
         bool clock_started;
-        std::chrono::system_clock::time_point driving_start;
+        ros::Time driving_start;
     };
 
     /* "OLD" PARKING SUBTREE */
@@ -44,7 +43,7 @@ namespace NODES {
         void tick();
     private:
         bool start_waiting;
-        std::chrono::system_clock::time_point waiting_started;
+        ros::Time waiting_started;
     };
 
     class ParkingReverse : public BT::ActionNode {
@@ -53,7 +52,7 @@ namespace NODES {
         void tick();
     private:
         bool start_waiting;
-        std::chrono::system_clock::time_point waiting_started;
+        ros::Time waiting_started;
     };
 
     /* "NEW" PARKING SUBTREE */
@@ -76,7 +75,7 @@ namespace NODES {
         void tick();
     private:
         int start_waiting;
-        std::chrono::system_clock::time_point waiting_started;
+        ros::Time waiting_started;
     };
 
     class SwitchToLeftLane : public BT::ActionNode {
@@ -85,7 +84,7 @@ namespace NODES {
         void tick();
     private:
         bool start_waiting;
-        std::chrono::system_clock::time_point waiting_started;
+        ros::Time waiting_started;
     };
 
     class SwitchToRightLane : public BT::ActionNode {
@@ -94,7 +93,7 @@ namespace NODES {
         void tick();
     private:
         bool start_waiting;
-        std::chrono::system_clock::time_point waiting_started;
+        ros::Time waiting_started;
     };
 
     class FollowingObject : public BT::ActionNode {
@@ -111,7 +110,7 @@ namespace NODES {
         void tick();
     private:
         bool start_waiting;
-        std::chrono::system_clock::time_point waiting_started;
+        ros::Time waiting_started;
     };
 
     class BarredAreaAnticipate : public BT::ActionNode {
@@ -133,7 +132,7 @@ namespace NODES {
         void tick();
     private:
         bool already_waiting;
-        std::chrono::system_clock::time_point waiting_started;
+        ros::Time waiting_started;
     };
 
     /* "NEW" CROSSWALK SUBTREE */
@@ -143,7 +142,7 @@ namespace NODES {
         void tick();
     private:
         bool already_waiting;
-        std::chrono::system_clock::time_point waiting_started;
+        ros::Time waiting_started;
     };
 
     class IntersectionWait : public BT::ActionNode {
@@ -152,7 +151,7 @@ namespace NODES {
         void tick();
     private:
         bool start_waiting;
-        std::chrono::system_clock::time_point waiting_started;
+        ros::Time waiting_started;
     };
 
     class IntersectionDrive : public BT::ActionNode {
@@ -161,7 +160,7 @@ namespace NODES {
         void tick();
     private:
         bool started_driving;
-        std::chrono::system_clock::time_point start_time;
+        ros::Time start_time;
     };
 
 

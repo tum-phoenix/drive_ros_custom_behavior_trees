@@ -118,7 +118,6 @@ std::string get_driving_mode() {
         //The user buttons are one-hot-encoded; least significant bit being the leftmost button.
         if(user_button_state & 1) return "OBSTACLES";
         if(user_button_state & 2) return "PARKING";
-        ros::spinOnce();
         r.sleep();
     }
 }

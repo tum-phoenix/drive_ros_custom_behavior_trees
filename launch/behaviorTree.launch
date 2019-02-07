@@ -11,7 +11,7 @@
     <arg name="tick_frequency" default="60"/>
     <arg name="object_following_break_factor" default="0.8"/>
     <arg name="break_distance_safety_factor" default="1.6"/>
-    <arg name="intersection_turn_duration" default="800"/>
+    <arg name="intersection_turn_duration" default="0.8"/>
     <!-- Speeds -->
     <arg name="general_max_speed" default="1.0"/>
     <arg name="general_max_speed_cautious" default="0.8"/>

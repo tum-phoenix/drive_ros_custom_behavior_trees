@@ -64,13 +64,13 @@ namespace NODES {
     }
     void InitialDriving::tick() {
         if(!clock_started) {
-            driving_start = std::chrono::system_clock::now();
+            driving_start = ros::Time::now();
             clock_started = true;
         }
         //To improve robustness of the system, InitialDriving is completed when either the start line of the Parking Zone sign is detected.
         if((EnvModel::start_line_distance() != -1 && EnvModel::start_line_distance() < 0.2)
             || (EnvModel::parking_sign_distance() != -1 && EnvModel::parking_sign_distance() < 0.2)
-            || (clock_started && (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - driving_start).count()) > 2000)) {
+            || (clock_started && (ros::Time::now().toSec() - driving_start.toSec()) > 2.0)) {
             set_state(SUCCESS);
         }
         else {
@@ -118,11 +118,11 @@ namespace NODES {
         publish_parking();
         if(current_velocity > speed_zero_tolerance) start_waiting = true;
         if(start_waiting) {
-            waiting_started = std::chrono::system_clock::now();
+            waiting_started = ros::Time::now();
             start_waiting = false;
         }
         if(!start_waiting 
-            && (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - waiting_started).count() > 2000)) {
+            && ((ros::Time::now().toSec() - waiting_startted.toSec()) > 2.0)) {
             start_waiting = true;
             successful_parking_count++;
             set_state(SUCCESS);
@@ -141,11 +141,11 @@ namespace NODES {
     void ParkingReverse::tick() {
         if(current_velocity > speed_zero_tolerance) start_waiting = true;
         if(start_waiting) {
-            waiting_started = std::chrono::system_clock::now();
+            waiting_started = ros::Time::now();
             start_waiting = false;
         }
         if(!start_waiting 
-            && (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - waiting_started).count() > 1000)) {
+            && ((ros::Time::now().toSec() - waiting_startted.toSec()) > 1.0)) {
             start_waiting = true;
             set_state(SUCCESS);
         }
@@ -199,11 +199,11 @@ namespace NODES {
     void FreeDriveIntersectionWait::tick() {
         if(start_waiting == 0 && (current_velocity < speed_zero_tolerance)) start_waiting = 1;
         if(start_waiting == 1) {
-            waiting_started = std::chrono::system_clock::now();
+            waiting_started = ros::Time::now();
             start_waiting = 2;
         }
         if(start_waiting == 2 
-            && std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - waiting_started).count() > 3000) { //Waiting time is over or no waiting is needed
+            && (ros::Time::now().toSec() - waiting_startted.toSec()) > 3.0) { //Waiting time is over or no waiting is needed
             set_state(SUCCESS); //The intersection crossing is done by IntersectionDrive.
         }
         else {
@@ -219,12 +219,12 @@ namespace NODES {
     }
     void SwitchToLeftLane::tick() {
         if(start_waiting) {
-            waiting_started = std::chrono::system_clock::now();
+            waiting_started = ros::Time::now();
             start_waiting = false;
         }
         drive_ros_msgs::TrajectoryMetaInput *msg = new drive_ros_msgs::TrajectoryMetaInput();
         if(/*EnvModel::get_current_lane() == drive_ros_msgs::Lane::LEFT*/
-            !start_waiting && std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - waiting_started).count() > 500) {
+            !start_waiting && (ros::Time::now().toSec() - waiting_startted.toSec()) > 0.5) {
             set_state(SUCCESS);
             start_waiting = true;
         }
@@ -261,11 +261,11 @@ namespace NODES {
         return;
         //Actual node code; currently unused ---------------------------------------------
         if(start_waiting) {
-            waiting_started = std::chrono::system_clock::now();
+            waiting_started = ros::Time::now();
             start_waiting = false;
         }
         if(/*EnvModel::get_current_lane() == drive_ros_msgs::Lane::RIGHT*/
-            !start_waiting && std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - waiting_started).count() > 500) {
+            !start_waiting && (ros::Time::now().toSec() - waiting_startted.toSec()) > 0.5) {
             set_state(SUCCESS);
             start_waiting = true;
         }
@@ -318,14 +318,14 @@ namespace NODES {
     }
     void LeftLaneDrive::tick() {
         if(start_waiting) {
-            waiting_started = std::chrono::system_clock::now();
+            waiting_started = ros::Time::now();
             start_waiting = false;
         }
         if(!EnvModel::object_on_lane(drive_ros_msgs::Lane::RIGHT) 
             && (EnvModel::barred_area_right_distance() > oncoming_traffic_clearance 
                 || EnvModel::barred_area_right_distance() == -1)
             && !start_waiting 
-            && (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - waiting_started).count() > 500)) { //When overtaking / passing barred area is finished.
+            && ((ros::Time::now().toSec() - waiting_startted.toSec()) > 0.5)) { //When overtaking / passing barred area is finished.
             set_state(SUCCESS);
             start_waiting = true;
         }
@@ -401,8 +401,7 @@ namespace NODES {
         else if(EnvModel::pedestrians_on_track() == 0 && EnvModel::was_pedestrian_on_track()) {
             //There hasn't been someone on the track for x milliseconds -> go on.
             if(already_waiting
-                && std::chrono::duration_cast<std::chrono::milliseconds>
-                    (std::chrono::system_clock::now() - waiting_started).count() > 500) {
+                && (ros::Time::now().toSec() - waiting_startted.toSec()) > 0.5) {
                 already_waiting = false;
                 set_state(SUCCESS);
             }
@@ -410,7 +409,7 @@ namespace NODES {
             else {
                 //If not yet waiting, initialize it.
                 if(!already_waiting) {
-                    waiting_started = std::chrono::system_clock::now();
+                    waiting_started = ros::Time::now();
                     already_waiting = true;
                 }
                 //anyways, break the car.
@@ -434,7 +433,7 @@ namespace NODES {
         drive_ros_msgs::TrajectoryMetaInput *msg = new drive_ros_msgs::TrajectoryMetaInput();
         if(current_velocity < speed_zero_tolerance) {
             if(already_waiting) {
-                if(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - waiting_started).count() > 6000) {
+                if((ros::Time::now().toSec() - waiting_startted.toSec()) > 6.0) {
                     set_state(SUCCESS);
                     already_waiting = false;
                 }
@@ -446,7 +445,7 @@ namespace NODES {
             }
             else {
                 already_waiting = true;
-                waiting_started = std::chrono::system_clock::now();
+                waiting_started = ros::Time::now();
             }
         }
         else {
@@ -463,14 +462,14 @@ namespace NODES {
     void IntersectionWait::tick() {
         //Only start waiting when the car has stopped
         if(current_velocity < speed_zero_tolerance && start_waiting) {
-            waiting_started = std::chrono::system_clock::now();
+            waiting_started = ros::Time::now();
             start_waiting = false;
         }
 
         //Cases where waiting can be stopped
         if(priority_road
             //!start_waiting is needed so that only a correctly set timestamp is being compared.
-            || ((EnvModel::intersection_no_object() && !start_waiting && std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - waiting_started).count() > 3000)
+            || ((EnvModel::intersection_no_object() && !start_waiting && (ros::Time::now().toSec() - waiting_startted.toSec()) > 3.0)
                 && (give_way && EnvModel::intersection_no_object())
                     || (!give_way && EnvModel::intersection_no_object_right()))) {
             set_state(SUCCESS);
@@ -489,7 +488,7 @@ namespace NODES {
     }
     void IntersectionDrive::tick() {
         started_driving = true;
-        if(started_driving && std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - start_time).count() > intersection_turn_duration) { //On normal track again
+        if(started_driving && (ros::Time::now().toSec() - started_driving.toSec()) > intersection_turn_duration) { //On normal track again
             intersection_turn_indication = 0;
             started_driving = false;
             set_state(SUCCESS);
