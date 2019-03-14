@@ -166,15 +166,9 @@ void construct_parkingmode_tree(BT::SequenceNode *head) {
     NODES::InitialDriving *node_initialDriving = new NODES::InitialDriving("Initial Driving");
     BT::SequenceNode *node_doCourse = new BT::SequenceNode("Course loop", true, true);
 
-//  BT::SequenceNode *node_parkingPending = new BT::SequenceNode("Parking");
     NODES::Parking *node_parking = new NODES::Parking("Parking");
     BT::SequenceNode *node_driving = new BT::SequenceNode("Driving", true, false);
-/*
-    NODES::ParkingSpotSearch *node_parkingSpotSearch = new NODES::ParkingSpotSearch("Parking Spot Search");
-    NODES::ParkingBreaking *node_parkingBreaking = new NODES::ParkingBreaking("Breaking (parking)");
-    NODES::ParkingInProgress *node_parkingInProgress = new NODES::ParkingInProgress("Parking in progress");
-    NODES::ParkingReverse *node_parkingReverse = new NODES::ParkingReverse("Parking reverse");
-*/
+
     NODES::FreeDrive *node_freeDrive = new NODES::FreeDrive("Free Drive");
     NODES::FreeDriveIntersectionWait *node_freeDriveIntersectionWait = new NODES::FreeDriveIntersectionWait("Waiting at intersection");
     NODES::IntersectionDrive *node_freeDriveIntersectionDrive = new NODES::IntersectionDrive("Crossing intersection");
@@ -184,15 +178,9 @@ void construct_parkingmode_tree(BT::SequenceNode *head) {
     head->addChild(node_initialDriving);
     head->addChild(node_doCourse);
 
-//  node_doCourse->addChild(node_parkingPending);
     node_doCourse->addChild(node_parking);
     node_doCourse->addChild(node_driving);
-/*
-    node_parkingPending->addChild(node_parkingSpotSearch);
-    node_parkingPending->addChild(node_parkingBreaking);
-    node_parkingPending->addChild(node_parkingInProgress);
-    node_parkingPending->addChild(node_parkingReverse);
-*/
+
     node_driving->addChild(node_freeDrive);
     node_driving->addChild(node_freeDriveIntersectionWait);
     node_driving->addChild(node_freeDriveIntersectionDrive);
