@@ -18,44 +18,7 @@ namespace NODES {
     public:
         InitialDriving(std::string name);
         void tick();
-    private:
-        bool clock_started;
-        ros::Time driving_start;
     };
-
-    /* "OLD" PARKING SUBTREE */
-
-    class ParkingSpotSearch : public BT::ActionNode {
-    public:
-        ParkingSpotSearch(std::string name);
-        void tick();
-    };
-
-    class ParkingBreaking : public BT::ActionNode {
-    public:
-        ParkingBreaking(std::string name);
-        void tick();
-    };
-
-    class ParkingInProgress : public BT::ActionNode {
-    public:
-        ParkingInProgress(std::string name);
-        void tick();
-    private:
-        bool start_waiting;
-        ros::Time waiting_started;
-    };
-
-    class ParkingReverse : public BT::ActionNode {
-    public:
-        ParkingReverse(std::string name);
-        void tick();
-    private:
-        bool start_waiting;
-        ros::Time waiting_started;
-    };
-
-    /* "NEW" PARKING SUBTREE */
 
     class Parking : public BT::ActionNode {
     public:
@@ -74,7 +37,7 @@ namespace NODES {
         FreeDriveIntersectionWait(std::string name);
         void tick();
     private:
-        int start_waiting;
+        int waiting_status;
         ros::Time waiting_started;
     };
 
@@ -82,18 +45,12 @@ namespace NODES {
     public:
         SwitchToLeftLane(std::string name);
         void tick();
-    private:
-        bool start_waiting;
-        ros::Time waiting_started;
     };
 
     class SwitchToRightLane : public BT::ActionNode {
     public:
         SwitchToRightLane(std::string name);
         void tick();
-    private:
-        bool start_waiting;
-        ros::Time waiting_started;
     };
 
     class FollowingObject : public BT::ActionNode {
@@ -119,7 +76,6 @@ namespace NODES {
         void tick();
     };
 
-    /* "OLD" CROSSWALK SUBTREE */
     class CrosswalkBreak : public BT::ActionNode {
     public:
         CrosswalkBreak(std::string name);
@@ -135,21 +91,12 @@ namespace NODES {
         ros::Time waiting_started;
     };
 
-    /* "NEW" CROSSWALK SUBTREE */
-    class Crosswalk : public BT::ActionNode {
-    public:
-        Crosswalk(std::string name);
-        void tick();
-    private:
-        bool already_waiting;
-        ros::Time waiting_started;
-    };
-
     class IntersectionWait : public BT::ActionNode {
     public:
         IntersectionWait(std::string name);
         void tick();
     private:
+        bool waited3sec();
         bool start_waiting;
         ros::Time waiting_started;
     };

@@ -89,7 +89,7 @@ namespace EnvModel {
                 constraint_distances.push_back(env_msg.traffic_marks[i].track_distance);
         }
 
-        //Sort them in ascending order
+        //Sort them in ascending distance order
         std::sort(constraint_distances.begin(), constraint_distances.end(), std::greater<float>());
         //Try to find a parking spot
         for(int i = 0; i < constraint_distances.size() - 1; i++) {
@@ -163,10 +163,9 @@ namespace EnvModel {
         float cd =  get_traffic_mark_distance(MARKING_CROSSWALK);
         float pd = get_traffic_mark_distance(PEDESTRIAN);
         float sd = get_traffic_mark_distance(SIGN_CROSSWALK);
-        float d = fmax(fmax(cd, pd), sd);
-        v_crosswalk_distance = d;
+        v_crosswalk_distance = fmax(fmax(cd, pd), sd);
         f_crosswalk_distance = true;
-        return d;
+        return v_crosswalk_distance;
     }
 
     bool f_start_line_distance = false;
@@ -174,10 +173,9 @@ namespace EnvModel {
     float start_line_distance() {
         if(f_start_line_distance) return v_start_line_distance;
 
-        float d = get_traffic_mark_distance(MARKING_START_LINE);
-        v_start_line_distance = d;
+        v_start_line_distance = get_traffic_mark_distance(MARKING_START_LINE);
         f_start_line_distance = true;
-        return d;
+        return v_start_line_distance;
     }
 
     bool f_parking_sign_distance = false;
@@ -185,10 +183,9 @@ namespace EnvModel {
     float parking_sign_distance() {
         if(f_parking_sign_distance) return v_parking_sign_distance;
 
-        float d = get_traffic_mark_distance(SIGN_PARKING);
-        v_parking_sign_distance = d;
+        v_parking_sign_distance = get_traffic_mark_distance(SIGN_PARKING);
         f_parking_sign_distance = true;
-        return d;
+        return v_parking_sign_distance;
     }
 
     bool f_in_sharp_turn = false;
@@ -230,7 +227,7 @@ namespace EnvModel {
         if(!start_box_was_closed 
             && ((env_msg.front_distance == 0 ? 10000 : env_msg.front_distance) < max_start_box_distance)) {
             start_box_was_closed = true;
-            ROS_INFO_STREAM("Start box detected");
+            ROS_INFO("Start box detected");
         }
         return start_box_was_closed && (env_msg.front_distance > max_start_box_distance);
     }
@@ -395,17 +392,17 @@ namespace EnvModel {
                     break;
                 case SIGN_STOP:
                     if(msg.traffic_marks[i].track_distance < min_sign_react_distance) {
+                        force_stop = true;
                         priority_road = false;
                         //Maybe the express_way_end was not detected...
                         express_way = false;
-                        force_stop = true;
                     }
                     break;
                 case MARKING_CROSSING_STOP:
+                    force_stop = true;
                     priority_road = false;
                     //Maybe the express_way_end was not detected...
                     express_way = false;
-                    force_stop = true;
                     break;
                 case SIGN_NO_PASSING_ZONE:
                     if(msg.traffic_marks[i].track_distance < min_sign_react_distance) {

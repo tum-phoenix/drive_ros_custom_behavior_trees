@@ -59,18 +59,11 @@ namespace NODES {
     }
 
     /* ---------- class:InitialDriving ---------- */
-    InitialDriving::InitialDriving(std::string name) : BT::ActionNode(name) {
-        clock_started = false;
-    }
+    InitialDriving::InitialDriving(std::string name) : BT::ActionNode(name) {}
     void InitialDriving::tick() {
-        if(!clock_started) {
-            driving_start = ros::Time::now();
-            clock_started = true;
-        }
         //To improve robustness of the system, InitialDriving is completed when either the start line of the Parking Zone sign is detected.
         if((EnvModel::start_line_distance() != -1 && EnvModel::start_line_distance() < 0.2)
-            || (EnvModel::parking_sign_distance() != -1 && EnvModel::parking_sign_distance() < 0.2)
-            || (clock_started && (ros::Time::now().toSec() - driving_start.toSec()) > 2.0)) {
+            || (EnvModel::parking_sign_distance() != -1 && EnvModel::parking_sign_distance() < 0.2)) {
             set_state(SUCCESS);
         }
         else {
@@ -84,8 +77,13 @@ namespace NODES {
     /* ---------- class:Parking ---------- */
     Parking::Parking(std::string name) : BT::ActionNode(name) {}
     void Parking::tick() {
+        if(successful_parking_count >= 2) {
+            //skip_failed_child is activated for parent node, thus parking will just be skipped
+            set_state(FAILURE);
+            return;
+        }
         if(parking_finished()) {
-            //set_state(SUCCESS);
+            set_state(SUCCESS);
         }
         trajectory_msg.control_metadata = drive_ros_msgs::TrajectoryMetaInput::PARKING;
         trajectory_msg.max_speed = general_max_speed_cautious;
@@ -96,14 +94,20 @@ namespace NODES {
     FreeDrive::FreeDrive(std::string name) : BT::ActionNode(name) {}
     void FreeDrive::tick() {
         if(EnvModel::intersection_immediately_upfront()) {
-            //set_state(SUCCESS);
+            set_state(SUCCESS);
         }
-        else if(EnvModel::start_line_distance() != -1 && (EnvModel::start_line_distance() < 0.2 || EnvModel::parking_sign_distance() < 0.2)) { //Start line/Parking sign detected
-            //set_state(FAILURE); //Break infinite drive loop to re-enter parking mode
+        else if((EnvModel::start_line_distance() != -1 && EnvModel::start_line_distance() < 0.2)
+            ||  (EnvModel::parking_sign_distance() != -1 && EnvModel::parking_sign_distance() < 0.2)) {
+            set_state(FAILURE); //Break infinite drive loop to re-enter parking mode
         }
         else {
-            if(EnvModel::get_current_lane() == drive_ros_msgs::Lane::LEFT || EnvModel::get_current_lane() == drive_ros_msgs::Lane::RIGHT) {
+            if(EnvModel::get_current_lane() == drive_ros_msgs::Lane::RIGHT) {
                 trajectory_msg.control_metadata = drive_ros_msgs::TrajectoryMetaInput::STANDARD;
+                trajectory_msg.max_speed = fmin(speed_limit, 
+                    EnvModel::in_sharp_turn() ? sharp_turn_speed : EnvModel::in_very_sharp_turn() ? very_sharp_turn_speed : general_max_speed);
+            }
+            else if(EnvModel::get_current_lane() == drive_ros_msgs::Lane::LEFT) {
+                trajectory_msg.control_metadata = drive_ros_msgs::TrajectoryMetaInput::SWITCH_RIGHT;
                 trajectory_msg.max_speed = fmin(speed_limit, 
                     EnvModel::in_sharp_turn() ? sharp_turn_speed : EnvModel::in_very_sharp_turn() ? very_sharp_turn_speed : general_max_speed);
             }
@@ -116,16 +120,16 @@ namespace NODES {
 
     /* ---------- class:FreeDriveIntersectionWait ---------- */
     FreeDriveIntersectionWait::FreeDriveIntersectionWait(std::string name) : BT::ActionNode(name) {
-        start_waiting = 0;
+        waiting_status = 0;
     }
     void FreeDriveIntersectionWait::tick() {
-        if(start_waiting == 0 && (current_velocity < speed_zero_tolerance)) start_waiting = 1;
-        if(start_waiting == 1) {
+        if(waiting_status == 0 && (current_velocity < speed_zero_tolerance)) waiting_status = 1;
+        if(waiting_status == 1) {
             waiting_started = ros::Time::now();
-            start_waiting = 2;
+            waiting_status = 2;
         }
-        if(start_waiting == 2 
-            && (ros::Time::now().toSec() - waiting_startted.toSec()) > 3.0) { //Waiting time is over or no waiting is needed
+        if(waiting_status == 2 
+            && (ros::Time::now().toSec() - waiting_started.toSec()) > 3.0) {
             set_state(SUCCESS); //The intersection crossing is done by IntersectionDrive.
         }
         else {
@@ -136,19 +140,11 @@ namespace NODES {
     }
 
     /* ---------- class:SwitchToLeftLane ---------- */
-    SwitchToLeftLane::SwitchToLeftLane(std::string name) : BT::ActionNode(name) {
-        start_waiting = true;
-    }
+    SwitchToLeftLane::SwitchToLeftLane(std::string name) : BT::ActionNode(name) {}
     void SwitchToLeftLane::tick() {
-        if(start_waiting) {
-            waiting_started = ros::Time::now();
-            start_waiting = false;
-        }
         drive_ros_msgs::TrajectoryMetaInput *msg = new drive_ros_msgs::TrajectoryMetaInput();
-        if(/*EnvModel::get_current_lane() == drive_ros_msgs::Lane::LEFT*/
-            !start_waiting && (ros::Time::now().toSec() - waiting_startted.toSec()) > 0.5) {
+        if(EnvModel::get_current_lane() == drive_ros_msgs::Lane::LEFT) {
             set_state(SUCCESS);
-            start_waiting = true;
         }
         else if(EnvModel::get_current_lane() == drive_ros_msgs::Lane::RIGHT) {
             if(EnvModel::object_min_lane_distance(drive_ros_msgs::Lane::LEFT) > oncoming_traffic_clearance) {
@@ -165,40 +161,32 @@ namespace NODES {
         else { //Lane is undefined; in the middle of lane change
             if(!EnvModel::object_on_lane(drive_ros_msgs::Lane::LEFT)) {
                 msg->control_metadata = drive_ros_msgs::TrajectoryMetaInput::SWITCH_LEFT;
+                msg->max_speed = max_lane_switch_speed;
+                msg_handler.addMessageSuggestion(msg);
             } else {
-                msg->control_metadata = drive_ros_msgs::TrajectoryMetaInput::SWITCH_RIGHT;
+                set_state(FAILURE);
             }
-            msg->max_speed = max_lane_switch_speed;
-            msg_handler.addMessageSuggestion(msg);
         }
     }
 
     /* ---------- class:SwitchToRightLane ---------- */
-    SwitchToRightLane::SwitchToRightLane(std::string name) : BT::ActionNode(name) {
-        start_waiting = true;
-    }
+    SwitchToRightLane::SwitchToRightLane(std::string name) : BT::ActionNode(name) {}
     void SwitchToRightLane::tick() {
         //Currently, we don't need to explicitly send SWITCH_RIGHT.
         set_state(SUCCESS);
         return;
         //Actual node code; currently unused ---------------------------------------------
-        if(start_waiting) {
-            waiting_started = ros::Time::now();
-            start_waiting = false;
-        }
-        if(/*EnvModel::get_current_lane() == drive_ros_msgs::Lane::RIGHT*/
-            !start_waiting && (ros::Time::now().toSec() - waiting_startted.toSec()) > 0.5) {
+        if(EnvModel::get_current_lane() == drive_ros_msgs::Lane::RIGHT) {
             set_state(SUCCESS);
-            start_waiting = true;
         }
         else {
             drive_ros_msgs::TrajectoryMetaInput *msg = new drive_ros_msgs::TrajectoryMetaInput();
-            //If there's at least some space on the right lane, go there.
+            //If there's at least some space on the right lane, switch.
             if((EnvModel::object_min_lane_distance(drive_ros_msgs::Lane::RIGHT) != -1 || EnvModel::object_min_lane_distance(drive_ros_msgs::Lane::RIGHT) > 0.5)
                 && (EnvModel::barred_area_right_distance() != -1 || EnvModel::barred_area_right_distance() > 0.5)) {
                 msg->control_metadata = drive_ros_msgs::TrajectoryMetaInput::SWITCH_RIGHT;
                 msg->max_speed = max_lane_switch_speed;
-                msg_handler.addMessageSuggestion(msg);    
+                msg_handler.addMessageSuggestion(msg);
             }
             //Otherwise slowly go forward and switch to the right lane as soon as possible.
             else {
@@ -247,29 +235,29 @@ namespace NODES {
             && (EnvModel::barred_area_right_distance() > oncoming_traffic_clearance 
                 || EnvModel::barred_area_right_distance() == -1)
             && !start_waiting 
-            && ((ros::Time::now().toSec() - waiting_startted.toSec()) > 0.5)) { //When overtaking / passing barred area is finished.
+            && ((ros::Time::now().toSec() - waiting_started.toSec()) > 0.5)) { //When overtaking / passing barred area is finished.
             set_state(SUCCESS);
             start_waiting = true;
         }
         else {
-            /*if(EnvModel::object_min_lane_distance(drive_ros_msgs::Lane::LEFT) < oncoming_traffic_clearance 
+            if(EnvModel::object_min_lane_distance(drive_ros_msgs::Lane::LEFT) < oncoming_traffic_clearance 
                 || (EnvModel::barred_area_left_distance() == -1 ? 10000 : EnvModel::barred_area_left_distance()) < oncoming_traffic_clearance
                 || (EnvModel::pass_by_on_right_distance() == -1 ? 10000 : EnvModel::pass_by_on_right_distance()) < oncoming_traffic_clearance) { //Abort, there's no room to overtake.
                     set_state(SUCCESS); //Go to "switch to right lane" and maybe then go back to "switch to left lane" again to try once more.
             }
-            else {*/
+            else {
                 drive_ros_msgs::TrajectoryMetaInput *msg = new drive_ros_msgs::TrajectoryMetaInput();
                 msg->control_metadata = drive_ros_msgs::TrajectoryMetaInput::SWITCH_LEFT;
                 msg->max_speed = general_max_speed; //Spend as little time as possible on left lane
                 msg_handler.addMessageSuggestion(msg);
-            /*}*/
+            }
         }
     }
 
     /* ---------- class:BarredAreaAnticipate ---------- */
     BarredAreaAnticipate::BarredAreaAnticipate(std::string name) : BT::ActionNode(name) {}
     void BarredAreaAnticipate::tick() {
-        if(EnvModel::barred_area_right_distance() < barred_area_react_distance
+        if(EnvModel::barred_area_right_distance() != -1 && EnvModel::barred_area_right_distance() < barred_area_react_distance
             && (EnvModel::object_min_lane_distance(drive_ros_msgs::Lane::LEFT) > oncoming_traffic_clearance)) {
             set_state(SUCCESS);
         }
@@ -290,9 +278,7 @@ namespace NODES {
         else {
             drive_ros_msgs::TrajectoryMetaInput *msg = new drive_ros_msgs::TrajectoryMetaInput();
             if(EnvModel::num_of_pedestrians() == 0) {
-                msg->control_metadata = drive_ros_msgs::TrajectoryMetaInput::STANDARD;
-                msg->max_speed = general_max_speed;
-                msg_handler.addMessageSuggestion(msg);
+                set_state(FAILURE);
             } else if (current_velocity < speed_zero_tolerance) {
                 set_state(SUCCESS);
             }
@@ -321,24 +307,7 @@ namespace NODES {
         }
         //There was (!) a pedestrian on the track, but currently nobody is.
         else if(EnvModel::pedestrians_on_track() == 0 && EnvModel::was_pedestrian_on_track()) {
-            //There hasn't been someone on the track for x milliseconds -> go on.
-            if(already_waiting
-                && (ros::Time::now().toSec() - waiting_startted.toSec()) > 0.5) {
-                already_waiting = false;
-                set_state(SUCCESS);
-            }
-            //Didn't start waiting yet or still waiting for somebody to enter the track
-            else {
-                //If not yet waiting, initialize it.
-                if(!already_waiting) {
-                    waiting_started = ros::Time::now();
-                    already_waiting = true;
-                }
-                //anyways, break the car.
-                msg->control_metadata = drive_ros_msgs::TrajectoryMetaInput::STANDARD;
-                msg->max_speed = 0;
-                msg_handler.addMessageSuggestion(msg);
-            }
+            set_state(SUCCESS);
         }
         //There's somebody to wait for.
         else {
@@ -348,38 +317,12 @@ namespace NODES {
         }
     }
 
-    Crosswalk::Crosswalk(std::string name) : BT::ActionNode(name) {
-        already_waiting = false;
-    }
-    void Crosswalk::tick() {
-        drive_ros_msgs::TrajectoryMetaInput *msg = new drive_ros_msgs::TrajectoryMetaInput();
-        if(current_velocity < speed_zero_tolerance) {
-            if(already_waiting) {
-                if((ros::Time::now().toSec() - waiting_startted.toSec()) > 6.0) {
-                    set_state(SUCCESS);
-                    already_waiting = false;
-                }
-                else {
-                    msg->control_metadata = drive_ros_msgs::TrajectoryMetaInput::STRAIGHT_FORWARD;
-                    msg->max_speed = 0;
-                    msg_handler.addMessageSuggestion(msg);
-                }
-            }
-            else {
-                already_waiting = true;
-                waiting_started = ros::Time::now();
-            }
-        }
-        else {
-            msg->control_metadata = drive_ros_msgs::TrajectoryMetaInput::STRAIGHT_FORWARD;
-            msg->max_speed = 0;
-            msg_handler.addMessageSuggestion(msg);
-        }
-    }
-
     /* ---------- class:IntersectionWait ---------- */
     IntersectionWait::IntersectionWait(std::string name) : BT::ActionNode(name) {
         start_waiting = true;
+    }
+    bool IntersectionWait::waited3sec() {
+        return !start_waiting && (ros::Time::now().toSec() - waiting_started.toSec()) > 3.0;
     }
     void IntersectionWait::tick() {
         //Only start waiting when the car has stopped
@@ -390,10 +333,8 @@ namespace NODES {
 
         //Cases where waiting can be stopped
         if(priority_road
-            //!start_waiting is needed so that only a correctly set timestamp is being compared.
-            || ((EnvModel::intersection_no_object() && !start_waiting && (ros::Time::now().toSec() - waiting_startted.toSec()) > 3.0)
-                && (give_way && EnvModel::intersection_no_object())
-                    || (!give_way && EnvModel::intersection_no_object_right()))) {
+            || (waited3sec() && give_way && EnvModel::intersection_no_object()) 
+            || (waited3sec() && !give_way && EnvModel::intersection_no_object_right())) {
             set_state(SUCCESS);
         }
         else {
@@ -409,8 +350,13 @@ namespace NODES {
         started_driving = false;
     }
     void IntersectionDrive::tick() {
-        started_driving = true;
-        if(started_driving && (ros::Time::now().toSec() - started_driving.toSec()) > intersection_turn_duration) { //On normal track again
+        //Set start time at first tick
+        if(!started_driving) {
+            start_time = ros::Time::now();
+            started_driving = true;
+        }
+        //If driving for long enough, assume the intersection has been crossed.
+        if(started_driving && (ros::Time::now().toSec() - start_time.toSec()) > intersection_turn_duration) {
             intersection_turn_indication = 0;
             started_driving = false;
             set_state(SUCCESS);
