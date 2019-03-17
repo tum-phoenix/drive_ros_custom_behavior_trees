@@ -90,14 +90,14 @@ int main(int argc, char **argv) {
         ROS_ERROR("Driving mode not properly declared. Please check launch file");
         return -1;
     }
-
-    //Create the tree instance
     tree = new BT::Tree(head, tick_freq_ms, clean_output);
+    
     //If start states have been set in the launch file, apply them
     if(!started_by_button && initial_states->size() > 0) {
         ROS_INFO_STREAM("" << initial_states->size() << " start state(s) manually set, applying...");
         tree->reset_state(initial_states);
     }
+
     //Fire up the tree
     tree->execute();
 }
@@ -229,8 +229,8 @@ void construct_obstaclesmode_tree(BT::SequenceNode *head) {
     node_barredArea->addChild(node_barredAreaSwitchToLeft);
     node_barredArea->addChild(node_barredAreaPass);
     node_barredArea->addChild(node_barredAreaSwitchToRight);
-/*    node_crosswalk->addChild(node_crosswalkBreak);
-    node_crosswalk->addChild(node_crosswalkWait);*/
+    node_crosswalk->addChild(node_crosswalkBreak);
+    node_crosswalk->addChild(node_crosswalkWait);
     node_intersection->addChild(node_intersectionWait);
     node_intersection->addChild(node_intersectionDrive);
 }
