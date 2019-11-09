@@ -1,11 +1,11 @@
 #include "bt_node/environment_model.h"
-#include "bt_node/value_definitions.h"
 
 #include "drive_ros_msgs/ObstacleEnvironment.h"
 #include "drive_ros_msgs/PedestrianEnvironment.h"
 #include "drive_ros_msgs/TrafficMarkEnvironment.h"
 #include "drive_ros_msgs/Lane.h"
 #include "drive_ros_msgs/TrajectoryMetaInput.h"
+#include "drive_ros_msgs/value_definitions.h"
 
 #include "general.h"
 

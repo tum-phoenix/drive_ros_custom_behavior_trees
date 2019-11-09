@@ -2,11 +2,11 @@
 #include "bt_node/environment_model.h"
 #include "bt_lib/definitions.h"
 #include "bt_lib/tree.h"
-#include "bt_node/value_definitions.h"
 #include "bt_node/node_reset.h"
 
 #include "drive_ros_msgs/TrajectoryMetaInput.h"
 #include "drive_ros_msgs/Lane.h"
+#include "drive_ros_msgs/value_definitions.h"
 
 #include <math.h>
 
